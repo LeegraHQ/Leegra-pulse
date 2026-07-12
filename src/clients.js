@@ -97,6 +97,11 @@ export const CLIENTS = [
   },
 ];
 
+// Minimal client picker list for the login screen's manager/admin dropdown —
+// derived from CLIENTS so there's one list to keep in sync with the tenant
+// codes in netlify/functions/_data.js, not a second hardcoded copy.
+export const TENANT_DIRECTORY = CLIENTS.map(c => ({ code: c.code, name: c.name, logo: c.logo }));
+
 export const TRAINING_MATERIALS = [
   { id: 'm1', title: 'Shelf Standards 101', type: 'Video', meta: '8 min' },
   { id: 'm2', title: 'Q3 Product Launch briefing', type: 'PDF', meta: '6 pages' },
