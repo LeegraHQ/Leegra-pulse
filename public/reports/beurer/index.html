@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet data-dc-atomics>
+<template id="__bundler_thumbnail"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" fill="#0c6b4f"/><text x="50" y="58" font-size="34" text-anchor="middle" fill="#fff" font-family="sans-serif" font-weight="700">B</text></svg></template>
+<style>
+  body{margin:0;background:oklch(97.5% 0.006 150);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+  input, select, textarea{font-family:inherit}
+  a{color:oklch(45% 0.1 165)}
+  a:hover{color:oklch(38% 0.1 165)}
+</style>
+</helmet>
+
+<div style="display:flex;flex-direction:column;background:oklch(97.5% 0.006 150);min-height:100vh">
+
+  <div style="background:oklch(48% 0.09 165);padding:22px 32px;display:flex;align-items:center;justify-content:space-between">
+    <div>
+      <div style="font-size:20px;font-weight:700;color:#fff;letter-spacing:-0.01em">Beurer Stock Audit</div>
+      <div style="font-size:12.5px;color:oklch(93% 0.04 165);margin-top:2px">Medirite Plus store compliance tracker</div>
+    </div>
+    <div style="font-size:12px;color:oklch(93% 0.04 165)">{{ kpis.filledCount }} of {{ kpis.totalStores }} stores audited</div>
+  </div>
+
+  <div style="display:flex;gap:14px;padding:20px 32px;flex-wrap:wrap;align-items:center;background:oklch(99% 0.003 150);border-bottom:1px solid rgba(0,0,0,.07)">
+    <div style="display:flex;flex-direction:column;gap:4px">
+      <label style="font-size:10.5px;font-weight:600;color:oklch(48% 0.02 150);text-transform:uppercase;letter-spacing:.04em">Month</label>
+      <select value="{{ filters.month }}" onChange="{{ onFilterMonth }}" style="padding:8px 12px;border-radius:8px;border:1px solid oklch(88% 0.01 150);font-size:13px;min-width:140px;background:#fff;color:oklch(22% 0.02 150)">
+        <option value="">All months</option>
+        <sc-for list="{{ monthOptions }}" as="m" hint-placeholder-count="1">
+          <option value="{{ m }}">{{ m }}</option>
+        </sc-for>
+      </select>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:4px">
+      <label style="font-size:10.5px;font-weight:600;color:oklch(48% 0.02 150);text-transform:uppercase;letter-spacing:.04em">Region</label>
+      <select value="{{ filters.region }}" onChange="{{ onFilterRegion }}" style="padding:8px 12px;border-radius:8px;border:1px solid oklch(88% 0.01 150);font-size:13px;min-width:140px;background:#fff;color:oklch(22% 0.02 150)">
+        <option value="">All regions</option>
+        <sc-for list="{{ regionOptions }}" as="r" hint-placeholder-count="1">
+          <option value="{{ r }}">{{ r }}</option>
+        </sc-for>
+      </select>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:4px">
+      <label style="font-size:10.5px;font-weight:600;color:oklch(48% 0.02 150);text-transform:uppercase;letter-spacing:.04em">Store</label>
+      <select value="{{ filters.store }}" onChange="{{ onFilterStore }}" style="padding:8px 12px;border-radius:8px;border:1px solid oklch(88% 0.01 150);font-size:13px;min-width:220px;background:#fff;color:oklch(22% 0.02 150)">
+        <option value="">All stores</option>
+        <sc-for list="{{ storeOptions }}" as="s" hint-placeholder-count="1">
+          <option value="{{ s.store }}">{{ s.displayName }}</option>
+        </sc-for>
+      </select>
+    </div>
+    <button onClick="{{ onClearFilters }}" style="margin-left:auto;padding:8px 16px;border-radius:8px;border:1px solid oklch(88% 0.01 150);background:#fff;font-size:12.5px;font-weight:600;color:oklch(48% 0.02 150);cursor:pointer">Clear filters</button>
+    <button onClick="{{ addRow }}" style="padding:8px 16px;border-radius:8px;border:none;background:oklch(48% 0.09 165);font-size:12.5px;font-weight:600;color:#fff;cursor:pointer">+ Add visit</button>
+  </div>
+
+  <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:16px;padding:22px 32px">
+    <div style="background:#fff;border:1px solid rgba(0,0,0,.07);border-radius:10px;padding:16px 18px">
+      <div style="font-size:11px;font-weight:600;color:oklch(48% 0.02 150);text-transform:uppercase;letter-spacing:.04em">Stores in view</div>
+      <div style="font-size:28px;font-weight:700;color:oklch(22% 0.02 150);margin-top:6px">{{ kpis.rowCount }}</div>
+    </div>
+    <div style="background:#fff;border:1px solid rgba(0,0,0,.07);border-radius:10px;padding:16px 18px">
+      <div style="font-size:11px;font-weight:600;color:oklch(48% 0.02 150);text-transform:uppercase;letter-spacing:.04em">Stock listed</div>
+      <div style="font-size:28px;font-weight:700;color:oklch(22% 0.02 150);margin-top:6px">{{ kpis.listedLabel }}</div>
+    </div>
+    <div style="background:#fff;border:1px solid rgba(0,0,0,.07);border-radius:10px;padding:16px 18px">
+      <div style="font-size:11px;font-weight:600;color:oklch(48% 0.02 150);text-transform:uppercase;letter-spacing:.04em">Stock available</div>
+      <div style="font-size:28px;font-weight:700;color:oklch(22% 0.02 150);margin-top:6px">{{ kpis.availableLabel }}</div>
+    </div>
+    <div style="background:#fff;border:1px solid rgba(0,0,0,.07);border-radius:10px;padding:16px 18px">
+      <div style="font-size:11px;font-weight:600;color:oklch(48% 0.02 150);text-transform:uppercase;letter-spacing:.04em">PI label correct</div>
+      <div style="font-size:28px;font-weight:700;color:oklch(22% 0.02 150);margin-top:6px">{{ kpis.piCorrectLabel }}</div>
+    </div>
+    <div style="background:#fff;border:1px solid rgba(0,0,0,.07);border-radius:10px;padding:16px 18px">
+      <div style="font-size:11px;font-weight:600;color:oklch(48% 0.02 150);text-transform:uppercase;letter-spacing:.04em">Stock ordered</div>
+      <div style="font-size:28px;font-weight:700;color:oklch(22% 0.02 150);margin-top:6px">{{ kpis.orderedLabel }}</div>
+    </div>
+  </div>
+
+  <div style="margin:0 32px 22px;background:#fff;border:1px solid rgba(0,0,0,.07);border-radius:10px;padding:18px">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:10px">
+      <div style="font-size:14px;font-weight:700;color:oklch(22% 0.02 150)">Store photos</div>
+      <div style="display:flex;flex-direction:column;gap:4px">
+        <label style="font-size:10.5px;font-weight:600;color:oklch(48% 0.02 150);text-transform:uppercase;letter-spacing:.04em">Select store to view / upload photo</label>
+        <select value="{{ photoStore }}" onChange="{{ onPhotoStore }}" style="padding:8px 12px;border-radius:8px;border:1px solid oklch(88% 0.01 150);font-size:13px;min-width:260px;background:#fff;color:oklch(22% 0.02 150)">
+          <sc-for list="{{ storeOptions }}" as="s" hint-placeholder-count="1">
+            <option value="{{ s.store }}">{{ s.displayName }}</option>
+          </sc-for>
+        </select>
+      </div>
+    </div>
+    <sc-if value="{{ selectedPhotoRow }}" hint-placeholder-val="{{ false }}">
+      <div style="display:flex;gap:20px;align-items:flex-start">
+        <div style="width:260px;height:170px;flex:none;border-radius:8px;overflow:hidden">
+          <x-import component-from-global-scope="image-slot" from="./image-slot.js" id="{{ selectedPhotoRow.photoId }}" src="{{ selectedPhotoRow.photoSrc }}" shape="rounded" radius="8" placeholder="Drop shelf photo" hint-size="260px,170px" style="width:260px;height:170px"></x-import>
+        </div>
+        <div style="flex:1">
+          <div style="font-size:15px;font-weight:700;color:oklch(22% 0.02 150)">{{ selectedPhotoRow.displayName }}</div>
+          <div style="font-size:12px;color:oklch(48% 0.02 150);margin-top:2px">{{ selectedPhotoRow.channel }} · Region: {{ selectedPhotoRow.regionLabel }}</div>
+          <div style="font-size:12.5px;color:oklch(48% 0.02 150);margin-top:10px;line-height:1.5">Drag a shelf photo onto the frame to attach it to this store's audit record. This slicer is independent of the table filters above.</div>
+        </div>
+      </div>
+    </sc-if>
+  </div>
+
+  <div style="padding:0 32px 32px;overflow-x:auto">
+    <table style="width:100%;border-collapse:collapse;font-size:12.5px;background:#fff;border-radius:10px;overflow:hidden;border:1px solid rgba(0,0,0,.07)">
+      <thead>
+        <tr style="background:oklch(93% 0.04 165)">
+          <th style="text-align:left;padding:10px 12px;font-weight:700;color:oklch(30% 0.05 165)">Store</th>
+          <th style="text-align:left;padding:10px 12px;font-weight:700;color:oklch(30% 0.05 165)">Region</th>
+          <th style="text-align:left;padding:10px 12px;font-weight:700;color:oklch(30% 0.05 165)">Date</th>
+          <th style="text-align:center;padding:10px 12px;font-weight:700;color:oklch(30% 0.05 165)">Listed</th>
+          <th style="text-align:center;padding:10px 12px;font-weight:700;color:oklch(30% 0.05 165)">Available</th>
+          <th style="text-align:center;padding:10px 12px;font-weight:700;color:oklch(30% 0.05 165)">Ordered</th>
+          <th style="text-align:center;padding:10px 12px;font-weight:700;color:oklch(30% 0.05 165)">PI label</th>
+          <th style="text-align:left;padding:10px 12px;font-weight:700;color:oklch(30% 0.05 165)">Comments</th>
+          <th style="padding:10px 12px"></th>
+        </tr>
+      </thead>
+      <tbody>
+        <sc-for list="{{ rows }}" as="row" hint-placeholder-count="6">
+          <tr style="border-top:1px solid rgba(0,0,0,.06)">
+            <td style="padding:9px 12px;font-weight:600;color:oklch(22% 0.02 150)">{{ row.displayName }}</td>
+            <td style="padding:9px 12px;color:oklch(48% 0.02 150)">
+              <input value="{{ row.region }}" onChange="{{ row.onRegion }}" placeholder="—" style="width:52px;border:1px solid oklch(90% 0.01 150);border-radius:6px;padding:5px 7px;font-size:12px"/>
+            </td>
+            <td style="padding:9px 12px;color:oklch(48% 0.02 150)">
+              <input type="date" value="{{ row.date }}" onChange="{{ row.onDate }}" style="border:1px solid oklch(90% 0.01 150);border-radius:6px;padding:5px 7px;font-size:12px"/>
+            </td>
+            <td style="padding:9px 12px;text-align:center">
+              <select value="{{ row.stockListed }}" onChange="{{ row.onListed }}" style="border:1px solid oklch(90% 0.01 150);border-radius:6px;padding:5px 7px;font-size:12px;font-weight:600;color:{{ row.listedColor }}">
+                <option value="unset">—</option>
+                <option value="yes">Yes</option>
+                <option value="no">No</option>
+              </select>
+            </td>
+            <td style="padding:9px 12px;text-align:center">
+              <select value="{{ row.stockAvailable }}" onChange="{{ row.onAvailable }}" style="border:1px solid oklch(90% 0.01 150);border-radius:6px;padding:5px 7px;font-size:12px;font-weight:600;color:{{ row.availableColor }}">
+                <option value="unset">—</option>
+                <option value="yes">Yes</option>
+                <option value="no">No</option>
+              </select>
+            </td>
+            <td style="padding:9px 12px;text-align:center">
+              <select value="{{ row.stockOrdered }}" onChange="{{ row.onOrdered }}" style="border:1px solid oklch(90% 0.01 150);border-radius:6px;padding:5px 7px;font-size:12px;font-weight:600;color:{{ row.orderedColor }}">
+                <option value="unset">—</option>
+                <option value="yes">Yes</option>
+                <option value="no">No</option>
+              </select>
+            </td>
+            <td style="padding:9px 12px;text-align:center">
+              <select value="{{ row.piLabelCorrect }}" onChange="{{ row.onPI }}" style="border:1px solid oklch(90% 0.01 150);border-radius:6px;padding:5px 7px;font-size:12px;font-weight:600;color:{{ row.piColor }}">
+                <option value="unset">—</option>
+                <option value="yes">Yes</option>
+                <option value="no">No</option>
+              </select>
+            </td>
+            <td style="padding:9px 12px">
+              <input value="{{ row.comments }}" onChange="{{ row.onComments }}" placeholder="Add note…" style="width:100%;min-width:160px;border:1px solid oklch(90% 0.01 150);border-radius:6px;padding:5px 7px;font-size:12px"/>
+            </td>
+            <td style="padding:9px 12px;text-align:center">
+              <sc-if value="{{ row.removable }}" hint-placeholder-val="{{ false }}">
+                <button onClick="{{ row.onRemove }}" style="border:none;background:none;color:oklch(58% 0.18 25);font-size:15px;cursor:pointer;line-height:1">×</button>
+              </sc-if>
+            </td>
+          </tr>
+        </sc-for>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+const RAW_STORES = [
+  { store: "MEDIRITE PLUS WILLOWBRIDGE", date: "2026-06-19", region: "GP", stockListed: "yes", stockAvailable: "yes", piLabelCorrect: "yes", stockOrdered: "yes", comments: "" },
+  { store: "MEDIRITE PLUS SOMERSET WEST", date: "", region: "WC", stockListed: "unset", stockAvailable: "unset", piLabelCorrect: "unset", stockOrdered: "unset", comments: "" },
+  { store: "MEDIRITE PLUS OLIVEDALE", date: "2026-06-19", region: "GP", stockListed: "yes", stockAvailable: "yes", piLabelCorrect: "yes", stockOrdered: "no", comments: "" },
+  { store: "MEDIRITE PLUS STELLENBOSCH", date: "", region: "WC", stockListed: "unset", stockAvailable: "unset", piLabelCorrect: "unset", stockOrdered: "unset", comments: "" },
+  { store: "MEDIRITE PLUS BOTHASIG", date: "", region: "WC", stockListed: "unset", stockAvailable: "unset", piLabelCorrect: "unset", stockOrdered: "unset", comments: "" },
+  { store: "MEDIRITE PLUS OCEANS MALL", date: "2026-06-07", region: "KZN", stockListed: "yes", stockAvailable: "yes", piLabelCorrect: "yes", stockOrdered: "no", comments: "" },
+  { store: "MEDIRITE PLUS ST JOHNS", date: "2026-06-08", region: "KZN", stockListed: "no", stockAvailable: "no", piLabelCorrect: "no", stockOrdered: "yes", comments: "Manager opend Listing and order Placed " },
+  { store: "MEDIRITE PLUS MONAVONI", date: "2026-06-09", region: "GP", stockListed: "yes", stockAvailable: "yes", piLabelCorrect: "yes", stockOrdered: "no", comments: "" },
+  { store: "MEDIRITE PLUS CRESTA CROSSING", date: "2026-06-19", region: "GP", stockListed: "yes", stockAvailable: "yes", piLabelCorrect: "yes", stockOrdered: "no", comments: "" },
+  { store: "MEDIRITE PLUS THABAZIMBI", date: "2026-06-11", region: "LiMP", stockListed: "yes", stockAvailable: "yes", piLabelCorrect: "yes", stockOrdered: "no", comments: "" },
+  { store: "MEDIRITE PLUS SANDOWN CROSSING", date: "2026-06-12", region: "GP", stockListed: "yes", stockAvailable: "yes", piLabelCorrect: "yes", stockOrdered: "no", comments: "" },
+  { store: "MEDIRITE PLUS PAARDEVLEI", date: "2026-06-13", region: "KZN", stockListed: "yes", stockAvailable: "yes", piLabelCorrect: "yes", stockOrdered: "no", comments: "" },
+  { store: "MEDIRITE PLUS ST GEORGES SQUARE", date: "2026-06-03", region: "EC", stockListed: "yes", stockAvailable: "yes", piLabelCorrect: "yes", stockOrdered: "no", comments: "" },
+  { store: "MEDIRITE PLUS LANGVERWACHT", date: "", region: "WC", stockListed: "unset", stockAvailable: "unset", piLabelCorrect: "unset", stockOrdered: "unset", comments: "" },
+  { store: "MEDIRITE PLUS PARKLANDS", date: "2026-06-19", region: "GP", stockListed: "yes", stockAvailable: "yes", piLabelCorrect: "yes", stockOrdered: "no", comments: "" },
+  { store: "MEDIRITE PLUS ALLENS NEK", date: "2026-06-19", region: "GP", stockListed: "yes", stockAvailable: "yes", piLabelCorrect: "yes", stockOrdered: "no", comments: "" },
+  { store: "MEDIRITE PLUS MORELETA PARK", date: "2026-06-02", region: "GP", stockListed: "yes", stockAvailable: "yes", piLabelCorrect: "yes", stockOrdered: "yes", comments: "" },
+  { store: "MEDIRITE PLUS LYDENBURG", date: "2026-06-19", region: "LiMP", stockListed: "no", stockAvailable: "no", piLabelCorrect: "no", stockOrdered: "no", comments: "" },
+  { store: "MEDIRITE PLUS PROTEA HEIGHTS", date: "", region: "WC", stockListed: "unset", stockAvailable: "unset", piLabelCorrect: "unset", stockOrdered: "unset", comments: "" },
+  { store: "MEDIRITE PLUS ARCON", date: "2026-06-03", region: "EC", stockListed: "yes", stockAvailable: "no", piLabelCorrect: "no", stockOrdered: "no", comments: "Manager Not Commited to Order Now, will relook on Next Visit " },
+  { store: "MEDIRITE PLUS RUSTENBURG", date: "2026-06-22", region: "NW", stockListed: "yes", stockAvailable: "yes", piLabelCorrect: "yes", stockOrdered: "no", comments: "" },
+  { store: "MEDIRITE PLUS DASPOORT", date: "2026-06-02", region: "GP", stockListed: "yes", stockAvailable: "yes", piLabelCorrect: "no", stockOrdered: "no", comments: "PI Lable Fixed " }
+];
+
+const MONTH = "Jun-26";
+const CHANNEL = "Medirite Plus";
+
+const PHOTO_MAP = {
+  "MEDIRITE PLUS MORELETA PARK": "uploads/Medirite%20Moreleta%20.jpeg",
+  "MEDIRITE PLUS RUSTENBURG": "uploads/Medirite%20Rustenburg.jpeg",
+  "MEDIRITE PLUS THABAZIMBI": "uploads/Medirite%20Thabazimbi.jpeg",
+  "MEDIRITE PLUS ST GEORGES SQUARE": "uploads/Medirite%20St%20Georges%20Square%20.jpeg"
+};
+
+function titleCase(s) {
+  return s.toLowerCase().replace(/\b\w/g, c => c.toUpperCase());
+}
+function slug(s) {
+  return s.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
+}
+
+class Component extends DCLogic {
+  state = {
+    rows: RAW_STORES.map((s, i) => ({
+      id: i + 1,
+      store: s.store,
+      date: s.date,
+      month: MONTH,
+      region: s.region,
+      channel: CHANNEL,
+      stockListed: s.stockListed,
+      stockAvailable: s.stockAvailable,
+      stockOrdered: s.stockOrdered,
+      piLabelCorrect: s.piLabelCorrect,
+      comments: s.comments,
+      removable: false
+    })),
+    filters: { month: "", region: "", store: "" },
+    photoStore: RAW_STORES[0].store,
+    nextId: RAW_STORES.length + 1
+  };
+
+  updateRow(id, field, value) {
+    this.setState(s => ({
+      rows: s.rows.map(r => r.id === id ? { ...r, [field]: value } : r)
+    }));
+  }
+
+  removeRow(id) {
+    this.setState(s => ({ rows: s.rows.filter(r => r.id !== id) }));
+  }
+
+  addRow() {
+    const id = this.state.nextId;
+    this.setState(s => ({
+      nextId: id + 1,
+      rows: [
+        { id, store: "", date: "", month: "", region: "", channel: CHANNEL, stockListed: "unset", stockAvailable: "unset", stockOrdered: "unset", piLabelCorrect: "unset", comments: "", removable: true },
+        ...s.rows
+      ]
+    }));
+  }
+
+  setFilter(field, value) {
+    this.setState(s => ({ filters: { ...s.filters, [field]: value } }));
+  }
+
+  photoSrcFor(store) {
+    return PHOTO_MAP[store] || "";
+  }
+
+  colorFor(val) {
+    return val === "yes" ? "oklch(50% 0.13 150)" : val === "no" ? "oklch(55% 0.18 25)" : "oklch(48% 0.02 150)";
+  }
+
+  enrichRow(row) {
+    return {
+      ...row,
+      displayName: row.store ? titleCase(row.store.replace(/^MEDIRITE PLUS /, "")) : "New store visit",
+      regionLabel: row.region || "Unassigned",
+      photoId: `photo-${slug(row.store || ("new-" + row.id))}`,
+      photoSrc: this.photoSrcFor(row.store),
+      listedColor: this.colorFor(row.stockListed),
+      availableColor: this.colorFor(row.stockAvailable),
+      orderedColor: this.colorFor(row.stockOrdered),
+      piColor: this.colorFor(row.piLabelCorrect),
+      onRegion: e => this.updateRow(row.id, "region", e.target.value),
+      onDate: e => this.updateRow(row.id, "date", e.target.value),
+      onListed: e => this.updateRow(row.id, "stockListed", e.target.value),
+      onAvailable: e => this.updateRow(row.id, "stockAvailable", e.target.value),
+      onOrdered: e => this.updateRow(row.id, "stockOrdered", e.target.value),
+      onPI: e => this.updateRow(row.id, "piLabelCorrect", e.target.value),
+      onComments: e => this.updateRow(row.id, "comments", e.target.value),
+      onRemove: () => this.removeRow(row.id)
+    };
+  }
+
+  renderVals() {
+    const { rows, filters, photoStore } = this.state;
+    const filtered = rows.filter(r =>
+      (filters.month === "" || r.month === filters.month) &&
+      (filters.region === "" || r.region === filters.region) &&
+      (filters.store === "" || r.store === filters.store)
+    );
+
+    const enriched = filtered.map(r => this.enrichRow(r));
+
+    const monthOptions = [...new Set(rows.map(r => r.month).filter(Boolean))];
+    const regionOptions = [...new Set(rows.map(r => r.region).filter(Boolean))];
+    const storeOptions = rows
+      .filter(r => r.store)
+      .map(r => ({ store: r.store, displayName: titleCase(r.store.replace(/^MEDIRITE PLUS /, "")) }));
+
+    const audited = enriched.filter(r => r.stockListed !== "unset" || r.stockAvailable !== "unset" || r.stockOrdered !== "unset" || r.piLabelCorrect !== "unset");
+
+    const rate = field => {
+      const known = enriched.filter(r => r[field] !== "unset");
+      if (known.length === 0) return "—";
+      const yes = known.filter(r => r[field] === "yes").length;
+      return `${yes}/${known.length}`;
+    };
+
+    const photoRow = enriched.find(r => r.store === photoStore) || (rows.find(r => r.store === photoStore) ? this.enrichRow(rows.find(r => r.store === photoStore)) : null);
+
+    return {
+      rows: enriched,
+      filters,
+      monthOptions,
+      regionOptions,
+      storeOptions,
+      photoStore,
+      selectedPhotoRow: photoRow || false,
+      addRow: () => this.addRow(),
+      onFilterMonth: e => this.setFilter("month", e.target.value),
+      onFilterRegion: e => this.setFilter("region", e.target.value),
+      onFilterStore: e => this.setFilter("store", e.target.value),
+      onPhotoStore: e => this.setState({ photoStore: e.target.value }),
+      onClearFilters: () => this.setState({ filters: { month: "", region: "", store: "" } }),
+      kpis: {
+        totalStores: rows.length,
+        filledCount: audited.length,
+        rowCount: enriched.length,
+        listedLabel: rate("stockListed"),
+        availableLabel: rate("stockAvailable"),
+        orderedLabel: rate("stockOrdered"),
+        piCorrectLabel: rate("piLabelCorrect")
+      }
+    };
+  }
+}
+
+</script>
+</body>
+</html>

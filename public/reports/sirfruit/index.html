@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sir Fruit — Activation Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root { --primary-dark: #D9491F; --accent: #1A1A1A; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: #FAF7F0; color: #33322C; font-family: 'Inter', system-ui, sans-serif; }
+  .wrap { min-height: 100vh; padding: 20px 28px 32px; }
+  .header { display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; }
+  .header-left { display:flex; align-items:center; gap:12px; }
+  .logo { width:44px; height:44px; border-radius:50%; object-fit:cover; flex-shrink:0; }
+  .title { font-family:'Poppins',sans-serif; font-weight:700; font-size:22px; color:var(--primary-dark); letter-spacing:-0.02em; }
+  .subtitle { font-size:12px; color:#8A8676; margin-top:2px; }
+  .date-chip { font-size:11px; color:#8A8676; background:#fff; border:1px solid #E5E0D3; border-radius:8px; padding:6px 10px; }
+  .nav-link { font-size:11px; font-weight:600; color:var(--primary-dark); background:#fff; border:1px solid #E5E0D3; border-radius:8px; padding:6px 12px; text-decoration:none; }
+  .kpi-row { display:grid; grid-template-columns:repeat(4,1fr); gap:10px; margin-bottom:14px; }
+  .kpi-card { background:#fff; border:1px solid #E5E0D3; border-radius:10px; padding:10px 14px; }
+  .kpi-label { font-size:10px; text-transform:uppercase; letter-spacing:0.06em; color:#8A8676; font-weight:600; }
+  .kpi-value { font-family:'Poppins',sans-serif; font-size:20px; font-weight:700; margin-top:2px; }
+  .kpi-value.primary { color:var(--primary-dark); }
+  .kpi-value.accent { color:var(--accent); }
+  .section-full { margin-bottom:12px; }
+  .section-row { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:12px; }
+  .card { background:#fff; border:1px solid #E5E0D3; border-radius:10px; overflow:hidden; }
+  .card-header { background:var(--primary-dark); color:#fff; font-family:'Poppins',sans-serif; font-weight:600; font-size:12px; padding:8px 14px; display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap; }
+  table { width:100%; border-collapse:collapse; font-size:12px; }
+  thead tr { background:#F5F1E7; color:#8A8676; text-transform:uppercase; font-size:10px; letter-spacing:0.04em; }
+  th { text-align:left; padding:6px 14px; font-weight:600; }
+  th.num, td.num { text-align:right; }
+  td { padding:6px 14px; }
+  tbody tr { border-top:1px solid #F0EDE2; }
+  tbody tr:first-child { border-top:none; }
+  .name-cell { font-weight:500; }
+  .muted { color:#5C5A50; }
+  .badge { padding:2px 8px; border-radius:6px; font-size:10px; font-weight:600; display:inline-block; }
+  .empty-row td { padding:14px; text-align:center; color:#B5B0A0; font-size:12px; }
+  .slicers { background:#fff; border:1px solid #E5E0D3; border-radius:10px; padding:12px 14px; display:flex; gap:24px; flex-wrap:wrap; }
+  .slicer-label { font-size:10px; text-transform:uppercase; letter-spacing:0.06em; color:#8A8676; font-weight:600; margin-bottom:6px; }
+  .pill-row { display:flex; gap:6px; flex-wrap:wrap; }
+  .pill { cursor:pointer; padding:5px 12px; border-radius:999px; font-size:12px; font-weight:600; background:#F5F1E7; color:#5C5A50; border:1px solid #E5E0D3; user-select:none; }
+  .pill.region-active { background:var(--primary-dark); color:#fff; border-color:var(--primary-dark); }
+  .pill.channel-active { background:var(--accent); color:#fff; border-color:var(--accent); }
+  .cal-grid { display:grid; grid-template-columns: 2fr 1fr; }
+  .cal-body { padding:12px 14px; border-right:1px solid #F0EDE2; }
+  .cal-weekdays, .cal-cells { display:grid; grid-template-columns:repeat(7,1fr); gap:4px; }
+  .cal-weekdays { margin-bottom:4px; }
+  .cal-wd { font-size:10px; text-transform:uppercase; color:#8A8676; font-weight:600; text-align:center; }
+  .cal-cell { min-height:54px; background:#FBFAF6; border-radius:6px; padding:3px; border:1px solid #F0EDE2; }
+  .cal-daynum { font-size:9px; color:#8A8676; font-weight:600; margin-bottom:2px; }
+  .cal-chip { cursor:pointer; font-size:8px; font-weight:600; border-radius:4px; padding:1px 3px; margin-bottom:2px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .cal-more { font-size:8px; color:#B5B0A0; }
+  .detail-panel { padding:12px 14px; }
+  .detail-empty { font-size:12px; color:#B5B0A0; text-align:center; padding-top:24px; }
+  .detail-title { font-family:'Poppins',sans-serif; font-weight:600; font-size:13px; color:var(--primary-dark); margin-bottom:6px; }
+  .detail-sub { font-size:11px; color:#5C5A50; margin-bottom:8px; }
+  .detail-row { font-size:11px; color:#33322C; margin-bottom:4px; }
+  .detail-section-label { font-size:10px; text-transform:uppercase; color:#8A8676; font-weight:600; margin:8px 0 4px; }
+  .stock-row { font-size:11px; color:#5C5A50; display:flex; justify-content:space-between; margin-bottom:2px; }
+  .assets-grid { font-size:11px; color:#5C5A50; display:grid; grid-template-columns:1fr 1fr; gap:2px 8px; }
+  .asset-filter-row { display:flex; gap:4px; flex-wrap:wrap; }
+  .asset-pill { cursor:pointer; padding:3px 9px; border-radius:999px; font-size:10px; font-weight:600; background:rgba(255,255,255,0.15); color:#fff; }
+  .asset-pill.active { background:#fff; color:var(--primary-dark); }
+  .usage-bar { width:70px; height:5px; background:#F0EDE2; border-radius:3px; overflow:hidden; }
+  .usage-fill { height:100%; }
+  .photo-grid { padding:12px 14px; display:grid; grid-template-columns:repeat(4,1fr); gap:10px; }
+  .photo-slot { aspect-ratio:4/3; border:2px dashed #E5E0D3; border-radius:8px; background:#FBFAF6; display:flex; align-items:center; justify-content:center; text-align:center; font-size:11px; color:#B5B0A0; cursor:pointer; overflow:hidden; position:relative; }
+  .photo-slot.filled { border-style:solid; }
+  .photo-slot img { width:100%; height:100%; object-fit:cover; }
+  .photo-slot input { display:none; }
+  .photo-remove { position:absolute; top:4px; right:4px; background:rgba(0,0,0,0.55); color:#fff; border:none; border-radius:50%; width:18px; height:18px; font-size:11px; line-height:18px; cursor:pointer; }
+</style>
+</head>
+<body>
+<template id="__bundler_thumbnail" data-bg-color="#D9491F">
+  <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+    <circle cx="50" cy="50" r="30" fill="#1A1A1A"/>
+    <circle cx="50" cy="26" r="7" fill="#D9491F"/>
+  </svg>
+</template>
+
+<div class="wrap">
+  <div class="header">
+    <div class="header-left">
+      <img class="logo" src="./assets/sir-fruit-logo.png" alt="Sir Fruit logo">
+      <div>
+        <div class="title">Sir Fruit — Activation Dashboard</div>
+        <div class="subtitle">Demo data · Regional promotions &amp; execution tracker</div>
+      </div>
+    </div>
+    <div style="display:flex; align-items:center; gap:10px;">
+      <a class="nav-link" href="./Sir Fruit Summary.html">📊 Summary View</a>
+      <div class="date-chip">Data as of Jul 11, 2026</div>
+    </div>
+  </div>
+
+  <div class="kpi-row">
+    <div class="kpi-card"><div class="kpi-label">Total Billing (Month)</div><div class="kpi-value primary" id="kpi-billing">₹0</div></div>
+    <div class="kpi-card"><div class="kpi-label">Active Promotions</div><div class="kpi-value accent" id="kpi-active">0</div></div>
+    <div class="kpi-card"><div class="kpi-label">Promoters Assigned</div><div class="kpi-value primary" id="kpi-promoters">0</div></div>
+    <div class="kpi-card"><div class="kpi-label">Avg. Activation Feedback</div><div class="kpi-value accent" id="kpi-feedback">–</div></div>
+  </div>
+
+  <div class="section-full">
+    <div class="card">
+      <div class="card-header"><span>Schedule of Promotions</span></div>
+      <table>
+        <thead><tr><th>Store Name</th><th>Region</th><th>Channel</th><th>Dates</th><th>Status</th></tr></thead>
+        <tbody id="tbl-promotions"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="section-full">
+    <div class="card">
+      <div class="card-header">
+        <span id="cal-title">Promotions Calendar</span>
+        <span style="font-size:10px; font-weight:500; opacity:0.9;">Green = Active · Orange = Upcoming · Grey = Completed</span>
+      </div>
+      <div class="cal-grid">
+        <div class="cal-body">
+          <div class="cal-weekdays" id="cal-weekdays"></div>
+          <div class="cal-cells" id="cal-cells"></div>
+        </div>
+        <div class="detail-panel" id="detail-panel"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section-row">
+    <div class="card">
+      <div class="card-header"><span>Stock to be Used</span></div>
+      <table>
+        <thead><tr><th>SKU</th><th>Region</th><th class="num">Used/Alloc.</th><th class="num">Remaining</th></tr></thead>
+        <tbody id="tbl-stock"></tbody>
+      </table>
+    </div>
+    <div class="card">
+      <div class="card-header"><span>Promoters Assigned</span></div>
+      <table>
+        <thead><tr><th>Name</th><th>Store</th><th>Status</th></tr></thead>
+        <tbody id="tbl-promoters"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="section-row">
+    <div class="card">
+      <div class="card-header"><span>Manager Assigned to Check</span></div>
+      <table>
+        <thead><tr><th>Manager</th><th>Stores</th><th>Check Status</th></tr></thead>
+        <tbody id="tbl-managers"></tbody>
+      </table>
+    </div>
+    <div class="card">
+      <div class="card-header"><span>Feedback from Activations</span></div>
+      <table>
+        <thead><tr><th>Store</th><th>Rating</th><th>Comment</th></tr></thead>
+        <tbody id="tbl-feedback"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="section-full">
+    <div class="card">
+      <div class="card-header"><span>Execution Photos — drop images from each activation</span></div>
+      <div class="photo-grid" id="photo-grid"></div>
+    </div>
+  </div>
+
+  <div class="section-full">
+    <div class="card">
+      <div class="card-header">
+        <span>Assets Checklist</span>
+        <div class="asset-filter-row" id="asset-filters"></div>
+      </div>
+      <table>
+        <thead><tr><th>Item</th><th>Region / Channel</th><th class="num">Total</th><th class="num">Deployed</th><th class="num">Avail.</th><th>Usage</th></tr></thead>
+        <tbody id="tbl-assets"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="slicers">
+    <div>
+      <div class="slicer-label">Region</div>
+      <div class="pill-row" id="pills-region"></div>
+    </div>
+    <div>
+      <div class="slicer-label">Channel</div>
+      <div class="pill-row" id="pills-channel"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+const REGIONS = ['All', 'North', 'South', 'East', 'West'];
+const CHANNELS = ['All', 'Checkers', 'Spar', 'Tops', 'Sasol', 'Engen'];
+const ASSET_ITEMS = ['All', 'Tables', 'Uniforms', 'Cups', 'Ice Buckets', 'Tongs'];
+const WEEKDAY_LABELS = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+const MONTH_NAMES = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const CAL_YEAR = 2026, CAL_MONTH = 6;
+
+const PROMOTIONS = [
+  { id:'p1', name:'Buy 2 Get 1 Free — Citrus Pack', region:'North', channel:'Checkers', startDate:'2026-07-01', endDate:'2026-07-15', status:'Active', promoter:'Aisha Khan', deliveredDate:'2026-06-28', stockItems:[{sku:'Citrus Pack 500g', qty:860}], assets:{tables:4,uniforms:6,cups:300,iceBuckets:3,tongs:6} },
+  { id:'p2', name:'20% Off Tropical Mix', region:'South', channel:'Tops', startDate:'2026-07-05', endDate:'2026-07-20', status:'Active', promoter:'Ravi Menon', deliveredDate:'2026-07-02', stockItems:[{sku:'Tropical Mix 250g', qty:640}], assets:{tables:2,uniforms:3,cups:200,iceBuckets:2,tongs:3} },
+  { id:'p3', name:'Bundle Deal — Berry Box', region:'East', channel:'Spar', startDate:'2026-06-20', endDate:'2026-07-05', status:'Ended', promoter:'Priya Nair', deliveredDate:'2026-06-15', stockItems:[{sku:'Berry Box 300g', qty:600}], assets:{tables:3,uniforms:4,cups:250,iceBuckets:2,tongs:4} },
+  { id:'p4', name:'Sampling Drive — Melon Slices', region:'West', channel:'Checkers', startDate:'2026-07-10', endDate:'2026-07-25', status:'Active', promoter:'Daniel Cruz', deliveredDate:'2026-07-07', stockItems:[{sku:'Melon Slices Cup', qty:410}], assets:{tables:5,uniforms:5,cups:400,iceBuckets:4,tongs:5} },
+  { id:'p5', name:'Festival Discount 15%', region:'North', channel:'Spar', startDate:'2026-07-15', endDate:'2026-07-31', status:'Upcoming', promoter:'Meera Iyer', deliveredDate:'2026-07-12', stockItems:[{sku:'Festival Combo Pack', qty:120}], assets:{tables:3,uniforms:4,cups:220,iceBuckets:2,tongs:4} },
+  { id:'p6', name:'Buy 1 Get 1 — Apple Snacks', region:'South', channel:'Checkers', startDate:'2026-07-01', endDate:'2026-07-10', status:'Ended', promoter:'Tom Alex', deliveredDate:'2026-06-27', stockItems:[{sku:'Apple Snacks Pack', qty:990}], assets:{tables:4,uniforms:5,cups:350,iceBuckets:3,tongs:5} },
+  { id:'p7', name:'Flash Sale Weekend', region:'East', channel:'Tops', startDate:'2026-07-12', endDate:'2026-07-14', status:'Upcoming', promoter:'Farah Sheikh', deliveredDate:'2026-07-09', stockItems:[{sku:'Flash Sale Combo Pack', qty:300}], assets:{tables:2,uniforms:2,cups:180,iceBuckets:1,tongs:2} },
+  { id:'p8', name:'Corporate Gifting Combo', region:'West', channel:'Spar', startDate:'2026-07-08', endDate:'2026-07-22', status:'Active', promoter:'Karan Sethi', deliveredDate:'2026-07-05', stockItems:[{sku:'Corporate Gift Box', qty:90}], assets:{tables:3,uniforms:3,cups:150,iceBuckets:2,tongs:3} },
+  { id:'p9', name:'Back to School Bundle', region:'North', channel:'Checkers', startDate:'2026-07-18', endDate:'2026-07-31', status:'Upcoming', promoter:'Aisha Khan', deliveredDate:'2026-07-15', stockItems:[{sku:'Back-to-School Combo Pack', qty:150}], assets:{tables:4,uniforms:4,cups:260,iceBuckets:3,tongs:4} },
+  { id:'p10', name:'Clearance — Mixed Fruit Cups', region:'South', channel:'Spar', startDate:'2026-06-25', endDate:'2026-07-03', status:'Ended', promoter:'Ravi Menon', deliveredDate:'2026-06-20', stockItems:[{sku:'Mixed Fruit Cups', qty:500}], assets:{tables:2,uniforms:3,cups:300,iceBuckets:2,tongs:3} },
+];
+
+const STOCK = [
+  { sku:'Citrus Pack 500g', region:'North', channel:'Checkers', allocated:1200, used:860 },
+  { sku:'Tropical Mix 250g', region:'South', channel:'Tops', allocated:900, used:640 },
+  { sku:'Berry Box 300g', region:'East', channel:'Spar', allocated:600, used:600 },
+  { sku:'Melon Slices Cup', region:'West', channel:'Checkers', allocated:750, used:410 },
+  { sku:'Apple Snacks Pack', region:'South', channel:'Checkers', allocated:1000, used:990 },
+  { sku:'Mixed Fruit Cups', region:'South', channel:'Spar', allocated:500, used:500 },
+  { sku:'Festival Combo Pack', region:'North', channel:'Spar', allocated:800, used:120 },
+  { sku:'Corporate Gift Box', region:'West', channel:'Spar', allocated:300, used:90 },
+];
+
+const PROMOTERS = [
+  { name:'Aisha Khan', region:'North', channel:'Checkers', store:'Store #114 — Sector 12', status:'Active' },
+  { name:'Ravi Menon', region:'South', channel:'Tops', store:'Warehouse Hub — Chennai', status:'Active' },
+  { name:'Priya Nair', region:'East', channel:'Spar', store:'Store #221 — MG Road', status:'On Leave' },
+  { name:'Daniel Cruz', region:'West', channel:'Checkers', store:'Cafe Circuit — Bandra', status:'Active' },
+  { name:'Meera Iyer', region:'North', channel:'Spar', store:'Store #305 — Rajouri', status:'Active' },
+  { name:'Tom Alex', region:'South', channel:'Checkers', store:'Store #118 — Anna Nagar', status:'Active' },
+  { name:'Farah Sheikh', region:'East', channel:'Tops', store:'Warehouse Hub — Salt Lake', status:'On Leave' },
+  { name:'Karan Sethi', region:'West', channel:'Spar', store:'Store #402 — Andheri', status:'Active' },
+];
+
+const MANAGERS = [
+  { name:'Suresh Patil', region:'North', channel:'Checkers', stores:'6 stores', checkStatus:'Completed' },
+  { name:'Lakshmi Rao', region:'South', channel:'Tops', stores:'4 stores', checkStatus:'Pending' },
+  { name:'Vikram Das', region:'East', channel:'Spar', stores:'5 stores', checkStatus:'Completed' },
+  { name:'Neha Joshi', region:'West', channel:'Checkers', stores:'7 stores', checkStatus:'Pending' },
+  { name:'Arjun Kapoor', region:'North', channel:'Checkers', stores:'3 stores', checkStatus:'Completed' },
+  { name:'Sana Malik', region:'South', channel:'Spar', stores:'5 stores', checkStatus:'Pending' },
+];
+
+const FEEDBACK = [
+  { store:'Store #114 — Sector 12', region:'North', channel:'Checkers', rating:4.5, comment:'Great turnout, customers loved the citrus samples.' },
+  { store:'Warehouse Hub — Chennai', region:'South', channel:'Tops', rating:4.0, comment:'Good conversion on bundle offer.' },
+  { store:'Store #221 — MG Road', region:'East', channel:'Spar', rating:3.0, comment:'Low footfall during weekday activation.' },
+  { store:'Cafe Circuit — Bandra', region:'West', channel:'Checkers', rating:4.8, comment:'Excellent response to melon sampling.' },
+  { store:'Store #305 — Rajouri', region:'North', channel:'Spar', rating:3.5, comment:'Stock ran out by mid-day.' },
+  { store:'Store #118 — Anna Nagar', region:'South', channel:'Checkers', rating:4.2, comment:'Positive feedback on apple snack combo.' },
+  { store:'Warehouse Hub — Salt Lake', region:'East', channel:'Tops', rating:2.8, comment:'Delivery delays affected promo timing.' },
+  { store:'Store #402 — Andheri', region:'West', channel:'Spar', rating:4.6, comment:'Strong repeat customer interest.' },
+];
+
+const BILLING = [
+  { region:'North', channel:'Checkers', amount:480000 },
+  { region:'North', channel:'Spar', amount:210000 },
+  { region:'North', channel:'Checkers', amount:95000 },
+  { region:'South', channel:'Checkers', amount:360000 },
+  { region:'South', channel:'Tops', amount:275000 },
+  { region:'South', channel:'Spar', amount:150000 },
+  { region:'East', channel:'Spar', amount:190000 },
+  { region:'East', channel:'Tops', amount:88000 },
+  { region:'West', channel:'Checkers', amount:132000 },
+  { region:'West', channel:'Spar', amount:205000 },
+];
+
+const ASSETS = [
+  { item:'Tables', region:'North', channel:'Checkers', total:40, deployed:28 },
+  { item:'Uniforms', region:'North', channel:'Checkers', total:60, deployed:45 },
+  { item:'Cups', region:'North', channel:'Checkers', total:2000, deployed:1500 },
+  { item:'Ice Buckets', region:'North', channel:'Checkers', total:20, deployed:14 },
+  { item:'Tongs', region:'North', channel:'Checkers', total:50, deployed:35 },
+  { item:'Tables', region:'South', channel:'Tops', total:25, deployed:20 },
+  { item:'Uniforms', region:'South', channel:'Tops', total:35, deployed:30 },
+  { item:'Cups', region:'South', channel:'Tops', total:1500, deployed:1350 },
+  { item:'Ice Buckets', region:'South', channel:'Tops', total:15, deployed:13 },
+  { item:'Tongs', region:'South', channel:'Tops', total:30, deployed:26 },
+  { item:'Tables', region:'East', channel:'Spar', total:30, deployed:30 },
+  { item:'Uniforms', region:'East', channel:'Spar', total:40, deployed:40 },
+  { item:'Cups', region:'East', channel:'Spar', total:1200, deployed:1200 },
+  { item:'Ice Buckets', region:'East', channel:'Spar', total:12, deployed:12 },
+  { item:'Tongs', region:'East', channel:'Spar', total:35, deployed:35 },
+  { item:'Tables', region:'West', channel:'Checkers', total:35, deployed:22 },
+  { item:'Uniforms', region:'West', channel:'Checkers', total:45, deployed:30 },
+  { item:'Cups', region:'West', channel:'Checkers', total:1800, deployed:1100 },
+  { item:'Ice Buckets', region:'West', channel:'Checkers', total:18, deployed:10 },
+  { item:'Tongs', region:'West', channel:'Checkers', total:40, deployed:24 },
+  { item:'Tables', region:'North', channel:'Spar', total:20, deployed:6 },
+  { item:'Uniforms', region:'North', channel:'Spar', total:25, deployed:9 },
+  { item:'Cups', region:'North', channel:'Spar', total:900, deployed:300 },
+  { item:'Ice Buckets', region:'North', channel:'Spar', total:10, deployed:3 },
+  { item:'Tongs', region:'North', channel:'Spar', total:22, deployed:8 },
+];
+
+const STATUS_STYLES = { Active:['#EAF6EE','#D9491F'], Upcoming:['#FDF1E4','#B5651D'], Ended:['#F0EFEA','#8A8676'] };
+
+let state = { region:'All', channel:'All', selectedId:null, assetItem:'All' };
+
+function matches(row) { return (state.region==='All'||row.region===state.region) && (state.channel==='All'||row.channel===state.channel); }
+function esc(s){ const d=document.createElement('div'); d.textContent=s; return d.innerHTML; }
+function fmtCurrency(n){ return '₹'+n.toLocaleString('en-IN'); }
+function fmtShort(dateStr){ const d=new Date(dateStr+'T00:00:00'); return MONTH_NAMES[d.getMonth()]+' '+d.getDate(); }
+function fmtRange(s,e){ return fmtShort(s)+' – '+fmtShort(e); }
+
+function render() {
+  const promotions = PROMOTIONS.filter(matches).map(r => {
+    const [bg,color] = STATUS_STYLES[r.status];
+    return { ...r, dates: fmtRange(r.startDate, r.endDate), statusBg: bg, statusColor: color, deliveredLabel: fmtShort(r.deliveredDate) };
+  });
+  const stock = STOCK.filter(matches);
+  const promoters = PROMOTERS.filter(matches);
+  const managers = MANAGERS.filter(matches);
+  const feedback = FEEDBACK.filter(matches);
+  const billing = BILLING.filter(matches);
+  const assets = ASSETS.filter(matches).filter(r => state.assetItem === 'All' || r.item === state.assetItem);
+
+  document.getElementById('kpi-billing').textContent = fmtCurrency(billing.reduce((s,r)=>s+r.amount,0));
+  document.getElementById('kpi-active').textContent = promotions.filter(r=>r.status==='Active').length;
+  document.getElementById('kpi-promoters').textContent = promoters.length;
+  document.getElementById('kpi-feedback').textContent = feedback.length ? (feedback.reduce((s,r)=>s+r.rating,0)/feedback.length).toFixed(1)+' / 5' : '–';
+
+  document.getElementById('tbl-promotions').innerHTML = promotions.length ? promotions.map(r =>
+    `<tr><td class="name-cell">${esc(r.name)}</td><td class="muted">${esc(r.region)}</td><td class="muted">${esc(r.channel)}</td><td class="muted" style="white-space:nowrap">${esc(r.dates)}</td><td><span class="badge" style="background:${r.statusBg};color:${r.statusColor}">${esc(r.status)}</span></td></tr>`
+  ).join('') : '<tr class="empty-row"><td colspan="5">No promotions match the selected filters.</td></tr>';
+
+  document.getElementById('tbl-stock').innerHTML = stock.length ? stock.map(r => {
+    const pct = Math.round(((r.allocated-r.used)/r.allocated)*100);
+    const color = pct<=10?'#C0432F':pct<=40?'#B5651D':'#D9491F';
+    return `<tr><td class="name-cell">${esc(r.sku)}</td><td class="muted">${esc(r.region)}</td><td class="muted num" style="white-space:nowrap">${r.used.toLocaleString()} / ${r.allocated.toLocaleString()}</td><td class="num" style="font-weight:600;color:${color}">${pct}%</td></tr>`;
+  }).join('') : '<tr class="empty-row"><td colspan="4">No stock records match the selected filters.</td></tr>';
+
+  document.getElementById('tbl-promoters').innerHTML = promoters.length ? promoters.map(r => {
+    const active = r.status==='Active'; const bg=active?'#EAF6EE':'#F0EFEA', color=active?'#D9491F':'#8A8676';
+    return `<tr><td class="name-cell">${esc(r.name)}</td><td class="muted">${esc(r.store)}</td><td><span class="badge" style="background:${bg};color:${color}">${esc(r.status)}</span></td></tr>`;
+  }).join('') : '<tr class="empty-row"><td colspan="3">No promoters match the selected filters.</td></tr>';
+
+  document.getElementById('tbl-managers').innerHTML = managers.length ? managers.map(r => {
+    const done = r.checkStatus==='Completed'; const bg=done?'#EAF6EE':'#FDF1E4', color=done?'#D9491F':'#B5651D';
+    return `<tr><td class="name-cell">${esc(r.name)}</td><td class="muted">${esc(r.stores)}</td><td><span class="badge" style="background:${bg};color:${color}">${esc(r.checkStatus)}</span></td></tr>`;
+  }).join('') : '<tr class="empty-row"><td colspan="3">No managers match the selected filters.</td></tr>';
+
+  document.getElementById('tbl-feedback').innerHTML = feedback.length ? feedback.map(r => {
+    const color = r.rating>=4?'#D9491F':r.rating>=3?'#B5651D':'#C0432F';
+    return `<tr><td class="name-cell">${esc(r.store)}</td><td style="font-weight:600;color:${color};white-space:nowrap">${r.rating.toFixed(1)} ★</td><td class="muted" style="font-size:11px">${esc(r.comment)}</td></tr>`;
+  }).join('') : '<tr class="empty-row"><td colspan="3">No feedback matches the selected filters.</td></tr>';
+
+  document.getElementById('tbl-assets').innerHTML = assets.length ? assets.map(r => {
+    const available = r.total-r.deployed; const pct = Math.round((available/r.total)*100);
+    const usagePct = Math.round((r.deployed/r.total)*100);
+    const color = pct<=10?'#C0432F':pct<=40?'#B5651D':'#D9491F';
+    return `<tr><td class="name-cell">${esc(r.item)}</td><td class="muted" style="white-space:nowrap">${esc(r.region)} / ${esc(r.channel)}</td><td class="muted num">${r.total}</td><td class="muted num">${r.deployed}</td><td class="num" style="font-weight:600;color:${color}">${available}</td><td><div class="usage-bar"><div class="usage-fill" style="width:${usagePct}%;background:${color}"></div></div></td></tr>`;
+  }).join('') : '<tr class="empty-row"><td colspan="6">No assets match the selected filters.</td></tr>';
+
+  renderCalendar(promotions);
+  renderDetail(promotions);
+  renderPills();
+  renderAssetFilters();
+}
+
+function renderCalendar(promotions) {
+  document.getElementById('cal-title').textContent = 'Promotions Calendar — ' + MONTH_NAMES[CAL_MONTH] + ' ' + CAL_YEAR;
+  document.getElementById('cal-weekdays').innerHTML = WEEKDAY_LABELS.map(w => `<div class="cal-wd">${w}</div>`).join('');
+
+  const daysInMonth = new Date(CAL_YEAR, CAL_MONTH+1, 0).getDate();
+  const firstWeekday = new Date(CAL_YEAR, CAL_MONTH, 1).getDay();
+  const cellsEl = document.getElementById('cal-cells');
+  let html = '';
+  for (let i=0;i<42;i++) {
+    const dayNum = i-firstWeekday+1;
+    if (dayNum<1 || dayNum>daysInMonth) { html += '<div class="cal-cell"></div>'; continue; }
+    const cellDate = new Date(CAL_YEAR, CAL_MONTH, dayNum);
+    const dayPromos = promotions.filter(r => {
+      const s = new Date(r.startDate+'T00:00:00'), e = new Date(r.endDate+'T00:00:00');
+      return cellDate>=s && cellDate<=e;
+    });
+    const chips = dayPromos.slice(0,2).map(r => {
+      const label = r.name.length>16 ? r.name.slice(0,15)+'…' : r.name;
+      return `<div class="cal-chip" data-id="${esc(r.id)}" style="background:${r.statusBg};color:${r.statusColor}">${esc(label)}</div>`;
+    }).join('');
+    const more = dayPromos.length>2 ? `<div class="cal-more">+${dayPromos.length-2} more</div>` : '';
+    html += `<div class="cal-cell"><div class="cal-daynum">${dayNum}</div>${chips}${more}</div>`;
+  }
+  cellsEl.innerHTML = html;
+  cellsEl.querySelectorAll('.cal-chip').forEach(el => el.addEventListener('click', () => { state.selectedId = el.dataset.id; render(); }));
+}
+
+function renderDetail(promotions) {
+  const panel = document.getElementById('detail-panel');
+  const sel = state.selectedId ? PROMOTIONS.find(r => r.id === state.selectedId) : null;
+  if (!sel) { panel.innerHTML = '<div class="detail-empty">Click a promotion in the calendar to see the promoter, delivery date and stock/assets used.</div>'; return; }
+  const stockRows = sel.stockItems.map(si => `<div class="stock-row"><span>${esc(si.sku)}</span><span>${si.qty}</span></div>`).join('');
+  panel.innerHTML = `
+    <div class="detail-title">${esc(sel.name)}</div>
+    <div class="detail-sub">${esc(sel.region)} · ${esc(sel.channel)} · ${fmtRange(sel.startDate, sel.endDate)}</div>
+    <div class="detail-row"><b>Promoter:</b> ${esc(sel.promoter)}</div>
+    <div class="detail-row"><b>Stock &amp; tables delivered:</b> ${fmtShort(sel.deliveredDate)}</div>
+    <div class="detail-section-label">Stock Used</div>
+    ${stockRows}
+    <div class="detail-section-label">Assets Used</div>
+    <div class="assets-grid">
+      <span>Tables: ${sel.assets.tables}</span>
+      <span>Uniforms: ${sel.assets.uniforms}</span>
+      <span>Cups: ${sel.assets.cups}</span>
+      <span>Ice buckets: ${sel.assets.iceBuckets}</span>
+      <span>Tongs: ${sel.assets.tongs}</span>
+    </div>`;
+}
+
+function renderPills() {
+  const regionBody = document.getElementById('pills-region');
+  regionBody.innerHTML = REGIONS.map(r => `<div class="pill ${r===state.region?'region-active':''}" data-region="${esc(r)}">${esc(r)}</div>`).join('');
+  const channelBody = document.getElementById('pills-channel');
+  channelBody.innerHTML = CHANNELS.map(c => `<div class="pill ${c===state.channel?'channel-active':''}" data-channel="${esc(c)}">${esc(c)}</div>`).join('');
+  regionBody.querySelectorAll('.pill').forEach(el => el.addEventListener('click', () => { state.region = el.dataset.region; render(); }));
+  channelBody.querySelectorAll('.pill').forEach(el => el.addEventListener('click', () => { state.channel = el.dataset.channel; render(); }));
+}
+
+function renderAssetFilters() {
+  const el = document.getElementById('asset-filters');
+  el.innerHTML = ASSET_ITEMS.map(a => `<div class="asset-pill ${a===state.assetItem?'active':''}" data-item="${esc(a)}">${esc(a)}</div>`).join('');
+  el.querySelectorAll('.asset-pill').forEach(p => p.addEventListener('click', () => { state.assetItem = p.dataset.item; render(); }));
+}
+
+function renderPhotoGrid() {
+  const grid = document.getElementById('photo-grid');
+  const stored = JSON.parse(localStorage.getItem('sirfruit-exec-photos') || '{}');
+  grid.innerHTML = '';
+  for (let i = 1; i <= 4; i++) {
+    const slot = document.createElement('label');
+    slot.className = 'photo-slot' + (stored[i] ? ' filled' : '');
+    if (stored[i]) {
+      slot.innerHTML = `<img src="${stored[i]}" alt="Execution photo ${i}"><button type="button" class="photo-remove" data-idx="${i}">×</button>`;
+    } else {
+      slot.textContent = 'Click or drop photo ' + i;
+    }
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'image/*';
+    input.addEventListener('change', (e) => handleFile(i, e.target.files[0]));
+    slot.appendChild(input);
+    slot.addEventListener('dragover', (e) => { e.preventDefault(); slot.style.background = '#F0EDE2'; });
+    slot.addEventListener('dragleave', () => { slot.style.background = ''; });
+    slot.addEventListener('drop', (e) => {
+      e.preventDefault(); slot.style.background = '';
+      if (e.dataTransfer.files[0]) handleFile(i, e.dataTransfer.files[0]);
+    });
+    grid.appendChild(slot);
+  }
+  grid.querySelectorAll('.photo-remove').forEach(btn => btn.addEventListener('click', (e) => {
+    e.preventDefault(); e.stopPropagation();
+    const stored = JSON.parse(localStorage.getItem('sirfruit-exec-photos') || '{}');
+    delete stored[btn.dataset.idx];
+    localStorage.setItem('sirfruit-exec-photos', JSON.stringify(stored));
+    renderPhotoGrid();
+  }));
+}
+
+function handleFile(idx, file) {
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = () => {
+    const stored = JSON.parse(localStorage.getItem('sirfruit-exec-photos') || '{}');
+    stored[idx] = reader.result;
+    localStorage.setItem('sirfruit-exec-photos', JSON.stringify(stored));
+    renderPhotoGrid();
+  };
+  reader.readAsDataURL(file);
+}
+
+render();
+renderPhotoGrid();
+</script>
+</body>
+</html>

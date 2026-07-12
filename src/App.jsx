@@ -23,6 +23,8 @@ const CLIENT_REPORT_LINKS = {
   'TWR-260': '/reports/tower/',
   'HAT-009': '/reports/hatfield/',
   'SUP-042': '/reports/supaquick/',
+  'SIR-014': '/reports/sirfruit/',
+  'BEU-305': '/reports/beurer/',
 };
 
 export default function App() {
