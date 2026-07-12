@@ -57,12 +57,26 @@ export async function getDashboardSummary(token, tenantCode) {
   return res.json();
 }
 
-export async function checkIn(token, storeId) {
-  if (USE_MOCK) return { id: 'mock-visit', checkin_at: new Date().toISOString() };
+// Fallback questionnaire used only under USE_MOCK, so the rep screen still
+// has something to render standalone. Real questionnaires are tenant-defined
+// via POST /api/admin-questionnaire-import.
+const MOCK_QUESTIONNAIRE = {
+  id: 'mock-questionnaire',
+  name: 'Standard visit',
+  questions: [
+    { id: 'photo', label: 'Shelf photo capture', type: 'boolean', required: true },
+    { id: 'stock', label: 'Stock count / OOS report', type: 'boolean', required: true },
+    { id: 'checklist', label: 'Planogram checklist', type: 'boolean', required: false },
+    { id: 'survey', label: 'Manager survey', type: 'boolean', required: false },
+  ],
+};
+
+export async function checkIn(token, storeId, visitType) {
+  if (USE_MOCK) return { id: 'mock-visit', checkin_at: new Date().toISOString(), questionnaire: MOCK_QUESTIONNAIRE };
   const res = await fetch(`${API_BASE}/visits`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-    body: JSON.stringify({ store_id: storeId }),
+    body: JSON.stringify({ store_id: storeId, visit_type: visitType }),
   });
   return res.json();
 }
@@ -74,15 +88,17 @@ export async function checkOut(token, visitId) {
     headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
     body: JSON.stringify({ visit_id: visitId }),
   });
-  return res.json();
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.missing ? `Answer required: ${data.missing.join(', ')}` : (data.error || 'Could not check out'));
+  return data;
 }
 
-export async function updateVisitTask(token, visitId, type, payload) {
+export async function submitAnswer(token, visitId, questionId, answer) {
   if (USE_MOCK) return { ok: true };
   const res = await fetch(`${API_BASE}/visits-task`, {
     method: 'PATCH',
     headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-    body: JSON.stringify({ visit_id: visitId, type, payload }),
+    body: JSON.stringify({ visit_id: visitId, question_id: questionId, answer }),
   });
   return res.json();
 }

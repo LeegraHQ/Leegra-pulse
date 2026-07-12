@@ -1,0 +1,6 @@
+questionnaire_name,store_codes,visit_type,question_label,question_type,options,required
+Routine Check-in,,routine,Shelf photo capture,boolean,,true
+Routine Check-in,,routine,Stock count / OOS report,boolean,,true
+Routine Check-in,,routine,Units on shelf,number,,false
+New Store Audit,GAM-118;MAK-204,audit,Planogram checklist,boolean,,true
+New Store Audit,GAM-118;MAK-204,audit,Shelf condition,choice,Good;Fair;Poor,true

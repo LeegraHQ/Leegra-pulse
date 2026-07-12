@@ -1,14 +1,7 @@
 import React, { useState } from 'react';
-import { login, getDashboardSummary, checkIn, checkOut, updateVisitTask } from './api.js';
+import { login, getDashboardSummary, checkIn, checkOut, submitAnswer } from './api.js';
 import { TRAINING_MATERIALS } from './clients.js';
 import './theme.css';
-
-const TASK_LABELS = {
-  photo: 'Shelf photo capture',
-  stock: 'Stock count / OOS report',
-  checklist: 'Planogram checklist',
-  survey: 'Manager survey',
-};
 
 export default function App() {
   const [screen, setScreen] = useState('login'); // login | app | dashboard | superadmin
@@ -18,8 +11,9 @@ export default function App() {
   const [error, setError] = useState('');
   const [role, setRole] = useState('rep');
 
-  const [visit, setVisit] = useState(null); // { id, checkedInAt }
-  const [tasks, setTasks] = useState({ photo: false, stock: false, checklist: false, survey: false });
+  const [visit, setVisit] = useState(null); // { id, checkedInAt, questionnaire: { id, name, questions } }
+  const [answers, setAnswers] = useState({}); // { [questionId]: answer }
+  const [visitError, setVisitError] = useState('');
   const [training, setTraining] = useState({ m1: false, m2: false, m3: false });
 
   async function handleSignIn(e) {
@@ -36,7 +30,7 @@ export default function App() {
       }
       setError('');
       setVisit(null);
-      setTasks({ photo: false, stock: false, checklist: false, survey: false });
+      setAnswers({});
     } catch (err) {
       setError(err.message);
     }
@@ -59,18 +53,24 @@ export default function App() {
     if (!visit) {
       const store = session.client.stores[0];
       const v = await checkIn(session.token, store.code);
-      setVisit({ id: v.id, checkedInAt: new Date(v.checkin_at) });
+      setVisit({ id: v.id, checkedInAt: new Date(v.checkin_at), questionnaire: v.questionnaire });
+      setAnswers({});
+      setVisitError('');
     } else {
-      await checkOut(session.token, visit.id);
-      setVisit(null);
-      setTasks({ photo: false, stock: false, checklist: false, survey: false });
+      try {
+        await checkOut(session.token, visit.id);
+        setVisit(null);
+        setAnswers({});
+        setVisitError('');
+      } catch (err) {
+        setVisitError(err.message);
+      }
     }
   }
 
-  async function handleToggleTask(key) {
-    const next = { ...tasks, [key]: !tasks[key] };
-    setTasks(next);
-    if (visit) await updateVisitTask(session.token, visit.id, key, { completed: next[key] });
+  async function handleAnswerChange(questionId, value) {
+    setAnswers(a => ({ ...a, [questionId]: value }));
+    if (visit) await submitAnswer(session.token, visit.id, questionId, value);
   }
 
   function handleToggleTraining(id) {
@@ -154,7 +154,9 @@ export default function App() {
   const client = session.client;
 
   if (screen === 'app') {
-    const doneCount = Object.values(tasks).filter(Boolean).length;
+    const questions = visit?.questionnaire?.questions || [];
+    const isAnswered = a => a !== undefined && a !== null && a !== '';
+    const doneCount = questions.filter(q => isAnswered(answers[q.id])).length;
     if (!client.stores.length) {
       return (
         <div className="lp-shell">
@@ -192,16 +194,46 @@ export default function App() {
           {visit && (
             <>
               <button className="lp-btn lp-btn-secondary lp-block" disabled>✓ Checked in — GPS verified</button>
-              <div className="lp-label">Visit tasks · {doneCount}/4</div>
+              <div className="lp-label">{visit.questionnaire?.name || 'Visit tasks'} · {doneCount}/{questions.length}</div>
+              {!questions.length && <div className="lp-muted" style={{ fontSize: 12 }}>No checklist configured for this store yet.</div>}
               <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                {Object.keys(TASK_LABELS).map(key => (
-                  <div key={key} className="lp-row-card" onClick={() => handleToggleTask(key)}>
-                    <span className="lp-dot" style={{ background: tasks[key] ? 'var(--accent-2-400)' : 'var(--neutral-500)' }} />
-                    <div style={{ flex: 1, fontSize: 13 }}>{TASK_LABELS[key]}</div>
-                    <div className={tasks[key] ? 'lp-tag lp-tag-accent2' : 'lp-tag lp-tag-neutral'}>{tasks[key] ? 'Done' : 'Pending'}</div>
-                  </div>
-                ))}
+                {questions.map(q => {
+                  const answer = answers[q.id];
+                  if (q.type === 'boolean') {
+                    return (
+                      <div key={q.id} className="lp-row-card" onClick={() => handleAnswerChange(q.id, !answer)}>
+                        <span className="lp-dot" style={{ background: answer ? 'var(--accent-2-400)' : 'var(--neutral-500)' }} />
+                        <div style={{ flex: 1, fontSize: 13 }}>{q.label}{q.required ? ' *' : ''}</div>
+                        <div className={answer ? 'lp-tag lp-tag-accent2' : 'lp-tag lp-tag-neutral'}>{answer ? 'Done' : 'Pending'}</div>
+                      </div>
+                    );
+                  }
+                  if (q.type === 'choice') {
+                    return (
+                      <div key={q.id} className="lp-row-card">
+                        <div style={{ flex: 1, fontSize: 13 }}>{q.label}{q.required ? ' *' : ''}</div>
+                        <select className="lp-input" style={{ width: 140 }} value={answer || ''} onChange={e => handleAnswerChange(q.id, e.target.value)}>
+                          <option value="" disabled>Choose…</option>
+                          {(q.options || []).map(opt => <option key={opt} value={opt}>{opt}</option>)}
+                        </select>
+                      </div>
+                    );
+                  }
+                  return (
+                    <div key={q.id} className="lp-row-card">
+                      <div style={{ flex: 1, fontSize: 13 }}>{q.label}{q.required ? ' *' : ''}</div>
+                      <input
+                        className="lp-input"
+                        style={{ width: 140 }}
+                        type={q.type === 'number' ? 'number' : 'text'}
+                        value={answer ?? ''}
+                        onChange={e => handleAnswerChange(q.id, e.target.value)}
+                      />
+                    </div>
+                  );
+                })}
               </div>
+              {visitError && <div className="lp-error">{visitError}</div>}
               <button className="lp-btn lp-btn-primary lp-block" onClick={handleToggleCheckin}>Check out</button>
             </>
           )}

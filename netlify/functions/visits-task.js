@@ -1,5 +1,8 @@
-// PATCH /api/visits-task  { visit_id, type, payload } — upserts a task result
-// on the rep's own in-progress visit.
+// PATCH /api/visits-task  { visit_id, question_id, answer } — saves the
+// rep's answer to one question on their own in-progress visit. `answer`'s
+// shape depends on the question's type (boolean, number, text, choice) —
+// this endpoint doesn't validate it against the type, only that the visit
+// belongs to the caller.
 
 const jwt = require('./_lib/jwt');
 const { getLiveVisit, saveLiveVisit } = require('./_lib/records');
@@ -17,8 +20,8 @@ exports.handler = async (event) => {
     return { statusCode: 404, body: JSON.stringify({ error: 'Visit not found' }) };
   }
 
-  visit.tasks[body.type] = body.payload;
+  visit.answers[body.question_id] = body.answer;
   await saveLiveVisit(claims.tenantCode, visit);
 
-  return { statusCode: 200, body: JSON.stringify({ ok: true, visit_id: body.visit_id, type: body.type, saved_at: new Date().toISOString() }) };
+  return { statusCode: 200, body: JSON.stringify({ ok: true, visit_id: body.visit_id, question_id: body.question_id, saved_at: new Date().toISOString() }) };
 };

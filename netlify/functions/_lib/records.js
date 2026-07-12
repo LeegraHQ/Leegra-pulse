@@ -29,9 +29,10 @@ async function getLiveVisits(tenantCode) {
   return visits.filter(Boolean);
 }
 
-// Normalizes live check-in records (nested { tasks: { photo: { completed } } })
-// to the same flat *_done shape the imported CSV rows use, so both feed the
-// same aggregation below.
+// Normalizes live check-in records to the same flat shape the imported CSV
+// history rows use. Only store_code/rep_email/checkin_at/checkout_at feed
+// the dashboard aggregation below — per-visit question answers are dynamic
+// per tenant (see questionnaires below) so they aren't part of this shape.
 async function getAllVisits(tenantCode) {
   const [imported, live] = await Promise.all([getImportedVisits(tenantCode), getLiveVisits(tenantCode)]);
   const normalizedLive = live.map(v => ({
@@ -39,10 +40,6 @@ async function getAllVisits(tenantCode) {
     rep_email: v.repEmail,
     checkin_at: v.checkin_at,
     checkout_at: v.checkout_at || null,
-    photo_done: !!v.tasks?.photo?.completed,
-    stock_done: !!v.tasks?.stock?.completed,
-    checklist_done: !!v.tasks?.checklist?.completed,
-    survey_done: !!v.tasks?.survey?.completed,
   }));
   return [...imported, ...normalizedLive];
 }
@@ -55,6 +52,34 @@ async function saveLiveVisit(tenantCode, visit) {
 async function getLiveVisit(tenantCode, visitId) {
   const store = getStore(`visits-live-${tenantCode}`);
   return (await store.get(visitId, { type: 'json' })) || null;
+}
+
+async function getQuestionnaires(tenantCode) {
+  const store = getStore(`questionnaires-${tenantCode}`);
+  return (await store.get('list', { type: 'json' })) || [];
+}
+
+async function saveQuestionnaires(tenantCode, list) {
+  const store = getStore(`questionnaires-${tenantCode}`);
+  await store.setJSON('list', list);
+}
+
+// Picks the best-matching questionnaire for a check-in: an exact store match
+// beats an exact visit-type match, which beats a tenant-wide default
+// (one with no store_codes and no visit_type set). Returns null if nothing
+// matches and there's no default.
+function pickQuestionnaire(questionnaires, storeCode, visitType) {
+  let best = null;
+  let bestScore = -1;
+  for (const q of questionnaires) {
+    const storeMatch = Array.isArray(q.storeCodes) && q.storeCodes.length > 0 && q.storeCodes.includes(storeCode);
+    const typeMatch = !!q.visitType && !!visitType && q.visitType === visitType;
+    const isDefault = (!Array.isArray(q.storeCodes) || q.storeCodes.length === 0) && !q.visitType;
+    if (!storeMatch && !typeMatch && !isDefault) continue;
+    const score = (storeMatch ? 2 : 0) + (typeMatch ? 1 : 0);
+    if (score > bestScore) { bestScore = score; best = q; }
+  }
+  return best;
 }
 
 function daysAgo(iso) {
@@ -121,4 +146,7 @@ function computeDashboard(stores, visits) {
   };
 }
 
-module.exports = { getStores, getUsers, getAllVisits, saveLiveVisit, getLiveVisit, computeDashboard };
+module.exports = {
+  getStores, getUsers, getAllVisits, saveLiveVisit, getLiveVisit, computeDashboard,
+  getQuestionnaires, saveQuestionnaires, pickQuestionnaire,
+};
