@@ -7,7 +7,7 @@
 // payload — Netlify Functions have a request size/time limit.
 
 const jwt = require('./_lib/jwt');
-const { getStore } = require('@netlify/blobs');
+const { blobsStore } = require('./_lib/records');
 
 exports.handler = async (event) => {
   const claims = jwt.fromAuthHeader(event);
@@ -27,7 +27,7 @@ exports.handler = async (event) => {
   // Demo storage: Netlify Blobs, appended in batches. Once a real DB exists,
   // this becomes a bulk INSERT into `visits` (+ `visit_tasks`) instead —
   // keep batching on the client side either way (a few hundred rows/call).
-  const store = getStore(`visits-history-${tenantCode}`);
+  const store = blobsStore(`visits-history-${tenantCode}`);
   const batchKey = `batch_${Date.now()}`;
   await store.setJSON(batchKey, body.rows);
 

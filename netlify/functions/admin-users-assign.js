@@ -7,7 +7,7 @@
 // stores present in this assignment list.
 
 const jwt = require('./_lib/jwt');
-const { getStore } = require('@netlify/blobs');
+const { blobsStore } = require('./_lib/records');
 
 exports.handler = async (event) => {
   const claims = jwt.fromAuthHeader(event);
@@ -24,7 +24,7 @@ exports.handler = async (event) => {
     return { statusCode: 400, body: JSON.stringify({ error: 'tenant_code, email and store_codes[] required' }) };
   }
 
-  const store = getStore(`users-${tenantCode}`);
+  const store = blobsStore(`users-${tenantCode}`);
   const users = (await store.get('list', { type: 'json' })) || [];
   const idx = users.findIndex(u => u.email.toLowerCase() === body.email.toLowerCase());
   const record = { email: body.email, role: body.role || 'field_rep', storeCodes: body.store_codes, updatedAt: new Date().toISOString() };

@@ -5,25 +5,37 @@
 
 const { getStore } = require('@netlify/blobs');
 
+// The zero-config getStore(name) relies on Netlify auto-injecting Blobs
+// context, which isn't reliably present for every function/runtime — it can
+// fail with MissingBlobsEnvironmentError. Passing siteID + token explicitly
+// (SITE_ID is auto-set by Netlify; NETLIFY_BLOBS_TOKEN is a Netlify personal
+// access token you add under Site settings -> Environment variables) always
+// works. Falls back to zero-config if the token isn't set yet.
+function blobsStore(name) {
+  const siteID = process.env.SITE_ID || process.env.NETLIFY_SITE_ID;
+  const token = process.env.NETLIFY_BLOBS_TOKEN || process.env.NETLIFY_API_TOKEN;
+  return siteID && token ? getStore({ name, siteID, token }) : getStore(name);
+}
+
 async function getStores(tenantCode) {
-  const store = getStore(`stores-${tenantCode}`);
+  const store = blobsStore(`stores-${tenantCode}`);
   return (await store.get('base', { type: 'json' })) || [];
 }
 
 async function getUsers(tenantCode) {
-  const store = getStore(`users-${tenantCode}`);
+  const store = blobsStore(`users-${tenantCode}`);
   return (await store.get('list', { type: 'json' })) || [];
 }
 
 async function getImportedVisits(tenantCode) {
-  const store = getStore(`visits-history-${tenantCode}`);
+  const store = blobsStore(`visits-history-${tenantCode}`);
   const { blobs } = await store.list();
   const batches = await Promise.all(blobs.map(b => store.get(b.key, { type: 'json' })));
   return batches.flat().filter(Boolean);
 }
 
 async function getLiveVisits(tenantCode) {
-  const store = getStore(`visits-live-${tenantCode}`);
+  const store = blobsStore(`visits-live-${tenantCode}`);
   const { blobs } = await store.list();
   const visits = await Promise.all(blobs.map(b => store.get(b.key, { type: 'json' })));
   return visits.filter(Boolean);
@@ -45,22 +57,22 @@ async function getAllVisits(tenantCode) {
 }
 
 async function saveLiveVisit(tenantCode, visit) {
-  const store = getStore(`visits-live-${tenantCode}`);
+  const store = blobsStore(`visits-live-${tenantCode}`);
   await store.setJSON(visit.id, visit);
 }
 
 async function getLiveVisit(tenantCode, visitId) {
-  const store = getStore(`visits-live-${tenantCode}`);
+  const store = blobsStore(`visits-live-${tenantCode}`);
   return (await store.get(visitId, { type: 'json' })) || null;
 }
 
 async function getQuestionnaires(tenantCode) {
-  const store = getStore(`questionnaires-${tenantCode}`);
+  const store = blobsStore(`questionnaires-${tenantCode}`);
   return (await store.get('list', { type: 'json' })) || [];
 }
 
 async function saveQuestionnaires(tenantCode, list) {
-  const store = getStore(`questionnaires-${tenantCode}`);
+  const store = blobsStore(`questionnaires-${tenantCode}`);
   await store.setJSON('list', list);
 }
 
@@ -147,6 +159,7 @@ function computeDashboard(stores, visits) {
 }
 
 module.exports = {
+  blobsStore,
   getStores, getUsers, getAllVisits, saveLiveVisit, getLiveVisit, computeDashboard,
   getQuestionnaires, saveQuestionnaires, pickQuestionnaire,
 };

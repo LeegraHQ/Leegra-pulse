@@ -11,7 +11,7 @@
 // convert CSV -> this JSON shape) and POST it here.
 
 const jwt = require('./_lib/jwt');
-const { getStore } = require('@netlify/blobs');
+const { blobsStore } = require('./_lib/records');
 
 exports.handler = async (event) => {
   const claims = jwt.fromAuthHeader(event);
@@ -31,7 +31,7 @@ exports.handler = async (event) => {
   // INSERT into a real `stores` table (see BACKEND.md) once a DB exists —
   // the important part to keep is that tenant_code always drives the key,
   // never something taken from the row data itself.
-  const store = getStore(`stores-${tenantCode}`);
+  const store = blobsStore(`stores-${tenantCode}`);
   const existing = (await store.get('base', { type: 'json' })) || [];
   const merged = [...existing, ...body.rows];
   await store.setJSON('base', merged);

@@ -8,7 +8,7 @@
 // the file bytes as blob metadata; move it to a real table if you need to
 // query/filter beyond "list everything for this tenant".
 
-const { getStore } = require('@netlify/blobs');
+const { blobsStore } = require('./_lib/records');
 const jwt = require('./_lib/jwt');
 
 exports.handler = async (event) => {
@@ -16,7 +16,7 @@ exports.handler = async (event) => {
   if (!claims) return { statusCode: 401, body: JSON.stringify({ error: 'Not authenticated' }) };
 
   const tenantCode = claims.tenantCode || 'shared';
-  const store = getStore(`learning-${tenantCode}`);
+  const store = blobsStore(`learning-${tenantCode}`);
 
   if (event.httpMethod === 'GET') {
     const { blobs } = await store.list();
