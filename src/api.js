@@ -4,9 +4,9 @@
 // relative /api/* calls work in both `netlify dev` and production with no
 // extra config, since netlify.toml redirects /api/* to the functions.
 
-import { CLIENTS, TRAINING_MATERIALS } from './clients.js';
+import { CLIENTS, TRAINING_MATERIALS, SUPER_ADMIN_EMAIL } from './clients.js';
 
-const USE_MOCK = true; // flip to false once the Netlify Functions backend is live
+const USE_MOCK = false; // flip to true to run standalone against src/clients.js only
 const API_BASE = '/api';
 
 function genericClient(code) {
@@ -26,8 +26,11 @@ function genericClient(code) {
 
 export async function login({ companyCode, email, password, role }) {
   if (USE_MOCK) {
+    if (email.trim().toLowerCase() === SUPER_ADMIN_EMAIL) {
+      return { token: 'mock-token', role: 'leegra_super_admin' };
+    }
     const client = CLIENTS.find(c => c.code.toLowerCase() === companyCode.trim().toLowerCase()) || genericClient(companyCode);
-    return { token: 'mock-token', role, client };
+    return { token: 'mock-token', role: role === 'rep' ? 'field_rep' : 'client_admin', client };
   }
   const res = await fetch(`${API_BASE}/auth-login`, {
     method: 'POST',
@@ -36,6 +39,22 @@ export async function login({ companyCode, email, password, role }) {
   });
   if (!res.ok) throw new Error('Invalid company code or credentials');
   return res.json(); // { token, role, client }
+}
+
+export async function getDashboardSummary(token, tenantCode) {
+  if (USE_MOCK) {
+    if (tenantCode) return CLIENTS.find(c => c.code === tenantCode) || genericClient(tenantCode);
+    return {
+      tenants: CLIENTS.map(c => ({
+        code: c.code, name: c.name, logo: c.logo,
+        compliance: c.compliance, completedPlanned: c.completedPlanned, storesCovered: c.storesCovered, oosIssues: c.oosIssues,
+      })),
+    };
+  }
+  const qs = tenantCode ? `?tenant_code=${encodeURIComponent(tenantCode)}` : '';
+  const res = await fetch(`${API_BASE}/dashboard-summary${qs}`, { headers: { Authorization: `Bearer ${token}` } });
+  if (!res.ok) throw new Error('Could not load dashboard');
+  return res.json();
 }
 
 export async function checkIn(token, storeId) {

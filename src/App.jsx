@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { login, checkIn, checkOut, updateVisitTask } from './api.js';
-import { CLIENTS, TRAINING_MATERIALS } from './clients.js';
+import { login, getDashboardSummary, checkIn, checkOut, updateVisitTask } from './api.js';
+import { TRAINING_MATERIALS } from './clients.js';
 import './theme.css';
 
 const TASK_LABELS = {
@@ -9,8 +9,6 @@ const TASK_LABELS = {
   checklist: 'Planogram checklist',
   survey: 'Manager survey',
 };
-
-const SUPER_ADMIN_EMAIL = 'chris@leegra.co.za';
 
 export default function App() {
   const [screen, setScreen] = useState('login'); // login | app | dashboard | superadmin
@@ -26,16 +24,16 @@ export default function App() {
 
   async function handleSignIn(e) {
     e.preventDefault();
-    if (email.trim().toLowerCase() === SUPER_ADMIN_EMAIL) {
-      setSession({ isSuperAdmin: true, client: null });
-      setScreen('superadmin');
-      setError('');
-      return;
-    }
     try {
       const result = await login({ companyCode, email, password: '', role });
-      setSession({ ...result, isSuperAdmin: false });
-      setScreen(result.role === 'rep' ? 'app' : 'dashboard');
+      if (result.role === 'leegra_super_admin') {
+        const { tenants } = await getDashboardSummary(result.token);
+        setSession({ ...result, isSuperAdmin: true, tenants });
+        setScreen('superadmin');
+      } else {
+        setSession({ ...result, isSuperAdmin: false });
+        setScreen(result.role === 'field_rep' ? 'app' : 'dashboard');
+      }
       setError('');
       setVisit(null);
       setTasks({ photo: false, stock: false, checklist: false, survey: false });
@@ -44,8 +42,8 @@ export default function App() {
     }
   }
 
-  function handleOpenClient(code) {
-    const client = CLIENTS.find(c => c.code === code);
+  async function handleOpenClient(code) {
+    const client = await getDashboardSummary(session.token, code);
     setSession(s => ({ ...s, client }));
     setScreen('dashboard');
   }
@@ -138,9 +136,9 @@ export default function App() {
             <div className="lp-tag lp-tag-accent">chris@leegra.co.za</div>
             <button className="lp-tag lp-tag-outline" style={{ marginLeft: 'auto' }} onClick={handleLogout}>Log out</button>
           </div>
-          <div className="lp-muted" style={{ fontSize: 12 }}>All 8 client accounts — select one to view its dashboard.</div>
+          <div className="lp-muted" style={{ fontSize: 12 }}>All client accounts — select one to view its dashboard.</div>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12 }}>
-            {CLIENTS.map(c => (
+            {session.tenants.map(c => (
               <div key={c.code} className="lp-inner-card" style={{ cursor: 'pointer' }} onClick={() => handleOpenClient(c.code)}>
                 <div className="lp-title" style={{ fontSize: 15 }}>{c.name}</div>
                 <div className="lp-meta">{c.code}</div>
@@ -157,6 +155,20 @@ export default function App() {
 
   if (screen === 'app') {
     const doneCount = Object.values(tasks).filter(Boolean).length;
+    if (!client.stores.length) {
+      return (
+        <div className="lp-shell">
+          <div className="lp-card" style={{ width: 380 }}>
+            <div className="lp-nav">
+              {client.logo && <img src={client.logo} alt={client.name} height={22} />}
+              <div className="lp-nav-brand">{client.name}</div>
+              <button className="lp-tag lp-tag-outline" onClick={handleLogout}>Log out</button>
+            </div>
+            <div className="lp-muted">No stores have been assigned to you yet — check with your manager.</div>
+          </div>
+        </div>
+      );
+    }
     const store = client.stores[0];
     return (
       <div className="lp-shell">

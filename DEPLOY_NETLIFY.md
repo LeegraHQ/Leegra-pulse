@@ -14,7 +14,7 @@ a single deploy, not two separate services.
 1. Push this `netlify-app/` folder to a GitHub repo (or drag-and-drop it as a zip into Netlify's "Deploy manually" screen).
 2. In Netlify: **Add new site → Import an existing project**, pick the repo.
 3. Build settings are read from `netlify.toml` automatically — build command `npm run build`, publish `dist`, functions `netlify/functions`. No manual config needed.
-4. Deploy. Netlify installs both `package.json`s (root + `netlify/functions/`) automatically.
+4. Deploy. Netlify installs the root `package.json` automatically — function dependencies belong in that same root `package.json`, not a separate one under `netlify/functions/` (Netlify doesn't auto-install a function's own `package.json`).
 
 ## Deploy — from the terminal
 ```

@@ -2,6 +2,10 @@
 // supplied. Used as the seed/fallback dataset; api.js swaps to real Netlify
 // Function calls once USE_MOCK is false.
 
+// Shared with netlify/functions/_data.js's own copy of this constant — keep
+// both in sync (frontend can't import from netlify/functions/).
+export const SUPER_ADMIN_EMAIL = 'chris@leegra.co.za';
+
 export const CLIENTS = [
   { code: 'PH-201', name: 'Philips', logo: '/logos/philips-logo.png',
     staffName: 'Lerato N.', staffEmail: 'lerato.n@philips-retail.co.za', repStoreCount: 2,
