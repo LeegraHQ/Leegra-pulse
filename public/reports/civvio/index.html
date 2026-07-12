@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Civvio — Activation Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root { --primary-dark: #1B1D22; --accent: #D62828; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: #F4F6F8; color: #2C3138; font-family: 'Inter', system-ui, sans-serif; }
+  .wrap { min-height: 100vh; padding: 20px 28px 32px; }
+  .header { display:flex; align-items:center; gap:12px; justify-content:space-between; margin-bottom:14px; }
+  .header-left { display:flex; align-items:center; gap:10px; }
+  .header-left img { height:32px; width:auto; }
+  .title { font-family:'Poppins',sans-serif; font-weight:700; font-size:22px; color:var(--primary-dark); letter-spacing:-0.02em; }
+  .subtitle { font-size:12px; color:#7C8896; margin-top:2px; }
+  .date-chip { font-size:11px; color:#7C8896; background:#fff; border:1px solid #E1E6EB; border-radius:8px; padding:6px 10px; }
+  .kpi-row { display:grid; grid-template-columns:repeat(4,1fr); gap:10px; margin-bottom:14px; }
+  .kpi-card { background:#fff; border:1px solid #E1E6EB; border-radius:10px; padding:10px 14px; }
+  .kpi-label { font-size:10px; text-transform:uppercase; letter-spacing:0.06em; color:#7C8896; font-weight:600; }
+  .kpi-value { font-family:'Poppins',sans-serif; font-size:20px; font-weight:700; margin-top:2px; }
+  .kpi-value.primary { color:var(--primary-dark); }
+  .kpi-value.accent { color:var(--accent); }
+  .section-full { margin-bottom:12px; }
+  .section-row { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:12px; }
+  .card { background:#fff; border:1px solid #E1E6EB; border-radius:10px; overflow:hidden; }
+  .card-header { background:var(--primary-dark); color:#fff; font-family:'Poppins',sans-serif; font-weight:600; font-size:12px; padding:8px 14px; }
+  table { width:100%; border-collapse:collapse; font-size:12px; }
+  thead tr { background:#EEF1F4; color:#7C8896; text-transform:uppercase; font-size:10px; letter-spacing:0.04em; }
+  th { text-align:left; padding:6px 14px; font-weight:600; }
+  th.num, td.num { text-align:right; }
+  td { padding:6px 14px; }
+  tbody tr { border-top:1px solid #EDF0F3; }
+  tbody tr:first-child { border-top:none; }
+  .name-cell { font-weight:500; }
+  .muted { color:#5A6470; }
+  .badge { padding:2px 8px; border-radius:6px; font-size:10px; font-weight:600; display:inline-block; }
+  .empty-row td { padding:14px; text-align:center; color:#B0B8C0; font-size:12px; }
+  .slicers { background:#fff; border:1px solid #E1E6EB; border-radius:10px; padding:12px 14px; display:flex; gap:24px; flex-wrap:wrap; }
+  .slicer-label { font-size:10px; text-transform:uppercase; letter-spacing:0.06em; color:#7C8896; font-weight:600; margin-bottom:6px; }
+  .pill-row { display:flex; gap:6px; flex-wrap:wrap; }
+  .pill { cursor:pointer; padding:5px 12px; border-radius:999px; font-size:12px; font-weight:600; background:#EEF1F4; color:#5A6470; border:1px solid #E1E6EB; user-select:none; }
+  .pill.region-active { background:var(--primary-dark); color:#fff; border-color:var(--primary-dark); }
+  .pill.channel-active { background:var(--accent); color:#fff; border-color:var(--accent); }
+  .photo-grid { padding:12px 14px; display:grid; grid-template-columns:repeat(4,1fr); gap:10px; }
+  .photo-slot { width:100%; aspect-ratio:4/3; border-radius:8px; border:2px dashed #D8DEE4; background:#FAFBFC; display:flex; align-items:center; justify-content:center; text-align:center; color:#9AA5B1; font-size:11px; padding:8px; cursor:pointer; }
+  .photo-caption { font-size:10px; color:#7C8896; margin-top:4px; text-align:center; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="header">
+    <div class="header-left">
+      <img src="assets/civvio-logo.png" alt="Civvio">
+      <div>
+        <div class="title">Civvio — Activation Dashboard</div>
+        <div class="subtitle">Demo data · Totalsports &amp; Mr Price Sport promotions and execution tracker</div>
+      </div>
+    </div>
+    <div class="date-chip">Data as of Jul 13, 2026</div>
+  </div>
+
+  <div class="kpi-row">
+    <div class="kpi-card"><div class="kpi-label">Active Promotions</div><div class="kpi-value accent" id="kpi-active">0</div></div>
+    <div class="kpi-card"><div class="kpi-label">Promoters Assigned</div><div class="kpi-value primary" id="kpi-promoters">0</div></div>
+    <div class="kpi-card"><div class="kpi-label">Calls Achieved / Planned</div><div class="kpi-value primary" id="kpi-calls">0 / 0</div></div>
+    <div class="kpi-card"><div class="kpi-label">Avg. Activation Feedback</div><div class="kpi-value accent" id="kpi-feedback">–</div></div>
+  </div>
+
+  <div class="section-full">
+    <div class="card">
+      <div class="card-header">Schedule of Promotions</div>
+      <table><thead><tr><th>Promotion</th><th>Region</th><th>Channel</th><th>Dates</th><th>Status</th></tr></thead><tbody id="tbl-promotions"></tbody></table>
+    </div>
+  </div>
+
+  <div class="section-row">
+    <div class="card">
+      <div class="card-header">Stock to be Used</div>
+      <table><thead><tr><th>SKU</th><th>Region</th><th class="num">Used/Alloc.</th><th class="num">Remaining</th></tr></thead><tbody id="tbl-stock"></tbody></table>
+    </div>
+    <div class="card">
+      <div class="card-header">Promoters Assigned</div>
+      <table><thead><tr><th>Name</th><th>Store</th><th>Status</th></tr></thead><tbody id="tbl-promoters"></tbody></table>
+    </div>
+  </div>
+
+  <div class="section-row">
+    <div class="card">
+      <div class="card-header">Manager Assigned to Check</div>
+      <table><thead><tr><th>Manager</th><th>Stores</th><th>Check Status</th></tr></thead><tbody id="tbl-managers"></tbody></table>
+    </div>
+    <div class="card">
+      <div class="card-header">Feedback from Activations</div>
+      <table><thead><tr><th>Store</th><th>Rating</th><th>Comment</th></tr></thead><tbody id="tbl-feedback"></tbody></table>
+    </div>
+  </div>
+
+  <div class="section-full">
+    <div class="card">
+      <div class="card-header">Calls Planned vs Achieved &amp; Sell-In per Store</div>
+      <table>
+        <thead><tr><th>Store</th><th>Region</th><th>Channel</th><th class="num">Calls Planned</th><th class="num">Calls Achieved</th><th class="num">Order Generated (units)</th><th class="num">Sell-In Value</th></tr></thead>
+        <tbody id="tbl-calls"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="card" style="margin-bottom:12px;">
+    <div class="card-header">Store Visit Photos</div>
+    <div class="photo-grid">
+      <div><div class="photo-slot">📷<br>Drop photo — Totalsports Mall of Africa</div><div class="photo-caption">Totalsports Mall of Africa</div></div>
+      <div><div class="photo-slot">📷<br>Drop photo — Mr Price Sport Canal Walk</div><div class="photo-caption">Mr Price Sport Canal Walk</div></div>
+      <div><div class="photo-slot">📷<br>Drop photo — Totalsports Gateway Durban</div><div class="photo-caption">Totalsports Gateway Durban</div></div>
+      <div><div class="photo-slot">📷<br>Drop photo — Mr Price Sport Cresta</div><div class="photo-caption">Mr Price Sport Cresta</div></div>
+    </div>
+  </div>
+
+  <div class="slicers">
+    <div><div class="slicer-label">Region</div><div class="pill-row" id="pills-region"></div></div>
+    <div><div class="slicer-label">Channel</div><div class="pill-row" id="pills-channel"></div></div>
+  </div>
+</div>
+
+<script>
+// Real store base for Civvio (44 stores, Totalsports + Mr Price Sport banners
+// across GP/CPT/KZN/FS/NW) already loaded via admin-stores-import — the
+// promotions/stock/feedback figures below are illustrative demo data, same
+// as the Tower and Sir Fruit trackers, until Civvio's own activation
+// program data is available to import for real.
+const REGIONS = ['All', 'GP', 'CPT', 'KZN', 'FS', 'NW'];
+const CHANNELS = ['All', 'Totalsports', 'Mr Price Sport'];
+
+const PROMOTIONS = [
+  { name: 'Winter Trail Runner Sale — 20% Off', region: 'GP', channel: 'Totalsports', dates: 'Jul 1 – Jul 15', status: 'Active' },
+  { name: 'Hiking Boot Bundle — Buy Boots, Get Socks Free', region: 'CPT', channel: 'Totalsports', dates: 'Jul 5 – Jul 20', status: 'Active' },
+  { name: 'Gym Bag Giveaway with Membership Sign-Up', region: 'KZN', channel: 'Mr Price Sport', dates: 'Jun 20 – Jul 5', status: 'Ended' },
+  { name: 'Rugby Jersey Launch — New Season Kits', region: 'GP', channel: 'Mr Price Sport', dates: 'Jul 10 – Jul 25', status: 'Active' },
+  { name: 'Back-to-School Sports Kit 15% Off', region: 'FS', channel: 'Totalsports', dates: 'Jul 15 – Jul 31', status: 'Upcoming' },
+  { name: 'Trail Running Shoe Demo Day', region: 'CPT', channel: 'Totalsports', dates: 'Jul 1 – Jul 10', status: 'Ended' },
+  { name: 'Flash Sale Weekend — Compression Wear', region: 'NW', channel: 'Mr Price Sport', dates: 'Jul 12 – Jul 14', status: 'Upcoming' },
+  { name: 'Corporate Wellness Combo — Bottle & Cap', region: 'GP', channel: 'Mr Price Sport', dates: 'Jul 8 – Jul 22', status: 'Active' },
+  { name: 'Winter Layering Bundle — Jacket + Base Layer', region: 'KZN', channel: 'Totalsports', dates: 'Jul 18 – Jul 31', status: 'Upcoming' },
+  { name: 'Clearance — Last Season Sneakers', region: 'FS', channel: 'Mr Price Sport', dates: 'Jun 25 – Jul 3', status: 'Ended' },
+];
+
+const STOCK = [
+  { sku: 'Trail Runner Shoe (all sizes)', region: 'GP', channel: 'Totalsports', allocated: 600, used: 430 },
+  { sku: 'Hiking Boot — Mid Cut', region: 'CPT', channel: 'Totalsports', allocated: 400, used: 310 },
+  { sku: 'Gym Duffel Bag', region: 'KZN', channel: 'Mr Price Sport', allocated: 350, used: 350 },
+  { sku: 'Rugby Jersey — Home Kit', region: 'GP', channel: 'Mr Price Sport', allocated: 500, used: 260 },
+  { sku: 'Compression Tights', region: 'NW', channel: 'Mr Price Sport', allocated: 300, used: 295 },
+  { sku: 'Insulated Water Bottle', region: 'GP', channel: 'Mr Price Sport', allocated: 450, used: 90 },
+  { sku: 'Sports Sock 3-Pack', region: 'FS', channel: 'Totalsports', allocated: 700, used: 120 },
+  { sku: 'Winter Base Layer Set', region: 'KZN', channel: 'Totalsports', allocated: 250, used: 70 },
+];
+
+const PROMOTERS = [
+  { name: 'Zanele Khumalo', region: 'KZN', channel: 'Totalsports', store: 'Totalsports Westville Pavillion Durban', status: 'Active' },
+  { name: 'Bongani Ndlovu', region: 'GP', channel: 'Totalsports', store: 'Totalsports Mall of Africa Johannesburg', status: 'Active' },
+  { name: 'Chané van Wyk', region: 'CPT', channel: 'Totalsports', store: 'Totalsports Canal Walk Cape Town', status: 'On Leave' },
+  { name: 'Thabo Mokoena', region: 'GP', channel: 'Mr Price Sport', store: 'Mr Price Sport Cresta Johannesburg', status: 'Active' },
+  { name: 'Amahle Dlamini', region: 'KZN', channel: 'Mr Price Sport', store: 'MR Price Sport Gateway Durban', status: 'Active' },
+  { name: 'Pieter Botha', region: 'NW', channel: 'Totalsports', store: 'Totalsports Waterfall Mall Rustenburg', status: 'Active' },
+  { name: 'Lerato Sithole', region: 'FS', channel: 'Mr Price Sport', store: 'Mr Price Sport  Loch Logan Bloemfontein', status: 'On Leave' },
+  { name: 'Ryan Abrahams', region: 'CPT', channel: 'Mr Price Sport', store: 'Mr Price Sport Blue Route Cape Town', status: 'Active' },
+];
+
+const MANAGERS = [
+  { name: 'Sipho Mahlangu', region: 'GP', channel: 'Totalsports', stores: '8 stores', checkStatus: 'Completed' },
+  { name: 'Carla Pretorius', region: 'CPT', channel: 'Totalsports', stores: '6 stores', checkStatus: 'Pending' },
+  { name: 'Nomsa Zulu', region: 'KZN', channel: 'Mr Price Sport', stores: '3 stores', checkStatus: 'Completed' },
+  { name: 'Werner Kruger', region: 'GP', channel: 'Mr Price Sport', stores: '9 stores', checkStatus: 'Pending' },
+  { name: 'Palesa Moeketsi', region: 'FS', channel: 'Totalsports', stores: '2 stores', checkStatus: 'Completed' },
+  { name: 'Devan Naidoo', region: 'NW', channel: 'Mr Price Sport', stores: '1 store', checkStatus: 'Pending' },
+];
+
+const FEEDBACK = [
+  { store: 'Totalsports Mall of Africa Johannesburg', region: 'GP', channel: 'Totalsports', rating: 4.5, comment: 'Strong turnout for the trail runner demo, sold through fast.' },
+  { store: 'Totalsports Canal Walk Cape Town', region: 'CPT', channel: 'Totalsports', rating: 4.0, comment: 'Good conversion on the hiking boot bundle.' },
+  { store: 'MR Price Sport Gateway Durban', region: 'KZN', channel: 'Mr Price Sport', rating: 3.0, comment: 'Gym bag stock ran out on day one, missed weekend footfall.' },
+  { store: 'Mr Price Sport Cresta Johannesburg', region: 'GP', channel: 'Mr Price Sport', rating: 4.8, comment: 'Rugby jersey launch drew a strong crowd, great energy.' },
+  { store: 'Totalsports Loch Logan Bloemfontein', region: 'FS', channel: 'Totalsports', rating: 3.5, comment: 'Back-to-school kit interest slower than expected this early.' },
+  { store: 'Totalsports Waterfall Mall Rustenburg', region: 'NW', channel: 'Totalsports', rating: 4.2, comment: 'Positive feedback on compression wear flash sale.' },
+  { store: 'Mr Price Sport  Somerset Mall Somerset West', region: 'CPT', channel: 'Mr Price Sport', rating: 2.8, comment: 'Delivery delay pushed the wellness combo launch back a week.' },
+  { store: 'Totalsports East Rand Mall Boksburg', region: 'GP', channel: 'Totalsports', rating: 4.6, comment: 'Repeat customers asking about the winter layering bundle already.' },
+];
+
+const STORE_CALLS = [
+  { store: 'Totalsports Westville Pavillion Durban', region: 'KZN', channel: 'Totalsports', callsPlanned: 20, callsAchieved: 18, orderUnits: 340, unitPrice: 450 },
+  { store: 'MR Price Sport Gateway Durban', region: 'KZN', channel: 'Mr Price Sport', callsPlanned: 16, callsAchieved: 14, orderUnits: 260, unitPrice: 420 },
+  { store: 'Totalsports Canal Walk Cape Town', region: 'CPT', channel: 'Totalsports', callsPlanned: 18, callsAchieved: 18, orderUnits: 410, unitPrice: 450 },
+  { store: 'Mr Price Sport  Somerset Mall Somerset West', region: 'CPT', channel: 'Mr Price Sport', callsPlanned: 14, callsAchieved: 9, orderUnits: 150, unitPrice: 380 },
+  { store: 'Totalsports Mall of Africa Johannesburg', region: 'GP', channel: 'Totalsports', callsPlanned: 15, callsAchieved: 12, orderUnits: 210, unitPrice: 420 },
+  { store: 'Mr Price Sport Cresta Johannesburg', region: 'GP', channel: 'Mr Price Sport', callsPlanned: 12, callsAchieved: 10, orderUnits: 190, unitPrice: 450 },
+  { store: 'Totalsports Waterfall Mall Rustenburg', region: 'NW', channel: 'Totalsports', callsPlanned: 17, callsAchieved: 17, orderUnits: 305, unitPrice: 420 },
+  { store: 'Totalsports Loch Logan Bloemfontein', region: 'FS', channel: 'Totalsports', callsPlanned: 13, callsAchieved: 8, orderUnits: 95, unitPrice: 380 },
+];
+
+let state = { region: 'All', channel: 'All' };
+function matches(row) { return (state.region === 'All' || row.region === state.region) && (state.channel === 'All' || row.channel === state.channel); }
+function esc(s) { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
+const promoStatusStyle = { Active: ['#F9E7E7', '#1B1D22'], Upcoming: ['#FDF1E4', '#B5651D'], Ended: ['#F0EFEA', '#8A8676'] };
+
+function render() {
+  const promotions = PROMOTIONS.filter(matches);
+  const stock = STOCK.filter(matches);
+  const promoters = PROMOTERS.filter(matches);
+  const managers = MANAGERS.filter(matches);
+  const feedback = FEEDBACK.filter(matches);
+  const storeCalls = STORE_CALLS.filter(matches);
+
+  document.getElementById('kpi-active').textContent = promotions.filter(r => r.status === 'Active').length;
+  document.getElementById('kpi-promoters').textContent = promoters.length;
+  document.getElementById('kpi-feedback').textContent = feedback.length ? (feedback.reduce((s, r) => s + r.rating, 0) / feedback.length).toFixed(1) + ' / 5' : '–';
+  const plannedTotal = storeCalls.reduce((s, r) => s + r.callsPlanned, 0);
+  const achievedTotal = storeCalls.reduce((s, r) => s + r.callsAchieved, 0);
+  document.getElementById('kpi-calls').textContent = achievedTotal + ' / ' + plannedTotal;
+
+  document.getElementById('tbl-promotions').innerHTML = promotions.length ? promotions.map(r => {
+    const [bg, color] = promoStatusStyle[r.status];
+    return `<tr><td class="name-cell">${esc(r.name)}</td><td class="muted">${esc(r.region)}</td><td class="muted">${esc(r.channel)}</td><td class="muted" style="white-space:nowrap">${esc(r.dates)}</td><td><span class="badge" style="background:${bg};color:${color}">${esc(r.status)}</span></td></tr>`;
+  }).join('') : '<tr class="empty-row"><td colspan="5">No promotions match the selected filters.</td></tr>';
+
+  document.getElementById('tbl-stock').innerHTML = stock.length ? stock.map(r => {
+    const pct = Math.round(((r.allocated - r.used) / r.allocated) * 100);
+    const color = pct <= 10 ? '#C0432F' : pct <= 40 ? '#B5651D' : '#1B1D22';
+    return `<tr><td class="name-cell">${esc(r.sku)}</td><td class="muted">${esc(r.region)}</td><td class="muted num" style="white-space:nowrap">${r.used.toLocaleString()} / ${r.allocated.toLocaleString()}</td><td class="num" style="font-weight:600;color:${color}">${pct}%</td></tr>`;
+  }).join('') : '<tr class="empty-row"><td colspan="4">No stock records match the selected filters.</td></tr>';
+
+  document.getElementById('tbl-promoters').innerHTML = promoters.length ? promoters.map(r => {
+    const active = r.status === 'Active'; const bg = active ? '#F9E7E7' : '#F0EFEA', color = active ? '#1B1D22' : '#8A8676';
+    return `<tr><td class="name-cell">${esc(r.name)}</td><td class="muted">${esc(r.store)}</td><td><span class="badge" style="background:${bg};color:${color}">${esc(r.status)}</span></td></tr>`;
+  }).join('') : '<tr class="empty-row"><td colspan="3">No promoters match the selected filters.</td></tr>';
+
+  document.getElementById('tbl-managers').innerHTML = managers.length ? managers.map(r => {
+    const done = r.checkStatus === 'Completed'; const bg = done ? '#F9E7E7' : '#FDF1E4', color = done ? '#1B1D22' : '#B5651D';
+    return `<tr><td class="name-cell">${esc(r.name)}</td><td class="muted">${esc(r.stores)}</td><td><span class="badge" style="background:${bg};color:${color}">${esc(r.checkStatus)}</span></td></tr>`;
+  }).join('') : '<tr class="empty-row"><td colspan="3">No managers match the selected filters.</td></tr>';
+
+  document.getElementById('tbl-feedback').innerHTML = feedback.length ? feedback.map(r => {
+    const color = r.rating >= 4 ? '#1B1D22' : r.rating >= 3 ? '#B5651D' : '#C0432F';
+    return `<tr><td class="name-cell">${esc(r.store)}</td><td style="font-weight:600;color:${color};white-space:nowrap">${r.rating.toFixed(1)} ★</td><td class="muted" style="font-size:11px">${esc(r.comment)}</td></tr>`;
+  }).join('') : '<tr class="empty-row"><td colspan="3">No feedback matches the selected filters.</td></tr>';
+
+  document.getElementById('tbl-calls').innerHTML = storeCalls.length ? storeCalls.map(r => {
+    const sellIn = r.orderUnits * r.unitPrice;
+    const achColor = r.callsAchieved >= r.callsPlanned ? '#1B1D22' : (r.callsAchieved / r.callsPlanned >= 0.7 ? '#B5651D' : '#C0432F');
+    return `<tr><td class="name-cell">${esc(r.store)}</td><td class="muted">${esc(r.region)}</td><td class="muted">${esc(r.channel)}</td><td class="muted num">${r.callsPlanned}</td><td class="num" style="font-weight:600;color:${achColor}">${r.callsAchieved}</td><td class="muted num">${r.orderUnits}</td><td class="num" style="font-weight:600;color:#1B1D22">R${sellIn.toLocaleString('en-ZA')}</td></tr>`;
+  }).join('') : '<tr class="empty-row"><td colspan="7">No store call records match the selected filters.</td></tr>';
+
+  renderPills();
+}
+
+function renderPills() {
+  const regionBody = document.getElementById('pills-region');
+  regionBody.innerHTML = REGIONS.map(r => `<div class="pill ${r === state.region ? 'region-active' : ''}" data-region="${esc(r)}">${esc(r)}</div>`).join('');
+  const channelBody = document.getElementById('pills-channel');
+  channelBody.innerHTML = CHANNELS.map(c => `<div class="pill ${c === state.channel ? 'channel-active' : ''}" data-channel="${esc(c)}">${esc(c)}</div>`).join('');
+  regionBody.querySelectorAll('.pill').forEach(el => el.addEventListener('click', () => { state.region = el.dataset.region; render(); }));
+  channelBody.querySelectorAll('.pill').forEach(el => el.addEventListener('click', () => { state.channel = el.dataset.channel; render(); }));
+}
+
+document.querySelectorAll('.photo-slot').forEach(slot => {
+  slot.addEventListener('click', () => {
+    const input = document.createElement('input');
+    input.type = 'file'; input.accept = 'image/*';
+    input.onchange = () => {
+      const file = input.files[0];
+      if (!file) return;
+      const url = URL.createObjectURL(file);
+      slot.style.background = `url(${url}) center/cover no-repeat`;
+      slot.style.border = 'none';
+      slot.textContent = '';
+    };
+    input.click();
+  });
+});
+
+render();
+</script>
+</body>
+</html>

@@ -25,6 +25,7 @@ const CLIENT_REPORT_LINKS = {
   'SUP-042': '/reports/supaquick/',
   'SIR-014': '/reports/sirfruit/',
   'BEU-305': '/reports/beurer/',
+  'CIV-088': '/reports/civvio/',
 };
 
 export default function App() {
