@@ -1,0 +1,59 @@
+/* Leegra Pulse — Nocturne-derived tokens, plain CSS (no build-step dependency).
+   Swap these variables to re-skin the whole app from one place. */
+:root {
+  /* Leegra brand: dark ground + lime accent, sampled from the Leegra logo */
+  --bg: #14161c;
+  --surface: #21242c;
+  --text: #eef1e9;
+  --accent: #b4fc0f;
+  --accent-300: #d4fc7a;
+  --accent-2-400: #bdf23f;
+  --neutral-500: #9397ab;
+  --radius-lg: 14px;
+  --radius-md: 8px;
+  --shadow-md: 0 0 0 1px #3a3d33, 0 6px 18px rgba(0,0,0,0.55);
+}
+
+* { box-sizing: border-box; }
+body { margin: 0; font-family: 'Inter', system-ui, sans-serif; background: var(--bg); color: var(--text); }
+
+.lp-shell { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 40px; }
+.lp-card { background: var(--surface); border-radius: var(--radius-lg); box-shadow: var(--shadow-md); padding: 28px 22px; display: flex; flex-direction: column; gap: 16px; }
+.lp-brand { font-size: 24px; font-weight: 500; margin-top: 12px; }
+.lp-slogan { font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--accent-300); }
+.lp-field { display: flex; flex-direction: column; gap: 6px; font-size: 12px; color: color-mix(in srgb, var(--text) 70%, transparent); }
+.lp-input { min-height: 36px; padding: 6px 10px; font: inherit; font-size: 14px; color: var(--text); background: var(--bg); border: 1px solid color-mix(in srgb, var(--text) 16%, transparent); border-radius: var(--radius-md); }
+.lp-error { font-size: 12px; color: var(--accent-300); }
+.lp-muted { color: color-mix(in srgb, var(--text) 55%, transparent); }
+.lp-seg { display: inline-flex; border: 1px solid color-mix(in srgb, var(--text) 16%, transparent); border-radius: var(--radius-md); overflow: hidden; }
+.lp-seg-opt { display: flex; align-items: center; gap: 6px; padding: 7px 12px; font-size: 13px; cursor: pointer; }
+.lp-seg-opt input { position: absolute; opacity: 0; width: 0; height: 0; }
+.lp-seg-opt.active { background: var(--accent); color: var(--bg); }
+.lp-btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; cursor: pointer; font-size: 13px; padding: 10px 14px; border-radius: var(--radius-md); border: 1px solid transparent; background: transparent; color: var(--text); }
+.lp-btn:disabled { opacity: 0.45; cursor: not-allowed; }
+.lp-btn-primary { border: 1px solid var(--accent); color: var(--accent); font-weight: 600; }
+.lp-btn-secondary { border: 1px solid color-mix(in srgb, var(--text) 16%, transparent); }
+.lp-block { width: 100%; }
+.lp-nav { display: flex; align-items: center; gap: 12px; }
+.lp-nav-brand { font-size: 15px; font-weight: 500; }
+.lp-nav a { color: var(--text); text-decoration: none; font-size: 14px; }
+.lp-nav a[aria-current], .lp-nav a:hover { color: var(--accent); }
+.lp-inner-card { display: flex; flex-direction: column; gap: 4px; padding: 12px; border-radius: var(--radius-md); background: color-mix(in srgb, var(--text) 5%, var(--surface)); }
+.lp-kicker { font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--accent-300); }
+.lp-title { font-size: 17px; }
+.lp-title.lg { font-size: 26px; }
+.lp-title.accent { color: var(--accent-300); }
+.lp-meta { font-size: 11px; color: color-mix(in srgb, var(--text) 50%, transparent); }
+.lp-tag { display: inline-flex; align-items: center; font-size: 11px; padding: 3px 10px; border-radius: 6px; border: none; background: none; color: inherit; cursor: default; align-self: flex-start; }
+.lp-tag-accent { background: #2b2741; color: var(--accent-300); }
+.lp-tag-accent2 { background: #2b293a; color: var(--accent-2-400); }
+.lp-tag-neutral { background: #292b31; color: #b2b6ca; }
+.lp-tag-outline { border: 1px solid var(--accent); color: var(--accent-300); cursor: pointer; }
+.lp-label { font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; opacity: 0.5; margin-bottom: 8px; }
+.lp-row-card { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: var(--radius-md); background: color-mix(in srgb, var(--text) 5%, var(--surface)); cursor: pointer; }
+.lp-dot { width: 8px; height: 8px; border-radius: 50%; flex: none; }
+.lp-grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+.lp-grid-2 { display: grid; grid-template-columns: 1.3fr 1fr; gap: 16px; }
+.lp-table { width: 100%; border-collapse: collapse; font-size: 14px; }
+.lp-table th { text-align: left; font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: color-mix(in srgb, var(--text) 60%, transparent); padding: 8px; border-bottom: 1px solid color-mix(in srgb, var(--text) 16%, transparent); }
+.lp-table td { padding: 8px; border-bottom: 1px solid color-mix(in srgb, var(--text) 8%, transparent); }
