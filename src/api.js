@@ -103,6 +103,45 @@ export async function submitAnswer(token, visitId, questionId, answer) {
   return res.json();
 }
 
+export async function getVisitLog(token) {
+  if (USE_MOCK) return { count: 0, visits: [] };
+  const res = await fetch(`${API_BASE}/admin-visit-log`, { headers: { Authorization: `Bearer ${token}` } });
+  if (!res.ok) throw new Error('Could not load visit log');
+  return res.json();
+}
+
+export async function downloadVisitLogExport(token, format) {
+  const res = await fetch(`${API_BASE}/admin-visit-log?format=${format}`, { headers: { Authorization: `Bearer ${token}` } });
+  if (!res.ok) throw new Error(`Could not export ${format}`);
+  const blob = await res.blob();
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `visit-log.${format}`;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+}
+
+export async function uploadPhotoAnswer(token, visitId, questionId, file) {
+  const base64 = await new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result.split(',')[1]);
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+  if (USE_MOCK) return { ok: true, photo_id: 'mock-photo', previewUrl: URL.createObjectURL(file) };
+  const res = await fetch(`${API_BASE}/visit-photo`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+    body: JSON.stringify({ visit_id: visitId, question_id: questionId, image_base64: base64, mime: file.type }),
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error || 'Could not upload photo');
+  return { ...data, previewUrl: URL.createObjectURL(file) };
+}
+
 export async function getLearningMaterials(token) {
   if (USE_MOCK) return TRAINING_MATERIALS;
   const res = await fetch(`${API_BASE}/learning-materials`, { headers: { Authorization: `Bearer ${token}` } });

@@ -78,6 +78,24 @@ async function getLiveVisit(tenantCode, visitId) {
   return (await store.get(visitId, { type: 'json' })) || null;
 }
 
+// Visit photos — one blob per photo, keyed by a generated id, scoped per
+// tenant. Metadata carries the mime type so getPhoto can serve it back with
+// the right Content-Type.
+async function savePhoto(tenantCode, photoId, bytes, mime) {
+  const store = blobsStore(`visit-photos-${tenantCode}`);
+  await store.set(photoId, bytes, { metadata: { mime } });
+}
+
+async function getPhoto(tenantCode, photoId) {
+  const store = blobsStore(`visit-photos-${tenantCode}`);
+  const [bytes, meta] = await Promise.all([
+    store.get(photoId, { type: 'arrayBuffer' }),
+    store.getMetadata(photoId),
+  ]);
+  if (!bytes) return null;
+  return { bytes, mime: meta?.metadata?.mime || 'image/jpeg' };
+}
+
 async function getQuestionnaires(tenantCode) {
   const store = blobsStore(`questionnaires-${tenantCode}`);
   return (await store.get('list', { type: 'json' })) || [];
@@ -172,7 +190,8 @@ function computeDashboard(stores, visits) {
 
 module.exports = {
   blobsStore,
-  getStores, getUsers, getAllVisits, saveLiveVisit, getLiveVisit, computeDashboard,
+  getStores, getUsers, getAllVisits, getImportedVisits, getLiveVisits, saveLiveVisit, getLiveVisit, computeDashboard,
   getQuestionnaires, saveQuestionnaires, pickQuestionnaire,
   getStaff, saveStaff,
+  savePhoto, getPhoto,
 };

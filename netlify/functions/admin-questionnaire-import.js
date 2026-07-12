@@ -7,7 +7,7 @@
 //   store_codes?: [...],          // if set, this questionnaire only applies to these stores
 //   visit_type?: string,          // if set, only applies when the rep checks in with this visit type
 //   questions: [
-//     { id?, label, type: 'boolean'|'number'|'text'|'choice', options?: [...], required?: bool }
+//     { id?, label, type: 'boolean'|'number'|'text'|'choice'|'photo', options?: [...], required?: bool }
 //   ]
 // }
 // Leaving both store_codes and visit_type unset makes this the tenant-wide
@@ -22,7 +22,7 @@ function normalizeQuestions(questions) {
   return (questions || []).map((q, i) => ({
     id: q.id || `q_${i}_${String(q.label || '').toLowerCase().replace(/[^a-z0-9]+/g, '_').slice(0, 30)}`,
     label: q.label,
-    type: ['boolean', 'number', 'text', 'choice'].includes(q.type) ? q.type : 'boolean',
+    type: ['boolean', 'number', 'text', 'choice', 'photo'].includes(q.type) ? q.type : 'boolean',
     options: q.type === 'choice' ? (q.options || []) : undefined,
     required: !!q.required,
   }));

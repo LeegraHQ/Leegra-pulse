@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { login, getDashboardSummary, checkIn, checkOut, submitAnswer } from './api.js';
+import { login, getDashboardSummary, checkIn, checkOut, submitAnswer, uploadPhotoAnswer, getVisitLog, downloadVisitLogExport } from './api.js';
 import { TRAINING_MATERIALS, TENANT_DIRECTORY } from './clients.js';
 import './theme.css';
 
@@ -42,6 +42,10 @@ export default function App() {
   const [visitError, setVisitError] = useState('');
   const [training, setTraining] = useState({ m1: false, m2: false, m3: false });
 
+  const [visitLog, setVisitLog] = useState([]);
+  const [visitLogLoading, setVisitLogLoading] = useState(false);
+  const [visitLogError, setVisitLogError] = useState('');
+
   async function handleSignIn(e) {
     e.preventDefault();
     try {
@@ -66,6 +70,28 @@ export default function App() {
     const client = await getDashboardSummary(session.token, code);
     setSession(s => ({ ...s, client }));
     setScreen('dashboard');
+  }
+
+  async function handleOpenVisitLog() {
+    setScreen('visitlog');
+    setVisitLogLoading(true);
+    setVisitLogError('');
+    try {
+      const { visits } = await getVisitLog(session.token);
+      setVisitLog(visits);
+    } catch (err) {
+      setVisitLogError(err.message);
+    } finally {
+      setVisitLogLoading(false);
+    }
+  }
+
+  async function handleExportVisitLog(format) {
+    try {
+      await downloadVisitLogExport(session.token, format);
+    } catch (err) {
+      setVisitLogError(err.message);
+    }
   }
 
   function handleLogout() {
@@ -98,6 +124,12 @@ export default function App() {
   async function handleAnswerChange(questionId, value) {
     setAnswers(a => ({ ...a, [questionId]: value }));
     if (visit) await submitAnswer(session.token, visit.id, questionId, value);
+  }
+
+  async function handlePhotoAnswer(questionId, file) {
+    if (!visit || !file) return;
+    const result = await uploadPhotoAnswer(session.token, visit.id, questionId, file);
+    setAnswers(a => ({ ...a, [questionId]: { photoId: result.photo_id, previewUrl: result.previewUrl } }));
   }
 
   function handleToggleTraining(id) {
@@ -176,7 +208,8 @@ export default function App() {
           <div className="lp-nav">
             <div className="lp-nav-brand">Leegra Pulse · {LEEGRA_ROLE_LABELS[session.role] || 'Super admin'}</div>
             <div className="lp-tag lp-tag-accent">{session.email}</div>
-            <button className="lp-tag lp-tag-outline" style={{ marginLeft: 'auto' }} onClick={handleLogout}>Log out</button>
+            <button className="lp-tag lp-tag-outline" style={{ marginLeft: 'auto' }} onClick={handleOpenVisitLog}>Visit Log</button>
+            <button className="lp-tag lp-tag-outline" onClick={handleLogout}>Log out</button>
           </div>
           <div className="lp-muted" style={{ fontSize: 12 }}>All client accounts — select one to view its dashboard.</div>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12 }}>
@@ -188,6 +221,60 @@ export default function App() {
               </div>
             ))}
           </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (screen === 'visitlog') {
+    return (
+      <div className="lp-shell">
+        <div className="lp-card" style={{ width: 980 }}>
+          <div className="lp-nav">
+            <div className="lp-nav-brand">Leegra Pulse · Visit Log</div>
+            <div className="lp-tag lp-tag-accent">{session.email}</div>
+            <button className="lp-tag lp-tag-outline" style={{ marginLeft: 'auto' }} onClick={() => setScreen('superadmin')}>All clients</button>
+            <button className="lp-tag lp-tag-outline" onClick={handleLogout}>Log out</button>
+          </div>
+          <div className="lp-muted" style={{ fontSize: 12 }}>Consolidated check-in/check-out log across every client.</div>
+
+          <div style={{ display: 'flex', gap: 8 }}>
+            <button className="lp-btn lp-btn-secondary" onClick={() => handleExportVisitLog('xlsx')}>Export Excel</button>
+            <button className="lp-btn lp-btn-secondary" onClick={() => handleExportVisitLog('pdf')}>Export PDF</button>
+          </div>
+
+          {visitLogError && <div className="lp-error">{visitLogError}</div>}
+          {visitLogLoading && <div className="lp-muted">Loading…</div>}
+
+          {!visitLogLoading && !visitLogError && (
+            <table className="lp-table">
+              <thead>
+                <tr><th>Client</th><th>Store</th><th>Rep</th><th>Checked in</th><th>Checked out</th><th>Duration</th><th>Answers</th></tr>
+              </thead>
+              <tbody>
+                {visitLog.map((v, i) => (
+                  <tr key={i}>
+                    <td>{v.tenantName}</td>
+                    <td>{v.storeName}</td>
+                    <td>{v.repEmail || '—'}</td>
+                    <td>{v.checkinAt ? new Date(v.checkinAt).toLocaleString() : '—'}</td>
+                    <td>{v.checkoutAt ? new Date(v.checkoutAt).toLocaleString() : '—'}</td>
+                    <td>{v.durationMinutes != null ? `${v.durationMinutes} min` : '—'}</td>
+                    <td style={{ fontSize: 11 }}>
+                      {v.answers.map((a, j) => (
+                        <span key={j} className="lp-tag lp-tag-neutral" style={{ marginRight: 4, marginBottom: 4 }}>
+                          {a.label}: {a.photoId ? '📷' : String(a.value)}
+                        </span>
+                      ))}
+                    </td>
+                  </tr>
+                ))}
+                {!visitLog.length && (
+                  <tr><td colSpan={7} className="lp-muted" style={{ textAlign: 'center' }}>No visits recorded yet.</td></tr>
+                )}
+              </tbody>
+            </table>
+          )}
         </div>
       </div>
     );
@@ -247,6 +334,27 @@ export default function App() {
                         <span className="lp-dot" style={{ background: answer ? 'var(--accent-2-400)' : 'var(--neutral-500)' }} />
                         <div style={{ flex: 1, fontSize: 13 }}>{q.label}{q.required ? ' *' : ''}</div>
                         <div className={answer ? 'lp-tag lp-tag-accent2' : 'lp-tag lp-tag-neutral'}>{answer ? 'Done' : 'Pending'}</div>
+                      </div>
+                    );
+                  }
+                  if (q.type === 'photo') {
+                    const photoAnswer = answer && typeof answer === 'object' ? answer : null;
+                    return (
+                      <div key={q.id} className="lp-row-card" style={{ alignItems: 'center' }}>
+                        <div style={{ flex: 1, fontSize: 13 }}>{q.label}{q.required ? ' *' : ''}</div>
+                        {photoAnswer?.previewUrl && (
+                          <img src={photoAnswer.previewUrl} alt="" style={{ width: 36, height: 36, borderRadius: 6, objectFit: 'cover', marginRight: 8 }} />
+                        )}
+                        <label className="lp-tag lp-tag-outline" style={{ cursor: 'pointer' }}>
+                          {photoAnswer ? 'Retake' : 'Take photo'}
+                          <input
+                            type="file"
+                            accept="image/*"
+                            capture="environment"
+                            style={{ display: 'none' }}
+                            onChange={e => handlePhotoAnswer(q.id, e.target.files[0])}
+                          />
+                        </label>
                       </div>
                     );
                   }
