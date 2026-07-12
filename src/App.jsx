@@ -117,39 +117,25 @@ export default function App() {
             </label>
           </div>
 
-          {role === 'manager' ? (
-            <label className="lp-field">
-              Client
-              <select
-                className="lp-input"
-                value={companyCode}
-                onChange={e => { setCompanyCode(e.target.value); setError(''); }}
-              >
-                <option value="" disabled>Select a client…</option>
-                {TENANT_DIRECTORY.map(t => (
-                  <option key={t.code} value={t.code}>{t.name} ({t.code})</option>
-                ))}
-              </select>
-            </label>
-          ) : (
-            <label className="lp-field">
-              Company code
-              <input
-                className="lp-input"
-                type="password"
-                autoComplete="off"
-                placeholder="Enter your company code"
-                value={companyCode}
-                onChange={e => { setCompanyCode(e.target.value); setError(''); }}
-              />
-            </label>
-          )}
+          <label className="lp-field">
+            Client
+            <select
+              className="lp-input"
+              value={companyCode}
+              onChange={e => { setCompanyCode(e.target.value); setError(''); }}
+            >
+              <option value="" disabled>Select a client…</option>
+              {TENANT_DIRECTORY.map(t => (
+                <option key={t.code} value={t.code}>{t.name} ({t.code})</option>
+              ))}
+            </select>
+          </label>
 
           {error && <div className="lp-error">{error}</div>}
-          <div className="lp-muted" style={{ fontSize: 11 }}>Don't have your code? Contact your Leegra account manager.</div>
+          <div className="lp-muted" style={{ fontSize: 11 }}>Don't see your client listed? Contact your Leegra account manager.</div>
 
           <button className="lp-btn lp-btn-primary lp-block" type="submit">Sign in</button>
-          <div className="lp-muted" style={{ textAlign: 'center', fontSize: 11 }}>10 clients · isolated by company code</div>
+          <div className="lp-muted" style={{ textAlign: 'center', fontSize: 11 }}>Isolated per client — your login only ever sees your own client's data.</div>
         </form>
       </div>
     );
