@@ -3,6 +3,18 @@ import { login, getDashboardSummary, checkIn, checkOut, submitAnswer } from './a
 import { TRAINING_MATERIALS, TENANT_DIRECTORY } from './clients.js';
 import './theme.css';
 
+// The three tiers Leegra's own internal staff can hold (see
+// admin-staff-assign.js) — all three can browse every client's dashboard;
+// only leegra_super_admin/leegra_admin can also write (import stores/users/
+// questionnaires), which this frontend never exposes anyway (those calls
+// are API-only), so the UI doesn't need to distinguish further than this.
+const LEEGRA_ROLES = ['leegra_super_admin', 'leegra_admin', 'leegra_report_only'];
+const LEEGRA_ROLE_LABELS = {
+  leegra_super_admin: 'Super user',
+  leegra_admin: 'Admin',
+  leegra_report_only: 'Report export only',
+};
+
 export default function App() {
   const [screen, setScreen] = useState('login'); // login | app | dashboard | superadmin
   const [session, setSession] = useState(null); // { token, role, client, isSuperAdmin }
@@ -20,7 +32,7 @@ export default function App() {
     e.preventDefault();
     try {
       const result = await login({ companyCode, email, password: '', role });
-      if (result.role === 'leegra_super_admin') {
+      if (LEEGRA_ROLES.includes(result.role)) {
         const { tenants } = await getDashboardSummary(result.token);
         setSession({ ...result, isSuperAdmin: true, tenants });
         setScreen('superadmin');
@@ -148,8 +160,8 @@ export default function App() {
       <div className="lp-shell">
         <div className="lp-card" style={{ width: 820 }}>
           <div className="lp-nav">
-            <div className="lp-nav-brand">Leegra Pulse · Super admin</div>
-            <div className="lp-tag lp-tag-accent">chris@leegra.co.za</div>
+            <div className="lp-nav-brand">Leegra Pulse · {LEEGRA_ROLE_LABELS[session.role] || 'Super admin'}</div>
+            <div className="lp-tag lp-tag-accent">{session.email}</div>
             <button className="lp-tag lp-tag-outline" style={{ marginLeft: 'auto' }} onClick={handleLogout}>Log out</button>
           </div>
           <div className="lp-muted" style={{ fontSize: 12 }}>All client accounts — select one to view its dashboard.</div>

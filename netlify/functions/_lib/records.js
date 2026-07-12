@@ -27,6 +27,18 @@ async function getUsers(tenantCode) {
   return (await store.get('list', { type: 'json' })) || [];
 }
 
+// Leegra's own internal staff roster — global, not scoped to a tenant.
+// tier is one of 'super_user' | 'admin' | 'report_export_only'.
+async function getStaff() {
+  const store = blobsStore('leegra-staff');
+  return (await store.get('list', { type: 'json' })) || [];
+}
+
+async function saveStaff(list) {
+  const store = blobsStore('leegra-staff');
+  await store.setJSON('list', list);
+}
+
 async function getImportedVisits(tenantCode) {
   const store = blobsStore(`visits-history-${tenantCode}`);
   const { blobs } = await store.list();
@@ -162,4 +174,5 @@ module.exports = {
   blobsStore,
   getStores, getUsers, getAllVisits, saveLiveVisit, getLiveVisit, computeDashboard,
   getQuestionnaires, saveQuestionnaires, pickQuestionnaire,
+  getStaff, saveStaff,
 };

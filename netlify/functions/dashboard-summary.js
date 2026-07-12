@@ -1,10 +1,13 @@
 // GET /api/dashboard-summary — tenant-scoped stats for the logged-in client.
 // The tenant comes ONLY from the verified token, never from a query param —
-// except for leegra_super_admin, who may pass ?tenant_code= to drill into
-// one tenant's full dashboard (any other role's tenant_code param is ignored).
+// except for Leegra's own staff (any tier), who may pass ?tenant_code= to
+// drill into one tenant's full dashboard (any other role's tenant_code
+// param is ignored). All three staff tiers can read every tenant's
+// dashboard — the tiers only differ on write access (see the admin-*
+// endpoints), not on this read-only summary.
 
 const jwt = require('./_lib/jwt');
-const { TENANTS, findTenantByCode } = require('./_data');
+const { TENANTS, findTenantByCode, LEEGRA_ROLES } = require('./_data');
 const { getStores, getAllVisits, computeDashboard } = require('./_lib/records');
 
 async function tenantDashboard(tenant) {
@@ -16,7 +19,7 @@ exports.handler = async (event) => {
   const claims = jwt.fromAuthHeader(event);
   if (!claims) return { statusCode: 401, body: JSON.stringify({ error: 'Not authenticated' }) };
 
-  if (claims.role === 'leegra_super_admin') {
+  if (LEEGRA_ROLES.includes(claims.role)) {
     const tenantCode = event.queryStringParameters?.tenant_code;
     if (tenantCode) {
       const tenant = findTenantByCode(tenantCode);

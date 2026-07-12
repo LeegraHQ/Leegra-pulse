@@ -8,12 +8,13 @@
 
 const jwt = require('./_lib/jwt');
 const { blobsStore } = require('./_lib/records');
+const { LEEGRA_WRITE_ROLES } = require('./_data');
 
 exports.handler = async (event) => {
   const claims = jwt.fromAuthHeader(event);
   if (!claims) return { statusCode: 401, body: JSON.stringify({ error: 'Not authenticated' }) };
   if (event.httpMethod !== 'POST') return { statusCode: 405, body: 'Method not allowed' };
-  if (!['leegra_super_admin', 'client_admin'].includes(claims.role)) {
+  if (![...LEEGRA_WRITE_ROLES, 'client_admin'].includes(claims.role)) {
     return { statusCode: 403, body: JSON.stringify({ error: 'Not permitted' }) };
   }
 

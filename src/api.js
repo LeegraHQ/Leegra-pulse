@@ -27,7 +27,7 @@ function genericClient(code) {
 export async function login({ companyCode, email, password, role }) {
   if (USE_MOCK) {
     if (email.trim().toLowerCase() === SUPER_ADMIN_EMAIL) {
-      return { token: 'mock-token', role: 'leegra_super_admin' };
+      return { token: 'mock-token', role: 'leegra_super_admin', email: email.trim().toLowerCase() };
     }
     const client = CLIENTS.find(c => c.code.toLowerCase() === companyCode.trim().toLowerCase()) || genericClient(companyCode);
     return { token: 'mock-token', role: role === 'rep' ? 'field_rep' : 'client_admin', client };

@@ -5,9 +5,9 @@
 // login request. Password isn't checked yet — there's no password storage
 // in this Blobs-backed setup; add real hashing once you're past the demo.
 
-const { findTenantByCode, SUPER_ADMIN_EMAIL } = require('./_data');
+const { findTenantByCode, SUPER_ADMIN_EMAIL, TIER_TO_ROLE } = require('./_data');
 const jwt = require('./_lib/jwt');
-const { getStores, getUsers, getAllVisits, computeDashboard } = require('./_lib/records');
+const { getStores, getUsers, getAllVisits, computeDashboard, getStaff } = require('./_lib/records');
 
 exports.handler = async (event) => {
   if (event.httpMethod !== 'POST') return { statusCode: 405, body: 'Method not allowed' };
@@ -19,7 +19,15 @@ exports.handler = async (event) => {
 
   if (normalizedEmail === SUPER_ADMIN_EMAIL) {
     const token = jwt.sign({ role: 'leegra_super_admin', email: normalizedEmail });
-    return { statusCode: 200, body: JSON.stringify({ token, role: 'leegra_super_admin' }) };
+    return { statusCode: 200, body: JSON.stringify({ token, role: 'leegra_super_admin', email: normalizedEmail }) };
+  }
+
+  const staff = await getStaff();
+  const staffRecord = staff.find(s => s.email === normalizedEmail);
+  if (staffRecord) {
+    const role = TIER_TO_ROLE[staffRecord.tier] || 'leegra_report_only';
+    const token = jwt.sign({ role, email: normalizedEmail });
+    return { statusCode: 200, body: JSON.stringify({ token, role, email: normalizedEmail }) };
   }
 
   const tenant = findTenantByCode(company_code);
