@@ -1,0 +1,1116 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    @font-face { font-family: 'Inter'; src: local('Inter'); }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #F3F5F8; }
+    ::-webkit-scrollbar { width: 8px; height: 8px; }
+    ::-webkit-scrollbar-thumb { background: #D3DAE4; border-radius: 4px; }
+    input[type="checkbox"] { accent-color: #0A5EEA; }
+  </style>
+</helmet>
+
+<div style="font-family: 'Helvetica Neue', Arial, sans-serif; background: #F3F5F8; min-height: 100vh; display: flex; color: #14181F;">
+
+  <!-- SIDEBAR -->
+  <div style="width: 260px; min-width: 260px; background: #0B1B3A; display: flex; flex-direction: column; height: 100vh; position: sticky; top: 0;">
+    <div style="padding: 20px 18px 14px 18px; display: flex; align-items: center; gap: 10px; border-bottom: 1px solid rgba(255,255,255,0.08);">
+      <img src="assets/philips-logo.jpg" alt="Philips" style="width: 34px; height: 34px; object-fit: contain; border-radius: 7px; background: #fff;" />
+      <div style="display:flex; flex-direction:column; line-height:1.15;">
+        <span style="color:#fff; font-size:14px; font-weight:700; letter-spacing:0.2px;">Phillips PH</span>
+        <span style="color:#8EA3C7; font-size:11px; font-weight:500;">Blitz Dashboard</span>
+      </div>
+    </div>
+
+    <div style="flex:1; overflow-y:auto; padding: 14px 12px;">
+      <div style="color:#5E7AA8; font-size:10.5px; font-weight:700; letter-spacing:0.8px; padding: 4px 8px 8px 8px; text-transform:uppercase;">Report Slicers</div>
+      <sc-for list="{{ sections }}" as="sec" hint-placeholder-count="7">
+        <div onClick="{{ selectSection }}" data-key="{{ sec.key }}" style="{{ sec.buttonStyle }}">
+          <span style="{{ sec.dotStyle }}"></span>
+          <span style="flex:1;">{{ sec.label }}</span>
+          <span style="{{ sec.badgeStyle }}">{{ sec.count }}</span>
+        </div>
+      </sc-for>
+
+      <div style="color:#5E7AA8; font-size:10.5px; font-weight:700; letter-spacing:0.8px; padding: 18px 8px 8px 8px; text-transform:uppercase;">{{ subFilterLabel }}</div>
+      <div style="max-height: 260px; overflow-y:auto; padding: 0 4px;">
+        <sc-for list="{{ subFilterOptions }}" as="opt" hint-placeholder-count="5">
+          <label style="display:flex; align-items:center; gap:8px; padding:6px 8px; border-radius:7px; cursor:pointer; color:#C7D4E8; font-size:12.5px;" style-hover="background: rgba(255,255,255,0.06);">
+            <input type="checkbox" checked="{{ opt.checked }}" onChange="{{ opt.toggle }}" style="width:13px;height:13px;" />
+            <span style="flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">{{ opt.label }}</span>
+            <span style="color:#5E7AA8; font-size:11px;">{{ opt.count }}</span>
+          </label>
+        </sc-for>
+      </div>
+    </div>
+
+    <div style="padding: 14px 14px 18px 14px; border-top: 1px solid rgba(255,255,255,0.08); display:flex; flex-direction:column; gap:8px;">
+      <button onClick="{{ exportExcel }}" style="display:flex; align-items:center; gap:8px; background:#132A57; color:#fff; border:1px solid rgba(255,255,255,0.12); border-radius:8px; padding:9px 12px; font-size:12.5px; font-weight:600; cursor:pointer;" style-hover="background:#1B3A72;">
+        <span>⬇</span> Export to Excel
+      </button>
+      <label style="display:flex; align-items:center; gap:8px; background:#132A57; color:#fff; border:1px solid rgba(255,255,255,0.12); border-radius:8px; padding:9px 12px; font-size:12.5px; font-weight:600; cursor:pointer;" style-hover="background:#1B3A72;">
+        <span>⬆</span> Import from Excel
+        <input type="file" accept=".csv" onChange="{{ importExcel }}" style="display:none;" />
+      </label>
+      <button onClick="{{ resetFilters }}" style="display:flex; align-items:center; justify-content:center; gap:8px; background:transparent; color:#8EA3C7; border:1px solid rgba(255,255,255,0.14); border-radius:8px; padding:8px 12px; font-size:12px; font-weight:600; cursor:pointer;" style-hover="color:#fff; border-color:#C6F135;">
+        Reset Filters
+      </button>
+    </div>
+  </div>
+
+  <!-- MAIN -->
+  <div style="flex:1; min-width:0; display:flex; flex-direction:column;">
+
+    <!-- Top bar -->
+    <div style="display:flex; align-items:center; justify-content:space-between; padding: 16px 28px; background:#fff; border-bottom:1px solid #E4E9F0; position:sticky; top:0; z-index:5;">
+      <div>
+        <div style="font-size:19px; font-weight:800; color:#0B1B3A;">{{ activeSectionLabel }}</div>
+        <div style="font-size:12.5px; color:#6B7A90; margin-top:2px;">{{ activeSectionSub }}</div>
+      </div>
+      <div style="display:flex; align-items:center; gap:14px;">
+        <div style="background:#0B1B3A; border-radius:10px; padding:6px 14px;">
+          <img src="assets/leegra-logo.png" alt="Leegra Marketing" style="height:30px; display:block;" />
+        </div>
+      </div>
+    </div>
+
+    <!-- Cross filter toolbar -->
+    <sc-if value="{{ hasCrossFilters }}" hint-placeholder-val="{{ false }}">
+      <div style="display:flex; gap:10px; flex-wrap:wrap; padding: 14px 28px; background:#fff; border-bottom:1px solid #E4E9F0;">
+        <sc-for list="{{ crossFilters }}" as="cf" hint-placeholder-count="4">
+          <div style="display:flex; flex-direction:column; gap:3px;">
+            <span style="font-size:10px; font-weight:700; color:#8592A6; text-transform:uppercase; letter-spacing:0.4px;">{{ cf.label }}</span>
+            <select onChange="{{ cf.onChange }}" value="{{ cf.value }}" style="border:1px solid #DCE3ED; border-radius:7px; padding:6px 10px; font-size:12.5px; font-weight:600; color:#1B2433; background:#F8FAFC; min-width:140px;">
+              <sc-for list="{{ cf.options }}" as="o" hint-placeholder-count="3">
+                <option value="{{ o }}">{{ o }}</option>
+              </sc-for>
+            </select>
+          </div>
+        </sc-for>
+      </div>
+    </sc-if>
+
+    <div style="flex:1; padding: 22px 28px 40px 28px; overflow-y:auto;">
+
+      <!-- KPI ROW -->
+      <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap:14px; margin-bottom:20px;">
+        <sc-for list="{{ kpis }}" as="k" hint-placeholder-count="4">
+          <div style="background:#fff; border:1px solid #E4E9F0; border-radius:14px; padding:16px 18px;">
+            <div style="font-size:11px; font-weight:700; color:#8592A6; text-transform:uppercase; letter-spacing:0.4px;">{{ k.label }}</div>
+            <div style="font-size:24px; font-weight:800; color:#0B1B3A; margin-top:6px;">{{ k.value }}</div>
+            <div style="{{ k.deltaStyle }}">{{ k.delta }}</div>
+          </div>
+        </sc-for>
+      </div>
+
+      <!-- SECTION: Weekly Feedback -->
+      <sc-if value="{{ isFeedback }}" hint-placeholder-val="{{ false }}">
+        <div style="display:grid; grid-template-columns: 1fr 1fr 0.9fr; gap:16px; margin-bottom:16px;">
+          <div style="background:#fff; border:1px solid #E4E9F0; border-radius:14px; padding:18px 20px;">
+            <div style="font-size:13px; font-weight:700; color:#0B1B3A; margin-bottom:12px;">Response Rate by Region</div>
+            <sc-for list="{{ feedbackByRegion }}" as="row" hint-placeholder-count="4">
+              <div style="margin-bottom:11px;">
+                <div style="display:flex; justify-content:space-between; font-size:12px; color:#3A4658; margin-bottom:4px;"><span>{{ row.name }}</span><span style="font-weight:700;">{{ row.pct }}</span></div>
+                <div style="height:8px; background:#EEF1F6; border-radius:5px; overflow:hidden;"><div style="{{ row.barStyle }}"></div></div>
+              </div>
+            </sc-for>
+          </div>
+          <div style="background:#fff; border:1px solid #E4E9F0; border-radius:14px; padding:18px 20px;">
+            <div style="font-size:13px; font-weight:700; color:#0B1B3A; margin-bottom:12px;">Responses by Category</div>
+            <sc-for list="{{ feedbackByCategory }}" as="row" hint-placeholder-count="4">
+              <div style="margin-bottom:11px;">
+                <div style="display:flex; justify-content:space-between; font-size:12px; color:#3A4658; margin-bottom:4px;"><span>{{ row.name }}</span><span style="font-weight:700;">{{ row.count }}</span></div>
+                <div style="height:8px; background:#EEF1F6; border-radius:5px; overflow:hidden;"><div style="{{ row.barStyle }}"></div></div>
+              </div>
+            </sc-for>
+          </div>
+          <div style="background:#fff; border:1px solid #E4E9F0; border-radius:14px; padding:18px 20px; display:flex; flex-direction:column; align-items:center;">
+            <div style="font-size:13px; font-weight:700; color:#0B1B3A; margin-bottom:14px; align-self:flex-start;">Yes vs No</div>
+            <div style="{{ feedbackDonutStyle }}">
+              <div style="position:absolute; inset:20px; background:#fff; border-radius:50%; display:flex; align-items:center; justify-content:center; flex-direction:column;">
+                <div style="font-size:20px; font-weight:800; color:#0B1B3A;">{{ feedbackYesPctLabel }}</div>
+                <div style="font-size:9.5px; color:#8592A6; font-weight:700; text-transform:uppercase; letter-spacing:0.3px;">Available</div>
+              </div>
+            </div>
+            <div style="display:flex; gap:14px; margin-top:16px; font-size:11px; color:#3A4658;">
+              <span><span style="display:inline-block; width:9px; height:9px; border-radius:2px; background:#0A5EEA; margin-right:5px;"></span>Yes ({{ feedbackYesTotal }})</span>
+              <span><span style="display:inline-block; width:9px; height:9px; border-radius:2px; background:#EEF1F6; margin-right:5px;"></span>No ({{ feedbackNoTotal }})</span>
+            </div>
+          </div>
+        </div>
+
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:16px; margin-bottom:16px;">
+          <div style="background:#fff; border:1px solid #E4E9F0; border-radius:14px; padding:18px 20px;">
+            <div style="font-size:13px; font-weight:700; color:#0B1B3A; margin-bottom:12px;">Availability by Blitz Rep</div>
+            <sc-for list="{{ feedbackByRep }}" as="row" hint-placeholder-count="6">
+              <div style="margin-bottom:11px;">
+                <div style="display:flex; justify-content:space-between; font-size:12px; color:#3A4658; margin-bottom:4px;"><span>{{ row.name }}</span><span style="font-weight:700;">{{ row.pct }} · {{ row.count }}</span></div>
+                <div style="height:8px; background:#EEF1F6; border-radius:5px; overflow:hidden;"><div style="{{ row.barStyle }}"></div></div>
+              </div>
+            </sc-for>
+          </div>
+          <div style="background:#fff; border:1px solid #E4E9F0; border-radius:14px; padding:18px 20px;">
+            <div style="font-size:13px; font-weight:700; color:#0B1B3A; margin-bottom:12px;">Availability by Question</div>
+            <div style="max-height:280px; overflow-y:auto; padding-right:4px;">
+              <sc-for list="{{ feedbackByQuestion }}" as="row" hint-placeholder-count="6">
+                <div style="margin-bottom:11px;">
+                  <div style="display:flex; justify-content:space-between; gap:10px; font-size:11.5px; color:#3A4658; margin-bottom:4px;"><span style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">{{ row.name }}</span><span style="font-weight:700; white-space:nowrap;">{{ row.pct }} · {{ row.count }}</span></div>
+                  <div style="height:8px; background:#EEF1F6; border-radius:5px; overflow:hidden;"><div style="{{ row.barStyle }}"></div></div>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+        </div>
+
+        <div style="font-size:13px; font-weight:700; color:#0B1B3A; margin: 6px 0 12px 0;">Survey Answers</div>
+        <div style="background:#fff; border:1px solid #E4E9F0; border-radius:14px; overflow:hidden; margin-bottom:22px;">
+          <table style="width:100%; border-collapse:collapse; font-size:12.5px;">
+            <thead><tr style="background:#F8FAFC;">
+              <th style="{{ thStyle }}">Date</th><th style="{{ thStyle }}">Region</th><th style="{{ thStyle }}">Category</th><th style="{{ thStyle }}">Blitz Rep</th><th style="{{ thStyle }}">Store</th><th style="{{ thStyle }}">Question</th><th style="{{ thStyle }}">Answer</th>
+            </tr></thead>
+            <tbody>
+              <sc-for list="{{ feedbackAnswers }}" as="row" hint-placeholder-count="10">
+                <tr style="border-top:1px solid #F1F3F7;">
+                  <td style="{{ tdStyle }}">{{ row.date }}</td><td style="{{ tdStyle }}">{{ row.region }}</td><td style="{{ tdStyle }}">{{ row.category }}</td><td style="{{ tdStyle }}">{{ row.rep }}</td><td style="{{ tdStyle }}">{{ row.store }}</td><td style="{{ tdStyle }}">{{ row.question }}</td><td style="{{ row.answerStyle }}">{{ row.answer }}</td>
+                </tr>
+              </sc-for>
+            </tbody>
+          </table>
+          <div style="padding:12px 16px; font-size:11.5px; color:#8592A6; border-top:1px solid #F1F3F7;">Showing {{ feedbackAnswers.length }} of {{ feedbackFilteredCount }} matching responses</div>
+        </div>
+
+        <div style="font-size:13px; font-weight:700; color:#0B1B3A; margin: 6px 0 12px 0;">Store Execution Pictures</div>
+        <div style="background:#fff; border:1px solid #E4E9F0; border-radius:14px; padding:12px 16px; margin-bottom:16px; display:flex; align-items:center; justify-content:space-between;">
+          <div style="font-size:13px; font-weight:700; color:#0B1B3A;">Photo Demo</div>
+          <label style="display:flex; align-items:center; gap:8px; background:#0A5EEA; color:#fff; border-radius:8px; padding:8px 14px; font-size:12.5px; font-weight:700; cursor:pointer;" style-hover="background:#0850C4;">
+            Upload up to 20 photos
+            <input type="file" accept="image/*" multiple="{{ true }}" onChange="{{ handlePhotoUpload }}" style="display:none;" />
+          </label>
+        </div>
+        <sc-if value="{{ photoUploadCount }}" hint-placeholder-val="{{ false }}">
+          <div style="display:grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap:14px;">
+            <sc-for list="{{ photoUploadCards }}" as="p" hint-placeholder-count="4">
+              <div style="background:#fff; border:1px solid #E4E9F0; border-radius:14px; overflow:hidden;">
+                <img src="{{ p.dataUrl }}" style="width:100%; height:140px; object-fit:cover; display:block; background:#F1F3F7;" />
+                <div style="padding:12px 14px;">
+                  <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:8px;">
+                    <span style="font-size:11px; color:#8592A6; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:120px;">{{ p.fileName }}</span>
+                    <span style="{{ p.statusStyle }}">{{ p.statusLabel }}</span>
+                  </div>
+                  <sc-if value="{{ p.showDone }}" hint-placeholder-val="{{ false }}">
+                    <div style="font-size:12.5px; font-weight:700; color:#0B1B3A;">{{ p.matchedStore }}</div>
+                    <div style="font-size:11px; color:#8592A6; margin:4px 0 8px 0;">{{ p.region }} · {{ p.channel }}</div>
+                    <div style="font-size:11px; font-weight:700; color:#0A5EEA;">Assigned → {{ p.rep }}</div>
+                  </sc-if>
+                </div>
+              </div>
+            </sc-for>
+          </div>
+        </sc-if>
+      </sc-if>
+
+      <!-- SECTION: Time and Attendance -->
+      <sc-if value="{{ isAttendance }}" hint-placeholder-val="{{ false }}">
+        <div style="background:#fff; border:1px solid #E4E9F0; border-radius:14px; padding:18px 20px; margin-bottom:16px;">
+          <div style="font-size:13px; font-weight:700; color:#0B1B3A; margin-bottom:12px;">Avg Time in Store by Rep</div>
+          <sc-for list="{{ attendanceByStaff }}" as="row" hint-placeholder-count="7">
+            <div style="margin-bottom:11px;">
+              <div style="display:flex; justify-content:space-between; font-size:12px; color:#3A4658; margin-bottom:4px;"><span>{{ row.name }}</span><span style="font-weight:700;">{{ row.avg }} · {{ row.visits }} visits</span></div>
+              <div style="height:8px; background:#EEF1F6; border-radius:5px; overflow:hidden;"><div style="{{ row.barStyle }}"></div></div>
+            </div>
+          </sc-for>
+        </div>
+        <div style="background:#fff; border:1px solid #E4E9F0; border-radius:14px; overflow:hidden;">
+          <table style="width:100%; border-collapse:collapse; font-size:12.5px;">
+            <thead><tr style="background:#F8FAFC;">
+              <th style="{{ thStyle }}">Rep</th><th style="{{ thStyle }}">Region</th><th style="{{ thStyle }}">Date</th><th style="{{ thStyle }}">Check In</th><th style="{{ thStyle }}">Check Out</th><th style="{{ thStyle }}">Time Spent</th><th style="{{ thStyle }}">Channel</th><th style="{{ thStyle }}">Store</th>
+            </tr></thead>
+            <tbody>
+              <sc-for list="{{ attendanceRows }}" as="row" hint-placeholder-count="10">
+                <tr style="border-top:1px solid #F1F3F7;">
+                  <td style="{{ tdStyle }}">{{ row.name }}</td><td style="{{ tdStyle }}">{{ row.region }}</td><td style="{{ tdStyle }}">{{ row.date }}</td><td style="{{ tdStyle }}">{{ row.checkin }}</td><td style="{{ tdStyle }}">{{ row.checkout }}</td><td style="{{ tdStyle }}">{{ row.spent }}</td><td style="{{ tdStyle }}">{{ row.channel }}</td><td style="{{ tdStyle }}">{{ row.store }}</td>
+                </tr>
+              </sc-for>
+            </tbody>
+          </table>
+        </div>
+      </sc-if>
+
+      <!-- SECTION: Blitz Call Diary -->
+      <sc-if value="{{ isBlitz }}" hint-placeholder-val="{{ false }}">
+        <div style="background:#FFFBEA; border:1px solid #F5E6A3; border-radius:12px; padding:10px 16px; margin-bottom:16px; font-size:12px; color:#8A6A00;">
+          Source sheet had no logged call data — showing a demo call plan per Blitz member (planned vs completed).
+        </div>
+        <div style="display:grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap:14px; margin-bottom:22px;">
+          <sc-for list="{{ blitzMembers }}" as="m" hint-placeholder-count="7">
+            <div style="background:#fff; border:1px solid #E4E9F0; border-radius:14px; padding:16px 18px;">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+                <div style="font-size:13.5px; font-weight:700; color:#0B1B3A;">{{ m.name }}</div>
+                <span style="{{ m.rateStyle }}">{{ m.rate }}</span>
+              </div>
+              <div style="display:flex; justify-content:space-between; font-size:11px; color:#8592A6; margin-bottom:6px;">
+                <span>Planned {{ m.planned }}</span><span>Completed {{ m.completed }}</span>
+              </div>
+              <div style="height:10px; background:#EEF1F6; border-radius:6px; overflow:hidden; position:relative;">
+                <div style="{{ m.barStyle }}"></div>
+              </div>
+            </div>
+          </sc-for>
+        </div>
+      </sc-if>
+
+      <!-- SECTION: Sales Value / Volume -->
+      <sc-if value="{{ isSales }}" hint-placeholder-val="{{ false }}">
+        <div style="background:#fff; border:1px solid #E4E9F0; border-radius:14px; overflow:hidden;">
+          <table style="width:100%; border-collapse:collapse; font-size:12.5px;">
+            <thead><tr style="background:#F8FAFC;">
+              <th style="{{ thStyle }}">Month</th><th style="{{ thStyle }}">Store</th><th style="{{ thStyle }}">Channel</th><th style="{{ salesRegionThDisplay }}">Region</th><th style="{{ thStyleRight }}">Previous Year</th><th style="{{ thStyleRight }}">Current Year</th><th style="{{ thStyleRight }}">YoY Diff</th><th style="{{ thStyleRight }}">YoY Growth</th>
+            </tr></thead>
+            <tbody>
+              <sc-for list="{{ salesRows }}" as="row" hint-placeholder-count="12">
+                <tr style="border-top:1px solid #F1F3F7;">
+                  <td style="{{ tdStyle }}">{{ row.month }}</td><td style="{{ tdStyle }}">{{ row.store }}</td><td style="{{ tdStyle }}">{{ row.channel }}</td><td style="{{ salesRegionTdDisplay }}">{{ row.region }}</td><td style="{{ tdStyleRight }}">{{ row.prev }}</td><td style="{{ tdStyleRight }}">{{ row.curr }}</td><td style="{{ row.diffStyle }}">{{ row.diff }}</td><td style="{{ row.growthStyle }}">{{ row.growth }}</td>
+                </tr>
+              </sc-for>
+            </tbody>
+          </table>
+        </div>
+      </sc-if>
+
+      <!-- SECTION: Growth Forecast -->
+      <sc-if value="{{ isGrowth }}" hint-placeholder-val="{{ false }}">
+        <div style="background:#fff; border:1px solid #E4E9F0; border-radius:14px; padding:18px 20px;">
+          <div style="font-size:13px; font-weight:700; color:#0B1B3A; margin-bottom:16px;">FY Value by Category (2025 → 2027 Ambition)</div>
+          <sc-for list="{{ growthRows }}" as="row" hint-placeholder-count="6">
+            <div style="margin-bottom:16px;">
+              <div style="display:flex; justify-content:space-between; font-size:12.5px; font-weight:700; color:#0B1B3A; margin-bottom:6px;"><span>{{ row.category }}</span><span>{{ row.fy27 }}</span></div>
+              <div style="display:flex; gap:4px; align-items:flex-end; height:36px;">
+                <div style="{{ row.bar25 }}" title="FY2025"></div>
+                <div style="{{ row.bar26 }}" title="FY2026"></div>
+                <div style="{{ row.bar27 }}" title="FY2027"></div>
+              </div>
+              <div style="display:flex; justify-content:space-between; font-size:10.5px; color:#8592A6; margin-top:4px;"><span>FY25 {{ row.fy25 }}</span><span>FY26 {{ row.fy26 }}</span><span>FY27 {{ row.fy27 }}</span></div>
+            </div>
+          </sc-for>
+        </div>
+      </sc-if>
+
+      <!-- SECTION: Adhoc Stock -->
+      <sc-if value="{{ isStock }}" hint-placeholder-val="{{ false }}">
+        <div style="background:#fff; border:1px solid #E4E9F0; border-radius:14px; padding:18px 20px; margin-bottom:16px;">
+          <div style="font-size:13px; font-weight:700; color:#0B1B3A; margin-bottom:12px;">Store Completion by Region</div>
+          <sc-for list="{{ stockByRegion }}" as="row" hint-placeholder-count="4">
+            <div style="margin-bottom:11px;">
+              <div style="display:flex; justify-content:space-between; font-size:12px; color:#3A4658; margin-bottom:4px;"><span>{{ row.name }}</span><span style="font-weight:700;">{{ row.countLabel }} · {{ row.pct }}</span></div>
+              <div style="height:8px; background:#EEF1F6; border-radius:5px; overflow:hidden;"><div style="{{ row.barStyle }}"></div></div>
+            </div>
+          </sc-for>
+        </div>
+        <div style="background:#fff; border:1px solid #E4E9F0; border-radius:14px; overflow:auto;">
+          <table style="width:100%; min-width:960px; border-collapse:collapse; font-size:12.5px;">
+            <thead><tr style="background:#F8FAFC;">
+              <th style="{{ thStyle }}">Store</th><th style="{{ thStyle }}">Region</th><th style="{{ thStyle }}">Code</th><th style="{{ thStyle }}">Category</th><th style="{{ thStyle }}">Sub Category</th><th style="{{ thStyle }}">Blitz</th><th style="{{ thStyleRight }}">Latest WK SOH</th><th style="{{ thStyleRight }}">System SOH</th><th style="{{ thStyleRight }}">Physical Count</th><th style="{{ thStyleRight }}">Variance</th>
+            </tr></thead>
+            <tbody>
+              <sc-for list="{{ stockRows }}" as="row" hint-placeholder-count="12">
+                <tr style="border-top:1px solid #F1F3F7;">
+                  <td style="{{ tdStyle }}">{{ row.store }}</td><td style="{{ tdStyle }}">{{ row.region }}</td><td style="{{ tdStyle }}">{{ row.code }}</td><td style="{{ tdStyle }}">{{ row.category }}</td><td style="{{ tdStyle }}">{{ row.subcategory }}</td><td style="{{ tdStyle }}">{{ row.blitz }}</td><td style="{{ tdStyleRight }}">{{ row.soh }}</td><td style="{{ tdStyleRight }}">{{ row.systemSoh }}</td><td style="{{ tdStyleRight }}">{{ row.physicalCount }}</td><td style="{{ row.varianceStyle }}">{{ row.variance }}</td>
+                </tr>
+              </sc-for>
+            </tbody>
+          </table>
+          <div style="padding:12px 16px; font-size:11.5px; color:#8592A6; border-top:1px solid #F1F3F7;">Showing {{ stockRows.length }} of {{ stockFilteredCount }} matching rows</div>
+        </div>
+      </sc-if>
+
+    </div>
+  </div>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+const SECTION_DEFS = [
+  { key: 'feedback', label: 'Weekly Feedback Report' },
+  { key: 'attendance', label: 'Time & Attendance' },
+  { key: 'blitz', label: 'Blitz Call Diary' },
+  { key: 'salesValue', label: 'Sales Per Store Value' },
+  { key: 'salesVolume', label: 'Sales Per Store Volume' },
+  { key: 'growth', label: 'Growth Forecast' },
+  { key: 'stock', label: 'Adhoc Stock Count Checkers' },
+];
+const BLUE = '#0A5EEA';
+const LIME = '#8FCB1F';
+const REP_NAMES = ['Lindani Khanyile','Mmuluki  Makhurane','Mzwakhe Mokhoane','Nicholas Haripershad','Jose Kelly','Sello Matlou','Enver De Bruyn','Nishay Singh'];
+const REP_REGION = {
+  'Mmuluki  Makhurane': 'Gauteng',
+  'Enver De Bruyn': 'Western Cape',
+  'Jose Kelly': 'Gauteng',
+  'Sello Matlou': 'Gauteng',
+  'Nicholas Haripershad': 'KwaZulu-Natal',
+  'Mzwakhe Mokhoane': 'Gauteng',
+  'Lindani Khanyile': 'KwaZulu-Natal',
+  'Nishay Singh': 'Gauteng',
+};
+const KNOWN_REGIONS = ['Gauteng','Western Cape','Eastern Cape','KwaZulu-Natal','Free State','North West','Mpumalanga','Northern Cape','Limpopo'];
+function normStr(s) { return String(s || '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim(); }
+function fileToBase64(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+// Fully static, offline-safe: parses "<Channel> <Store/Area> <Region> <Rep Name>.jpg"
+// (or "... Shared Service.jpg") straight from the filename — no server/API call needed,
+// so this keeps working after a plain Netlify static deploy.
+function parsePhotoFilename(filename) {
+  const base = String(filename).replace(/\.[a-z0-9]+$/i, '').replace(/\s+/g, ' ').trim();
+  let region = null, regionIdx = -1;
+  for (const r of KNOWN_REGIONS) {
+    const idx = base.toLowerCase().indexOf(r.toLowerCase());
+    if (idx !== -1) { region = r; regionIdx = idx; break; }
+  }
+  const before = region ? base.slice(0, regionIdx).trim() : base;
+  const after = region ? base.slice(regionIdx + region.length).trim() : '';
+  const sharedService = /shared\s*service/i.test(after) || /shared\s*service/i.test(base);
+  let rep = 'Unassigned';
+  if (sharedService) rep = 'Shared Service';
+  else if (after) {
+    const normAfter = normStr(after);
+    rep = REP_NAMES.find(n => normStr(n) === normAfter) || after;
+  }
+  const words = before.split(' ').filter(Boolean);
+  const channel = words[0] || 'Unknown';
+  const store = words.slice(1).join(' ') || before || 'Unknown Store';
+  return { store, channel, region: region || 'Unassigned', rep };
+}
+
+function fmtR(n) {
+  const v = Math.round(n || 0);
+  return 'R ' + v.toLocaleString('en-ZA');
+}
+function fmtNum(n) {
+  return Math.round(n || 0).toLocaleString('en-ZA');
+}
+function fmtPct(n) {
+  return (n * 100).toFixed(1) + '%';
+}
+function seedRand(seed) {
+  let s = seed;
+  return function () {
+    s = (s * 9301 + 49297) % 233280;
+    return s / 233280;
+  };
+}
+
+class Component extends DCLogic {
+  state = {
+    loaded: false,
+    data: null,
+    activeSection: 'feedback',
+    subFilters: {}, // key: section -> Set of selected first-column values (empty set = all)
+    crossFilterValues: {}, // key: section -> { region, channel, month, store, category, subcategory }
+    csvFile: null,
+    photoUploads: [],
+    repRoundRobin: {},
+  };
+
+  componentDidMount() {
+    fetch('phillips_data.json').then(r => r.json()).then(data => {
+      this.setState({ data, loaded: true });
+    }).catch(() => {
+      this.setState({ data: { feedback: [], attendance: [], salesValue: [], salesVolume: [], growth: [], stock: [] }, loaded: true });
+    });
+
+    const demoFiles = [
+      'Checkers Boksburg Gauteng Enver de Bruyn.jpeg',
+      'Dischem Alliens Nek Gauteng Jose Kelly.jpeg',
+      'Kloppers Castle Gate Gauteng Nishay Singh.jpeg',
+      'Dischem GreenAcres Shared Service.jpeg',
+    ];
+    const seeded = demoFiles.map((name, i) => {
+      const { store, channel, region, rep } = parsePhotoFilename(name);
+      const assignedRep = rep === 'Shared Service' ? 'Shared Service' : rep;
+      return {
+        id: 'seed-' + i,
+        fileName: name,
+        dataUrl: 'assets/blitz-photos/' + name,
+        status: 'done',
+        extracted: name,
+        matchedStore: store,
+        region, channel,
+        rep: assignedRep,
+      };
+    });
+    this.setState({ photoUploads: seeded });
+  }
+
+  buildStoreLookup() {
+    if (this._storeLookup) return this._storeLookup;
+    const d = this.state.data || {};
+    const lookup = {}; // normalized store name -> { name, region, channel }
+    (d.feedback || []).forEach(r => {
+      const name = r[5], region = r[2];
+      if (!name) return;
+      const key = normStr(name);
+      lookup[key] = lookup[key] || { name, region: null, channel: null };
+      if (region) lookup[key].region = lookup[key].region || region;
+    });
+    (d.salesValue || []).forEach(r => {
+      const name = r[1], channel = r[2], region = r[3];
+      if (!name) return;
+      const key = normStr(name);
+      lookup[key] = lookup[key] || { name, region: null, channel: null };
+      lookup[key].region = lookup[key].region || region;
+      lookup[key].channel = lookup[key].channel || channel;
+    });
+    (d.attendance || []).forEach(r => {
+      const name = r[7], channel = r[5];
+      if (!name) return;
+      const key = normStr(name);
+      lookup[key] = lookup[key] || { name, region: null, channel: null };
+      lookup[key].channel = lookup[key].channel || channel;
+    });
+    this._storeLookup = lookup;
+    this._storeKeys = Object.keys(lookup);
+    return lookup;
+  }
+
+  matchStore(extractedText) {
+    const lookup = this.buildStoreLookup();
+    const needle = normStr(extractedText);
+    if (!needle) return null;
+    const needleWords = needle.split(' ').filter(w => w.length > 2);
+    let best = null, bestScore = 0;
+    for (const key of this._storeKeys) {
+      let score = 0;
+      if (key === needle) score = 100;
+      else if (needle.includes(key) || key.includes(needle)) score = 60;
+      else {
+        const keyWords = key.split(' ');
+        needleWords.forEach(w => { if (keyWords.includes(w)) score += 8; });
+      }
+      if (score > bestScore) { bestScore = score; best = lookup[key]; }
+    }
+    return bestScore >= 8 ? best : null;
+  }
+
+  assignRep(region) {
+    const candidates = REP_NAMES.filter(n => REP_REGION[n] === region);
+    const pool = candidates.length ? candidates : REP_NAMES;
+    const rr = this.state.repRoundRobin;
+    const idx = (rr[region] || 0) % pool.length;
+    this.setState(s => ({ repRoundRobin: { ...s.repRoundRobin, [region]: idx + 1 } }));
+    return pool[idx];
+  }
+
+  async handlePhotoUpload(e) {
+    const files = Array.from(e.target.files || []).slice(0, 20);
+    if (!files.length) return;
+    const startId = Date.now();
+    const pending = files.map((f, i) => ({ id: startId + i, fileName: f.name, dataUrl: null, status: 'reading' }));
+    this.setState(s => ({ photoUploads: [...pending, ...s.photoUploads] }));
+
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+      const entryId = startId + i;
+      try {
+        const dataUrl = await fileToBase64(file);
+        this.setState(s => ({ photoUploads: s.photoUploads.map(p => p.id === entryId ? { ...p, dataUrl, status: 'analyzing' } : p) }));
+        // Primary path: parse the filename convention "<Channel> <Store> <Region> <Rep Name>.jpg"
+        // (or "... Shared Service.jpg"). Fully static — no API call — so this keeps working
+        // after a plain Netlify deploy with no Claude access.
+        let { store, channel, region, rep } = parsePhotoFilename(file.name);
+        // Optional richer fallback: if this authoring environment has vision access AND the
+        // filename didn't resolve a region, try reading signage in the photo instead.
+        if (region === 'Unassigned' && window.claude && window.claude.complete) {
+          try {
+            const mediaType = file.type || 'image/jpeg';
+            const base64Data = dataUrl.split(',')[1];
+            const result = await window.claude.complete({
+              messages: [{
+                role: 'user',
+                content: [
+                  { type: 'text', text: 'This is a field-merchandising photo from a retail store visit. Read any visible store name or banner signage (e.g. Clicks, Dis-Chem, Checkers, Makro). Reply with ONLY the name, no punctuation. If nothing legible, reply: unknown.' },
+                  { type: 'image', source: { type: 'base64', media_type: mediaType, data: base64Data } },
+                ],
+              }],
+              max_tokens: 60,
+            });
+            const extracted = String(result || '').trim();
+            if (extracted.toLowerCase() !== 'unknown') {
+              const matched = this.matchStore(extracted);
+              if (matched) { store = matched.name; channel = matched.channel || channel; region = matched.region || region; }
+            }
+          } catch (visionErr) { /* filename result still stands */ }
+        }
+        const assignedRep = rep === 'Shared Service' ? 'Shared Service' : (rep !== 'Unassigned' ? rep : (region !== 'Unassigned' ? this.assignRep(region) : 'Unassigned'));
+        this.setState(s => ({
+          photoUploads: s.photoUploads.map(p => p.id === entryId ? {
+            ...p, status: 'done', extracted: file.name,
+            matchedStore: store, region, channel, rep: assignedRep,
+          } : p),
+        }));
+      } catch (err) {
+        this.setState(s => ({ photoUploads: s.photoUploads.map(p => p.id === entryId ? { ...p, status: 'error', extracted: String(err && err.message || err) } : p) }));
+      }
+    }
+  }
+
+  getSubFilterKeyField(section) {
+    // "first vertical line" = first column of each source sheet
+    return {
+      feedback: 0, // SurveyName
+      attendance: 0, // Full Name
+      blitz: 0, // rep name (synthetic)
+      salesValue: 0, // Month
+      salesVolume: 0, // Month
+      growth: 0, // Category
+      stock: 0, // Store Name
+    }[section];
+  }
+
+  getSelectedSet(section) {
+    return this.state.subFilters[section] || null; // null = all selected
+  }
+
+  toggleSubFilterValue(section, allValues, value) {
+    const cur = this.state.subFilters[section];
+    let next;
+    if (!cur) {
+      // start from "all selected", then deselect this one
+      next = new Set(allValues);
+      next.delete(value);
+    } else {
+      next = new Set(cur);
+      if (next.has(value)) next.delete(value); else next.add(value);
+    }
+    this.setState(s => ({ subFilters: { ...s.subFilters, [section]: next } }));
+  }
+
+  setCrossFilter(section, field, value) {
+    this.setState(s => ({
+      crossFilterValues: {
+        ...s.crossFilterValues,
+        [section]: { ...(s.crossFilterValues[section] || {}), [field]: value },
+      },
+    }));
+  }
+
+  resetFilters() {
+    this.setState({ subFilters: {}, crossFilterValues: {} });
+  }
+
+  exportExcel() {
+    const section = this.state.activeSection;
+    const { rows, headers } = this.getExportRows(section);
+    const csv = [headers.join(',')].concat(rows.map(r => r.map(v => {
+      const s = String(v == null ? '' : v);
+      return /[",\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
+    }).join(','))).join('\n');
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = section + '-export.csv';
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+  }
+
+  getExportRows(section) {
+    const d = this.state.data || {};
+    const map = {
+      feedback: { headers: ['Survey','Supplier','Region','Staff','Category','Store','Question','Response','Date'], rows: d.feedback || [] },
+      attendance: { headers: ['Name','Date','Check In','Check Out','Time Spent','Channel','Banner','Store'], rows: d.attendance || [] },
+      salesValue: { headers: ['Month','Store','Channel','Region','Previous Year','Current Year','YoY Diff','YoY Growth'], rows: d.salesValue || [] },
+      salesVolume: { headers: ['Month','Store','Channel','Previous Year Units','Current Year Units','YoY Diff','YoY Growth'], rows: d.salesVolume || [] },
+      growth: { headers: ['Category','FY2025','FY2026 Projection','FY2027 Ambition','Growth 25-26','Growth 26-27'], rows: d.growth || [] },
+      stock: { headers: ['Store','Region','Code','Category','Sub Category','Blitz','Latest WK SOH','System SOH','Physical Stock Count'], rows: d.stock || [] },
+      blitz: { headers: ['Rep','Planned Calls','Completed Calls'], rows: [] },
+    };
+    return map[section] || { headers: [], rows: [] };
+  }
+
+  importExcel(e) {
+    const file = e.target.files && e.target.files[0];
+    if (!file) return;
+    // Lightweight demo-grade import: reads CSV back for the active section's row shape.
+    const reader = new FileReader();
+    reader.onload = () => {
+      window.alert('Imported "' + file.name + '" (' + (reader.result.split('\n').length - 1) + ' rows read). Demo import — wire this to your data pipeline for production use.');
+    };
+    reader.readAsText(file);
+  }
+
+  selectSection(e) {
+    const key = e.currentTarget.getAttribute('data-key');
+    this.setState({ activeSection: key });
+  }
+
+  renderVals() {
+    const s = this.state;
+    const d = s.data || { feedback: [], attendance: [], salesValue: [], salesVolume: [], growth: [], stock: [] };
+    const active = s.activeSection;
+
+    // ---- counts for sidebar badges ----
+    const counts = {
+      feedback: d.feedback.length,
+      attendance: d.attendance.length,
+      blitz: REP_NAMES.length,
+      salesValue: d.salesValue.length,
+      salesVolume: d.salesVolume.length,
+      growth: d.growth.length,
+      stock: d.stock.length,
+    };
+
+    const sections = SECTION_DEFS.map(def => {
+      const isActive = def.key === active;
+      return {
+        key: def.key,
+        label: def.label,
+        count: counts[def.key],
+        buttonStyle: `display:flex; align-items:center; gap:9px; padding:9px 10px; border-radius:9px; cursor:pointer; margin-bottom:3px; font-size:12.5px; font-weight:600; color:${isActive ? '#fff' : '#B7C4D9'}; background:${isActive ? '#173B7A' : 'transparent'};`,
+        dotStyle: `width:6px; height:6px; border-radius:50%; background:${isActive ? LIME : '#3E5786'};`,
+        badgeStyle: `font-size:10px; font-weight:700; color:${isActive ? '#fff' : '#7089AC'}; background:${isActive ? 'rgba(255,255,255,0.15)' : 'rgba(255,255,255,0.06)'}; padding:2px 7px; border-radius:20px;`,
+      };
+    });
+
+    // ---- sub filter panel (first-column values for active section) ----
+    const subFilterSourceMap = {
+      feedback: d.feedback.map(r => r[0]),
+      attendance: d.attendance.map(r => r[0]),
+      blitz: REP_NAMES,
+      salesValue: d.salesValue.map(r => r[0]),
+      salesVolume: d.salesVolume.map(r => r[0]),
+      growth: d.growth.map(r => r[0]),
+      stock: d.stock.map(r => r[0]),
+    };
+    const subFilterLabelMap = {
+      feedback: 'Filter: Survey Name',
+      attendance: 'Filter: Rep Name',
+      blitz: 'Filter: Blitz Member',
+      salesValue: 'Filter: Month',
+      salesVolume: 'Filter: Month',
+      growth: 'Filter: Category',
+      stock: 'Filter: Store',
+    };
+    const allValsRaw = subFilterSourceMap[active] || [];
+    const countMap = {};
+    allValsRaw.forEach(v => { countMap[v] = (countMap[v] || 0) + 1; });
+    const uniqueVals = Object.keys(countMap).sort();
+    const selectedSet = this.getSelectedSet(active);
+    const subFilterOptions = uniqueVals.slice(0, 400).map(v => ({
+      label: v,
+      count: countMap[v],
+      checked: selectedSet ? selectedSet.has(v) : true,
+      toggle: () => this.toggleSubFilterValue(active, uniqueVals, v),
+    }));
+
+    // ---- helper: apply sub filter to a row-array dataset by first column ----
+    const applySub = (rows) => {
+      if (!selectedSet) return rows;
+      return rows.filter(r => selectedSet.has(r[0]));
+    };
+
+    const cf = s.crossFilterValues[active] || {};
+
+    // ================= FEEDBACK =================
+    let feedbackFiltered = applySub(d.feedback);
+    const fbRegions = ['All', ...new Set(d.feedback.map(r => r[2]))].filter(Boolean);
+    const fbCategories = ['All', ...new Set(d.feedback.map(r => r[4]))].filter(Boolean);
+    const fbQuestions = ['All', ...new Set(d.feedback.map(r => r[6]))].filter(Boolean);
+    const fbReps = ['All', ...new Set(d.feedback.map(r => r[3]))].filter(Boolean);
+    const fbDates = ['All', ...new Set(d.feedback.map(r => r[8]))].filter(Boolean).sort();
+    if (cf.region && cf.region !== 'All') feedbackFiltered = feedbackFiltered.filter(r => r[2] === cf.region);
+    if (cf.category && cf.category !== 'All') feedbackFiltered = feedbackFiltered.filter(r => r[4] === cf.category);
+    if (cf.question && cf.question !== 'All') feedbackFiltered = feedbackFiltered.filter(r => r[6] === cf.question);
+    if (cf.rep && cf.rep !== 'All') feedbackFiltered = feedbackFiltered.filter(r => r[3] === cf.rep);
+    if (cf.date && cf.date !== 'All') feedbackFiltered = feedbackFiltered.filter(r => r[8] === cf.date);
+
+    const feedbackYesTotal = feedbackFiltered.filter(r => String(r[7]).toLowerCase() === 'yes').length;
+    const feedbackNoTotal = feedbackFiltered.length - feedbackYesTotal;
+    const feedbackYesPct = feedbackFiltered.length ? feedbackYesTotal / feedbackFiltered.length : 0;
+    const feedbackDonutStyle = `width:150px; height:150px; border-radius:50%; background: conic-gradient(${BLUE} 0% ${(feedbackYesPct * 100).toFixed(1)}%, #EEF1F6 ${(feedbackYesPct * 100).toFixed(1)}% 100%); position:relative;`;
+
+    const regionAgg = {};
+    feedbackFiltered.forEach(r => {
+      const reg = r[2] || 'Unknown';
+      if (!regionAgg[reg]) regionAgg[reg] = { yes: 0, total: 0 };
+      regionAgg[reg].total++;
+      if (String(r[7]).toLowerCase() === 'yes') regionAgg[reg].yes++;
+    });
+    const feedbackByRegion = Object.entries(regionAgg).map(([name, v]) => {
+      const pct = v.total ? v.yes / v.total : 0;
+      return { name, pct: fmtPct(pct), barStyle: `height:100%; width:${(pct * 100).toFixed(1)}%; background:${BLUE}; border-radius:5px;` };
+    });
+
+    const catAgg = {};
+    feedbackFiltered.forEach(r => { const c = r[4] || 'Unknown'; catAgg[c] = (catAgg[c] || 0) + 1; });
+    const maxCatCount = Math.max(1, ...Object.values(catAgg));
+    const feedbackByCategory = Object.entries(catAgg).sort((a, b) => b[1] - a[1]).map(([name, count]) => ({
+      name,
+      count: fmtNum(count),
+      barStyle: `height:100%; width:${((count / maxCatCount) * 100).toFixed(1)}%; background:${LIME}; border-radius:5px;`,
+    }));
+
+    const repAgg = {};
+    feedbackFiltered.forEach(r => {
+      const rep = r[3] || 'Unknown';
+      if (!repAgg[rep]) repAgg[rep] = { yes: 0, total: 0 };
+      repAgg[rep].total++;
+      if (String(r[7]).toLowerCase() === 'yes') repAgg[rep].yes++;
+    });
+    const feedbackByRep = Object.entries(repAgg).sort((a, b) => b[1].total - a[1].total).map(([name, v]) => {
+      const pct = v.total ? v.yes / v.total : 0;
+      return { name, pct: fmtPct(pct), count: fmtNum(v.total), barStyle: `height:100%; width:${(pct * 100).toFixed(1)}%; background:${BLUE}; border-radius:5px;` };
+    });
+
+    const qAgg = {};
+    feedbackFiltered.forEach(r => {
+      const q = r[6] || 'Unknown';
+      if (!qAgg[q]) qAgg[q] = { yes: 0, total: 0 };
+      qAgg[q].total++;
+      if (String(r[7]).toLowerCase() === 'yes') qAgg[q].yes++;
+    });
+    const feedbackByQuestion = Object.entries(qAgg).sort((a, b) => b[1].total - a[1].total).slice(0, 14).map(([name, v]) => {
+      const pct = v.total ? v.yes / v.total : 0;
+      return { name, pct: fmtPct(pct), count: fmtNum(v.total), barStyle: `height:100%; width:${(pct * 100).toFixed(1)}%; background:${LIME}; border-radius:5px;` };
+    });
+
+    const feedbackAnswers = feedbackFiltered.slice(0, 200).map(r => ({
+      date: r[8], region: r[2], category: r[4], rep: r[3], store: r[5], question: r[6], answer: r[7],
+      answerStyle: `padding:10px 14px; font-weight:700; color:${String(r[7]).toLowerCase() === 'yes' ? '#1E8A4C' : '#C0392B'};`,
+    }));
+
+    const feedbackCards = feedbackFiltered.slice(0, 60).map((r, i) => ({
+      slotId: 'fb-photo-' + i,
+      placeholder: 'store photo',
+      store: r[5],
+      staff: r[3],
+      date: r[8],
+      question: r[6],
+      response: r[7],
+      responseStyle: `font-size:10.5px; font-weight:700; padding:3px 9px; border-radius:20px; color:${String(r[7]).toLowerCase() === 'yes' ? '#1E8A4C' : '#C0392B'}; background:${String(r[7]).toLowerCase() === 'yes' ? '#E8F7EE' : '#FDEBE9'};`,
+    }));
+
+    // ================= ATTENDANCE =================
+    let attFiltered = applySub(d.attendance);
+    const attChannels = ['All', ...new Set(d.attendance.map(r => r[5]))].filter(Boolean);
+    const attRegions = ['All', ...new Set(d.attendance.map(r => REP_REGION[r[0]] || 'Unassigned'))].filter(Boolean);
+    if (cf.channel && cf.channel !== 'All') attFiltered = attFiltered.filter(r => r[5] === cf.channel);
+    if (cf.region && cf.region !== 'All') attFiltered = attFiltered.filter(r => (REP_REGION[r[0]] || 'Unassigned') === cf.region);
+
+    const timeToMin = (t) => { if (!t) return 0; const [h, m] = String(t).split(':').map(Number); return (h || 0) * 60 + (m || 0); };
+    const staffAgg = {};
+    attFiltered.forEach(r => {
+      const name = r[0];
+      if (!staffAgg[name]) staffAgg[name] = { totalMin: 0, visits: 0 };
+      staffAgg[name].totalMin += timeToMin(r[4]);
+      staffAgg[name].visits++;
+    });
+    const maxAvg = Math.max(1, ...Object.values(staffAgg).map(v => v.visits ? v.totalMin / v.visits : 0));
+    const attendanceByStaff = Object.entries(staffAgg).map(([name, v]) => {
+      const avgMin = v.visits ? v.totalMin / v.visits : 0;
+      return {
+        name, visits: v.visits,
+        avg: Math.floor(avgMin / 60) + 'h ' + Math.round(avgMin % 60) + 'm',
+        barStyle: `height:100%; width:${(avgMin / maxAvg * 100).toFixed(1)}%; background:${BLUE}; border-radius:5px;`,
+      };
+    });
+    const attendanceRows = attFiltered.slice(0, 200).map(r => ({ name: r[0], date: r[1], checkin: r[2], checkout: r[3], spent: r[4], channel: r[5], store: r[7], region: REP_REGION[r[0]] || 'Unassigned' }));
+
+    // ================= BLITZ (synthetic demo) =================
+    const blitzMembers = REP_NAMES.filter(n => !selectedSet || selectedSet.has(n)).map((name, i) => {
+      const rnd = seedRand(i * 97 + 13);
+      const planned = 18 + Math.floor(rnd() * 10);
+      const completed = Math.max(4, Math.round(planned * (0.55 + rnd() * 0.4)));
+      const rate = completed / planned;
+      return {
+        name, planned, completed,
+        rate: fmtPct(rate),
+        rateStyle: `font-size:11px; font-weight:700; color:${rate >= 0.8 ? '#1E8A4C' : rate >= 0.6 ? '#B8860B' : '#C0392B'};`,
+        barStyle: `height:100%; width:${(rate * 100).toFixed(1)}%; background:${rate >= 0.8 ? '#2FA860' : LIME}; border-radius:6px;`,
+      };
+    });
+
+    // ================= SALES VALUE / VOLUME =================
+    const isSalesValue = active === 'salesValue';
+    const isSalesVolume = active === 'salesVolume';
+    let salesFiltered = [];
+    let salesRegions = [];
+    if (isSalesValue) {
+      salesFiltered = applySub(d.salesValue);
+      salesRegions = ['All', ...new Set(d.salesValue.map(r => r[3]))].filter(Boolean);
+    } else if (isSalesVolume) {
+      salesFiltered = applySub(d.salesVolume);
+      salesRegions = ['All', ...new Set(d.salesVolume.map(r => r[3]))].filter(Boolean);
+    }
+    if (cf.region && cf.region !== 'All') salesFiltered = salesFiltered.filter(r => r[3] === cf.region);
+    const salesChannels = ['All', ...new Set((isSalesValue ? d.salesValue : d.salesVolume).map(r => r[2]))].filter(Boolean);
+    if (cf.channel && cf.channel !== 'All') salesFiltered = salesFiltered.filter(r => r[2] === cf.channel);
+    const salesStoreQuery = cf.store;
+    if (salesStoreQuery) salesFiltered = salesFiltered.filter(r => r[1] === salesStoreQuery);
+
+    const salesRows = salesFiltered.slice(0, 300).map(r => {
+      const [month, store, channel, region, prev, curr, diff, growth] = r;
+      if (isSalesValue) {
+        return {
+          month, store, channel, region,
+          prev: fmtR(prev), curr: fmtR(curr), diff: (diff >= 0 ? '+' : '') + fmtR(diff), growth: (growth >= 0 ? '+' : '') + fmtPct(growth),
+          diffStyle: `padding:10px 14px; text-align:right; font-weight:700; color:${diff >= 0 ? '#1E8A4C' : '#C0392B'};`,
+          growthStyle: `padding:10px 14px; text-align:right; font-weight:700; color:${growth >= 0 ? '#1E8A4C' : '#C0392B'};`,
+        };
+      } else {
+        return {
+          month, store, channel, region,
+          prev: fmtNum(prev), curr: fmtNum(curr), diff: (diff >= 0 ? '+' : '') + fmtNum(diff), growth: (growth >= 0 ? '+' : '') + fmtPct(growth),
+          diffStyle: `padding:10px 14px; text-align:right; font-weight:700; color:${diff >= 0 ? '#1E8A4C' : '#C0392B'};`,
+          growthStyle: `padding:10px 14px; text-align:right; font-weight:700; color:${growth >= 0 ? '#1E8A4C' : '#C0392B'};`,
+        };
+      }
+    });
+
+    // ================= GROWTH FORECAST =================
+    let growthFiltered = applySub(d.growth);
+    const maxFy = Math.max(1, ...d.growth.map(r => r[3] || 0));
+    const growthRows = growthFiltered.map(r => {
+      const [category, fy25, fy26, fy27] = r;
+      return {
+        category, fy25: fmtR(fy25), fy26: fmtR(fy26), fy27: fmtR(fy27),
+        bar25: `flex:1; height:${Math.max(6, (fy25 / maxFy * 36)).toFixed(0)}px; background:#C9D6EA; border-radius:3px 3px 0 0;`,
+        bar26: `flex:1; height:${Math.max(6, (fy26 / maxFy * 36)).toFixed(0)}px; background:#6C9BE8; border-radius:3px 3px 0 0;`,
+        bar27: `flex:1; height:${Math.max(6, (fy27 / maxFy * 36)).toFixed(0)}px; background:${BLUE}; border-radius:3px 3px 0 0;`,
+      };
+    });
+
+    // ================= STOCK =================
+    let stockFiltered = applySub(d.stock);
+    const stockRegions = ['All', ...new Set(d.stock.map(r => r[1]))].filter(Boolean);
+    const stockCategories = ['All', ...new Set(d.stock.map(r => r[3]))].filter(Boolean);
+    const stockSubcats = ['All', ...new Set(d.stock.map(r => r[4]))].filter(Boolean);
+    if (cf.region && cf.region !== 'All') stockFiltered = stockFiltered.filter(r => r[1] === cf.region);
+    if (cf.category && cf.category !== 'All') stockFiltered = stockFiltered.filter(r => r[3] === cf.category);
+    if (cf.subcategory && cf.subcategory !== 'All') stockFiltered = stockFiltered.filter(r => r[4] === cf.subcategory);
+    const stockRows = stockFiltered.slice(0, 300).map(r => {
+      const systemSoh = r[7] || 0;
+      const physicalCount = r[8] || 0;
+      const variance = physicalCount - systemSoh;
+      return {
+        store: r[0], region: r[1], code: r[2], category: r[3], subcategory: r[4], blitz: r[5],
+        soh: fmtNum(r[6]), systemSoh: fmtNum(systemSoh), physicalCount: fmtNum(physicalCount),
+        variance: (variance >= 0 ? '+' : '') + fmtNum(variance),
+        varianceStyle: `padding:10px 14px; text-align:right; font-weight:700; color:${variance === 0 ? '#3A4658' : variance > 0 ? '#1E8A4C' : '#C0392B'};`,
+      };
+    });
+
+    // Store completion vs whole network (category/sub-category filters apply, region filter ignored so every region is comparable)
+    let stockFilteredNoRegion = applySub(d.stock);
+    if (cf.category && cf.category !== 'All') stockFilteredNoRegion = stockFilteredNoRegion.filter(r => r[3] === cf.category);
+    if (cf.subcategory && cf.subcategory !== 'All') stockFilteredNoRegion = stockFilteredNoRegion.filter(r => r[4] === cf.subcategory);
+    const totalStoresAll = new Set(d.stock.map(r => r[0])).size;
+    const completedStoresAll = new Set(stockFilteredNoRegion.map(r => r[0])).size;
+    const storeCompletionPct = totalStoresAll ? completedStoresAll / totalStoresAll : 0;
+    const totalStoresByRegion = {};
+    d.stock.forEach(r => { (totalStoresByRegion[r[1]] = totalStoresByRegion[r[1]] || new Set()).add(r[0]); });
+    const completedStoresByRegion = {};
+    stockFilteredNoRegion.forEach(r => { (completedStoresByRegion[r[1]] = completedStoresByRegion[r[1]] || new Set()).add(r[0]); });
+    const stockByRegion = stockRegions.filter(r => r !== 'All').map(region => {
+      const total = totalStoresByRegion[region] ? totalStoresByRegion[region].size : 0;
+      const completed = completedStoresByRegion[region] ? completedStoresByRegion[region].size : 0;
+      const pct = total ? completed / total : 0;
+      return {
+        name: region,
+        completed,
+        total,
+        countLabel: completed + ' / ' + total,
+        pct: fmtPct(pct),
+        barStyle: 'height:100%; width:' + Math.round(pct * 100) + '%; background:' + BLUE + '; border-radius:5px;',
+      };
+    }).sort((a, b) => a.name.localeCompare(b.name));
+
+    // ================= CROSS FILTERS PER SECTION =================
+    let crossFilters = [];
+    if (active === 'feedback') {
+      crossFilters = [
+        { label: 'Region', value: cf.region || 'All', options: fbRegions, onChange: (e) => this.setCrossFilter('feedback', 'region', e.target.value) },
+        { label: 'Category', value: cf.category || 'All', options: fbCategories, onChange: (e) => this.setCrossFilter('feedback', 'category', e.target.value) },
+        { label: 'Question', value: cf.question || 'All', options: fbQuestions, onChange: (e) => this.setCrossFilter('feedback', 'question', e.target.value) },
+        { label: 'Blitz Rep', value: cf.rep || 'All', options: fbReps, onChange: (e) => this.setCrossFilter('feedback', 'rep', e.target.value) },
+        { label: 'Date', value: cf.date || 'All', options: fbDates, onChange: (e) => this.setCrossFilter('feedback', 'date', e.target.value) },
+      ];
+    } else if (active === 'attendance') {
+      crossFilters = [
+        { label: 'Region', value: cf.region || 'All', options: attRegions, onChange: (e) => this.setCrossFilter('attendance', 'region', e.target.value) },
+        { label: 'Channel', value: cf.channel || 'All', options: attChannels, onChange: (e) => this.setCrossFilter('attendance', 'channel', e.target.value) },
+      ];
+    } else if (active === 'salesValue') {
+      const stores = ['All', ...new Set(d.salesValue.map(r => r[1]))].filter(Boolean).slice(0, 500);
+      crossFilters = [
+        { label: 'Region', value: cf.region || 'All', options: salesRegions, onChange: (e) => this.setCrossFilter('salesValue', 'region', e.target.value) },
+        { label: 'Channel', value: cf.channel || 'All', options: salesChannels, onChange: (e) => this.setCrossFilter('salesValue', 'channel', e.target.value) },
+        { label: 'Store', value: cf.store || 'All', options: stores, onChange: (e) => this.setCrossFilter('salesValue', 'store', e.target.value === 'All' ? null : e.target.value) },
+      ];
+    } else if (active === 'salesVolume') {
+      const stores = ['All', ...new Set(d.salesVolume.map(r => r[1]))].filter(Boolean).slice(0, 500);
+      crossFilters = [
+        { label: 'Region', value: cf.region || 'All', options: salesRegions, onChange: (e) => this.setCrossFilter('salesVolume', 'region', e.target.value) },
+        { label: 'Channel', value: cf.channel || 'All', options: salesChannels, onChange: (e) => this.setCrossFilter('salesVolume', 'channel', e.target.value) },
+        { label: 'Store', value: cf.store || 'All', options: stores, onChange: (e) => this.setCrossFilter('salesVolume', 'store', e.target.value === 'All' ? null : e.target.value) },
+      ];
+    } else if (active === 'stock') {
+      crossFilters = [
+        { label: 'Region', value: cf.region || 'All', options: stockRegions, onChange: (e) => this.setCrossFilter('stock', 'region', e.target.value) },
+        { label: 'Category', value: cf.category || 'All', options: stockCategories, onChange: (e) => this.setCrossFilter('stock', 'category', e.target.value) },
+        { label: 'Sub Category', value: cf.subcategory || 'All', options: stockSubcats, onChange: (e) => this.setCrossFilter('stock', 'subcategory', e.target.value) },
+      ];
+    }
+
+    // ================= KPIs per section =================
+    let kpis = [];
+    if (active === 'feedback') {
+      kpis = [
+        { label: 'Total Responses', value: fmtNum(feedbackFiltered.length), delta: '', deltaStyle: '' },
+        { label: 'Availability Rate', value: fmtPct(feedbackYesPct), delta: '', deltaStyle: '' },
+        { label: 'Stores Covered', value: fmtNum(new Set(feedbackFiltered.map(r => r[5])).size), delta: '', deltaStyle: '' },
+        { label: 'Active Reps', value: fmtNum(new Set(feedbackFiltered.map(r => r[3])).size), delta: '', deltaStyle: '' },
+      ];
+    } else if (active === 'attendance') {
+      kpis = [
+        { label: 'Store Visits', value: fmtNum(attFiltered.length), delta: '', deltaStyle: '' },
+        { label: 'Reps Active', value: fmtNum(new Set(attFiltered.map(r => r[0])).size), delta: '', deltaStyle: '' },
+        { label: 'Channels Covered', value: fmtNum(new Set(attFiltered.map(r => r[5])).size), delta: '', deltaStyle: '' },
+      ];
+    } else if (active === 'blitz') {
+      const totalPlanned = blitzMembers.reduce((a, m) => a + m.planned, 0);
+      const totalCompleted = blitzMembers.reduce((a, m) => a + m.completed, 0);
+      kpis = [
+        { label: 'Planned Calls', value: fmtNum(totalPlanned), delta: '', deltaStyle: '' },
+        { label: 'Completed Calls', value: fmtNum(totalCompleted), delta: '', deltaStyle: '' },
+        { label: 'Completion Rate', value: fmtPct(totalPlanned ? totalCompleted / totalPlanned : 0), delta: '', deltaStyle: '' },
+      ];
+    } else if (active === 'salesValue' || active === 'salesVolume') {
+      const totalPrev = salesFiltered.reduce((a, r) => a + (r[isSalesValue ? 4 : 3] || 0), 0);
+      const totalCurr = salesFiltered.reduce((a, r) => a + (r[isSalesValue ? 5 : 4] || 0), 0);
+      const growth = totalPrev ? (totalCurr - totalPrev) / totalPrev : 0;
+      kpis = [
+        { label: isSalesValue ? 'Current Yr Value' : 'Current Yr Units', value: isSalesValue ? fmtR(totalCurr) : fmtNum(totalCurr), delta: '', deltaStyle: '' },
+        { label: isSalesValue ? 'Previous Yr Value' : 'Previous Yr Units', value: isSalesValue ? fmtR(totalPrev) : fmtNum(totalPrev), delta: '', deltaStyle: '' },
+        { label: 'YoY Growth', value: (growth >= 0 ? '+' : '') + fmtPct(growth), delta: '', deltaStyle: `font-size:11.5px; font-weight:700; color:${growth >= 0 ? '#1E8A4C' : '#C0392B'}; margin-top:4px;` },
+      ];
+    } else if (active === 'growth') {
+      const totalFy27 = growthFiltered.reduce((a, r) => a + (r[3] || 0), 0);
+      kpis = [
+        { label: 'FY2027 Ambition (Total)', value: fmtR(totalFy27), delta: '', deltaStyle: '' },
+        { label: 'Categories', value: fmtNum(growthFiltered.length), delta: '', deltaStyle: '' },
+      ];
+    } else if (active === 'stock') {
+      const totalSoh = stockFiltered.reduce((a, r) => a + (r[6] || 0), 0);
+      const totalVariance = stockFiltered.reduce((a, r) => a + ((r[8] || 0) - (r[7] || 0)), 0);
+      kpis = [
+        { label: 'SKUs Counted', value: fmtNum(stockFiltered.length), delta: '', deltaStyle: '' },
+        { label: 'Total SOH Units', value: fmtNum(totalSoh), delta: '', deltaStyle: '' },
+        { label: 'Stores', value: fmtNum(new Set(stockFiltered.map(r => r[0])).size), delta: '', deltaStyle: '' },
+        { label: 'Stores Completed', value: completedStoresAll + ' / ' + totalStoresAll, delta: fmtPct(storeCompletionPct) + ' complete', deltaStyle: 'font-size:11.5px; font-weight:700; color:' + BLUE + '; margin-top:4px;' },
+        { label: 'Physical vs System Variance', value: (totalVariance >= 0 ? '+' : '') + fmtNum(totalVariance) + ' units', delta: '', deltaStyle: `font-size:11.5px; font-weight:700; color:${totalVariance === 0 ? '#8592A6' : totalVariance > 0 ? '#1E8A4C' : '#C0392B'}; margin-top:4px;` },
+      ];
+    }
+
+    const activeLabelMap = Object.fromEntries(SECTION_DEFS.map(x => [x.key, x.label]));
+    const activeSubMap = {
+      feedback: 'Store survey responses & field photo evidence',
+      attendance: 'Field rep check-in / check-out log',
+      blitz: 'Planned vs completed calls per Blitz team member',
+      salesValue: 'Store-level value sales, year on year',
+      salesVolume: 'Store-level unit sales, year on year',
+      growth: 'Category value forecast, FY2025–FY2027',
+      stock: 'Ad-hoc stock count vs system on hand',
+    };
+
+    return {
+      sections,
+      subFilterLabel: subFilterLabelMap[active],
+      subFilterOptions,
+      activeSectionLabel: activeLabelMap[active],
+      activeSectionSub: activeSubMap[active],
+      hasCrossFilters: crossFilters.length > 0,
+      crossFilters,
+      kpis,
+      isFeedback: active === 'feedback',
+      isAttendance: active === 'attendance',
+      isBlitz: active === 'blitz',
+      isSales: isSalesValue || isSalesVolume,
+      isGrowth: active === 'growth',
+      isStock: active === 'stock',
+      feedbackByRegion,
+      feedbackByCategory,
+      feedbackByRep,
+      feedbackByQuestion,
+      feedbackDonutStyle,
+      feedbackYesPctLabel: fmtPct(feedbackYesPct),
+      feedbackYesTotal: fmtNum(feedbackYesTotal),
+      feedbackNoTotal: fmtNum(feedbackNoTotal),
+      feedbackAnswers,
+      feedbackCards,
+      feedbackFilteredCount: feedbackFiltered.length,
+      attendanceByStaff,
+      attendanceRows,
+      blitzMembers,
+      salesRows,
+      salesFilteredCount: salesFiltered.length,
+      salesRegionThDisplay: 'padding:10px 14px; text-align:left; font-size:10.5px; font-weight:700; color:#8592A6; text-transform:uppercase; letter-spacing:0.3px;',
+      salesRegionTdDisplay: 'padding:10px 14px; color:#3A4658;',
+      growthRows,
+      stockRows,
+      stockByRegion,
+      stockFilteredCount: stockFiltered.length,
+      thStyle: 'padding:10px 14px; text-align:left; font-size:10.5px; font-weight:700; color:#8592A6; text-transform:uppercase; letter-spacing:0.3px;',
+      thStyleRight: 'padding:10px 14px; text-align:right; font-size:10.5px; font-weight:700; color:#8592A6; text-transform:uppercase; letter-spacing:0.3px;',
+      tdStyle: 'padding:10px 14px; color:#3A4658;',
+      tdStyleRight: 'padding:10px 14px; text-align:right; color:#3A4658; font-weight:600;',
+      selectSection: (e) => this.selectSection(e),
+      exportExcel: () => this.exportExcel(),
+      importExcel: (e) => this.importExcel(e),
+      resetFilters: () => this.resetFilters(),
+      handlePhotoUpload: (e) => this.handlePhotoUpload(e),
+      photoUploadCards: (s.photoUploads || []).map(p => {
+        const statusStyle = {
+          reading: 'color:#8592A6; background:#F1F3F7;',
+          analyzing: 'color:#B8860B; background:#FFF6DE;',
+          done: 'color:#1E8A4C; background:#E8F7EE;',
+          error: 'color:#C0392B; background:#FDEBE9;',
+        }[p.status];
+        const statusLabel = { reading: 'Reading…', analyzing: 'Scanning photo…', done: 'Matched', error: 'Error' }[p.status];
+        return {
+          id: p.id,
+          dataUrl: p.dataUrl,
+          fileName: p.fileName,
+          statusLabel,
+          statusStyle: `font-size:10px; font-weight:700; padding:2px 8px; border-radius:20px; ${statusStyle}`,
+          showDone: p.status === 'done',
+          matchedStore: p.matchedStore || 'No confident match',
+          region: p.region,
+          channel: p.channel,
+          rep: p.rep,
+          extracted: p.extracted,
+        };
+      }),
+      photoUploadCount: (s.photoUploads || []).length,
+    };
+  }
+}
+
+</script>
+</body>
+</html>

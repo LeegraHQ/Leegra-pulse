@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tower — Activation Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root { --primary-dark: #2C3E50; --accent: #E8873A; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: #F4F6F8; color: #2C3138; font-family: 'Inter', system-ui, sans-serif; }
+  .wrap { min-height: 100vh; padding: 20px 28px 32px; }
+  .header { display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; }
+  .title { font-family:'Poppins',sans-serif; font-weight:700; font-size:22px; color:var(--primary-dark); letter-spacing:-0.02em; }
+  .subtitle { font-size:12px; color:#7C8896; margin-top:2px; }
+  .date-chip { font-size:11px; color:#7C8896; background:#fff; border:1px solid #E1E6EB; border-radius:8px; padding:6px 10px; }
+  .kpi-row { display:grid; grid-template-columns:repeat(4,1fr); gap:10px; margin-bottom:14px; }
+  .kpi-card { background:#fff; border:1px solid #E1E6EB; border-radius:10px; padding:10px 14px; }
+  .kpi-label { font-size:10px; text-transform:uppercase; letter-spacing:0.06em; color:#7C8896; font-weight:600; }
+  .kpi-value { font-family:'Poppins',sans-serif; font-size:20px; font-weight:700; margin-top:2px; }
+  .kpi-value.primary { color:var(--primary-dark); }
+  .kpi-value.accent { color:var(--accent); }
+  .section-full { margin-bottom:12px; }
+  .section-row { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:12px; }
+  .card { background:#fff; border:1px solid #E1E6EB; border-radius:10px; overflow:hidden; }
+  .card-header { background:var(--primary-dark); color:#fff; font-family:'Poppins',sans-serif; font-weight:600; font-size:12px; padding:8px 14px; }
+  table { width:100%; border-collapse:collapse; font-size:12px; }
+  thead tr { background:#EEF1F4; color:#7C8896; text-transform:uppercase; font-size:10px; letter-spacing:0.04em; }
+  th { text-align:left; padding:6px 14px; font-weight:600; }
+  th.num, td.num { text-align:right; }
+  td { padding:6px 14px; }
+  tbody tr { border-top:1px solid #EDF0F3; }
+  tbody tr:first-child { border-top:none; }
+  .name-cell { font-weight:500; }
+  .muted { color:#5A6470; }
+  .badge { padding:2px 8px; border-radius:6px; font-size:10px; font-weight:600; display:inline-block; }
+  .empty-row td { padding:14px; text-align:center; color:#B0B8C0; font-size:12px; }
+  .slicers { background:#fff; border:1px solid #E1E6EB; border-radius:10px; padding:12px 14px; display:flex; gap:24px; flex-wrap:wrap; }
+  .slicer-label { font-size:10px; text-transform:uppercase; letter-spacing:0.06em; color:#7C8896; font-weight:600; margin-bottom:6px; }
+  .pill-row { display:flex; gap:6px; flex-wrap:wrap; }
+  .pill { cursor:pointer; padding:5px 12px; border-radius:999px; font-size:12px; font-weight:600; background:#EEF1F4; color:#5A6470; border:1px solid #E1E6EB; user-select:none; }
+  .pill.region-active { background:var(--primary-dark); color:#fff; border-color:var(--primary-dark); }
+  .pill.channel-active { background:var(--accent); color:#fff; border-color:var(--accent); }
+  .photo-grid { padding:12px 14px; display:grid; grid-template-columns:repeat(4,1fr); gap:10px; }
+  .photo-slot { width:100%; aspect-ratio:4/3; border-radius:8px; border:2px dashed #D8DEE4; background:#FAFBFC; display:flex; align-items:center; justify-content:center; text-align:center; color:#9AA5B1; font-size:11px; padding:8px; cursor:pointer; }
+  .photo-caption { font-size:10px; color:#7C8896; margin-top:4px; text-align:center; }
+</style>
+</head>
+<body>
+<template id="__bundler_thumbnail" data-bg-color="#2C3E50">
+  <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+    <rect x="30" y="25" width="40" height="50" rx="4" fill="#E8873A"/>
+    <rect x="38" y="35" width="24" height="4" fill="#2C3E50"/>
+    <rect x="38" y="45" width="24" height="4" fill="#2C3E50"/>
+  </svg>
+</template>
+
+<div class="wrap">
+  <div class="header">
+    <div>
+      <div class="title">Tower — Activation Dashboard</div>
+      <div class="subtitle">Demo data · Spar &amp; Checkers promotions and execution tracker</div>
+    </div>
+    <div class="date-chip">Data as of Jul 8, 2026</div>
+  </div>
+
+  <div class="kpi-row">
+    <div class="kpi-card"><div class="kpi-label">Active Promotions</div><div class="kpi-value accent" id="kpi-active">0</div></div>
+    <div class="kpi-card"><div class="kpi-label">Promoters Assigned</div><div class="kpi-value primary" id="kpi-promoters">0</div></div>
+    <div class="kpi-card"><div class="kpi-label">Calls Achieved / Planned</div><div class="kpi-value primary" id="kpi-calls">0 / 0</div></div>
+    <div class="kpi-card"><div class="kpi-label">Avg. Activation Feedback</div><div class="kpi-value accent" id="kpi-feedback">–</div></div>
+  </div>
+
+  <div class="section-full">
+    <div class="card">
+      <div class="card-header">Schedule of Promotions</div>
+      <table><thead><tr><th>Promotion</th><th>Region</th><th>Channel</th><th>Dates</th><th>Status</th></tr></thead><tbody id="tbl-promotions"></tbody></table>
+    </div>
+  </div>
+
+  <div class="section-row">
+    <div class="card">
+      <div class="card-header">Stock to be Used</div>
+      <table><thead><tr><th>SKU</th><th>Region</th><th class="num">Used/Alloc.</th><th class="num">Remaining</th></tr></thead><tbody id="tbl-stock"></tbody></table>
+    </div>
+    <div class="card">
+      <div class="card-header">Promoters Assigned</div>
+      <table><thead><tr><th>Name</th><th>Store</th><th>Status</th></tr></thead><tbody id="tbl-promoters"></tbody></table>
+    </div>
+  </div>
+
+  <div class="section-row">
+    <div class="card">
+      <div class="card-header">Manager Assigned to Check</div>
+      <table><thead><tr><th>Manager</th><th>Stores</th><th>Check Status</th></tr></thead><tbody id="tbl-managers"></tbody></table>
+    </div>
+    <div class="card">
+      <div class="card-header">Feedback from Activations</div>
+      <table><thead><tr><th>Store</th><th>Rating</th><th>Comment</th></tr></thead><tbody id="tbl-feedback"></tbody></table>
+    </div>
+  </div>
+
+  <div class="section-full">
+    <div class="card">
+      <div class="card-header">Calls Planned vs Achieved &amp; Sell-In per Store</div>
+      <table>
+        <thead><tr><th>Store</th><th>Region</th><th>Channel</th><th class="num">Calls Planned</th><th class="num">Calls Achieved</th><th class="num">Order Generated (units)</th><th class="num">Sell-In Value</th></tr></thead>
+        <tbody id="tbl-calls"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="card" style="margin-bottom:12px;">
+    <div class="card-header">Store Visit Photos</div>
+    <div class="photo-grid">
+      <div><div class="photo-slot">📷<br>Drop photo — Spar Sector 12</div><div class="photo-caption">Spar Sector 12</div></div>
+      <div><div class="photo-slot">📷<br>Drop photo — Checkers MG Road</div><div class="photo-caption">Checkers MG Road</div></div>
+      <div><div class="photo-slot">📷<br>Drop photo — Spar Anna Nagar</div><div class="photo-caption">Spar Anna Nagar</div></div>
+      <div><div class="photo-slot">📷<br>Drop photo — Checkers Andheri</div><div class="photo-caption">Checkers Andheri</div></div>
+    </div>
+  </div>
+
+  <div class="slicers">
+    <div><div class="slicer-label">Region</div><div class="pill-row" id="pills-region"></div></div>
+    <div><div class="slicer-label">Channel</div><div class="pill-row" id="pills-channel"></div></div>
+  </div>
+</div>
+
+<script>
+const REGIONS = ['All', 'North', 'South', 'East', 'West'];
+const CHANNELS = ['All', 'Spar', 'Checkers'];
+
+const PROMOTIONS = [
+  { name: 'Buy 2 Get 1 Free — Notebook Pack', region: 'North', channel: 'Spar', dates: 'Jul 1 – Jul 15', status: 'Active' },
+  { name: '20% Off Premium Pen Sets', region: 'South', channel: 'Spar', dates: 'Jul 5 – Jul 20', status: 'Active' },
+  { name: 'Bundle Deal — Desk Organizer Kit', region: 'East', channel: 'Checkers', dates: 'Jun 20 – Jul 5', status: 'Ended' },
+  { name: 'Sampling Drive — Highlighter Sets', region: 'West', channel: 'Checkers', dates: 'Jul 10 – Jul 25', status: 'Active' },
+  { name: 'Back-to-School Discount 15%', region: 'North', channel: 'Checkers', dates: 'Jul 15 – Jul 31', status: 'Upcoming' },
+  { name: 'Buy 1 Get 1 — Sticky Notes', region: 'South', channel: 'Spar', dates: 'Jul 1 – Jul 10', status: 'Ended' },
+  { name: 'Flash Sale Weekend — Binders', region: 'East', channel: 'Spar', dates: 'Jul 12 – Jul 14', status: 'Upcoming' },
+  { name: 'Corporate Gifting Combo — Pen & Diary', region: 'West', channel: 'Checkers', dates: 'Jul 8 – Jul 22', status: 'Active' },
+  { name: 'Back to School Bundle — Backpack Set', region: 'North', channel: 'Checkers', dates: 'Jul 18 – Jul 31', status: 'Upcoming' },
+  { name: 'Clearance — Mixed Stationery Cups', region: 'South', channel: 'Checkers', dates: 'Jun 25 – Jul 3', status: 'Ended' },
+];
+
+const STOCK = [
+  { sku: 'Notebook Pack A5', region: 'North', channel: 'Spar', allocated: 1200, used: 860 },
+  { sku: 'Premium Pen Set', region: 'South', channel: 'Spar', allocated: 900, used: 640 },
+  { sku: 'Desk Organizer Kit', region: 'East', channel: 'Checkers', allocated: 600, used: 600 },
+  { sku: 'Highlighter Set (6pk)', region: 'West', channel: 'Checkers', allocated: 750, used: 410 },
+  { sku: 'Sticky Notes Combo', region: 'South', channel: 'Spar', allocated: 1000, used: 990 },
+  { sku: 'Mixed Stationery Cups', region: 'South', channel: 'Checkers', allocated: 500, used: 500 },
+  { sku: 'Back-to-School Combo Pack', region: 'North', channel: 'Checkers', allocated: 800, used: 120 },
+  { sku: 'Corporate Gift Box (Pen+Diary)', region: 'West', channel: 'Checkers', allocated: 300, used: 90 },
+];
+
+const PROMOTERS = [
+  { name: 'Aisha Khan', region: 'North', channel: 'Spar', store: 'Store #114 — Sector 12', status: 'Active' },
+  { name: 'Ravi Menon', region: 'South', channel: 'Spar', store: 'Warehouse Hub — Chennai', status: 'Active' },
+  { name: 'Priya Nair', region: 'East', channel: 'Checkers', store: 'Store #221 — MG Road', status: 'On Leave' },
+  { name: 'Daniel Cruz', region: 'West', channel: 'Checkers', store: 'Office Circuit — Bandra', status: 'Active' },
+  { name: 'Meera Iyer', region: 'North', channel: 'Checkers', store: 'Store #305 — Rajouri', status: 'Active' },
+  { name: 'Tom Alex', region: 'South', channel: 'Spar', store: 'Store #118 — Anna Nagar', status: 'Active' },
+  { name: 'Farah Sheikh', region: 'East', channel: 'Spar', store: 'Warehouse Hub — Salt Lake', status: 'On Leave' },
+  { name: 'Karan Sethi', region: 'West', channel: 'Checkers', store: 'Store #402 — Andheri', status: 'Active' },
+];
+
+const MANAGERS = [
+  { name: 'Suresh Patil', region: 'North', channel: 'Spar', stores: '6 stores', checkStatus: 'Completed' },
+  { name: 'Lakshmi Rao', region: 'South', channel: 'Spar', stores: '4 stores', checkStatus: 'Pending' },
+  { name: 'Vikram Das', region: 'East', channel: 'Checkers', stores: '5 stores', checkStatus: 'Completed' },
+  { name: 'Neha Joshi', region: 'West', channel: 'Checkers', stores: '7 stores', checkStatus: 'Pending' },
+  { name: 'Arjun Kapoor', region: 'North', channel: 'Checkers', stores: '3 stores', checkStatus: 'Completed' },
+  { name: 'Sana Malik', region: 'South', channel: 'Checkers', stores: '5 stores', checkStatus: 'Pending' },
+];
+
+const FEEDBACK = [
+  { store: 'Store #114 — Sector 12', region: 'North', channel: 'Spar', rating: 4.5, comment: 'Great turnout, customers loved the notebook bundle.' },
+  { store: 'Warehouse Hub — Chennai', region: 'South', channel: 'Spar', rating: 4.0, comment: 'Good conversion on pen set bundle.' },
+  { store: 'Store #221 — MG Road', region: 'East', channel: 'Checkers', rating: 3.0, comment: 'Low footfall during weekday activation.' },
+  { store: 'Office Circuit — Bandra', region: 'West', channel: 'Checkers', rating: 4.8, comment: 'Excellent response to highlighter sampling.' },
+  { store: 'Store #305 — Rajouri', region: 'North', channel: 'Checkers', rating: 3.5, comment: 'Stock ran out by mid-day.' },
+  { store: 'Store #118 — Anna Nagar', region: 'South', channel: 'Spar', rating: 4.2, comment: 'Positive feedback on sticky notes combo.' },
+  { store: 'Warehouse Hub — Salt Lake', region: 'East', channel: 'Spar', rating: 2.8, comment: 'Delivery delays affected promo timing.' },
+  { store: 'Store #402 — Andheri', region: 'West', channel: 'Checkers', rating: 4.6, comment: 'Strong repeat customer interest.' },
+];
+
+const STORE_CALLS = [
+  { store: 'Spar Sector 12', region: 'North', channel: 'Spar', callsPlanned: 20, callsAchieved: 18, orderUnits: 340, unitPrice: 45 },
+  { store: 'Checkers Rajouri', region: 'North', channel: 'Checkers', callsPlanned: 16, callsAchieved: 14, orderUnits: 260, unitPrice: 42 },
+  { store: 'Spar Anna Nagar', region: 'South', channel: 'Spar', callsPlanned: 18, callsAchieved: 18, orderUnits: 410, unitPrice: 45 },
+  { store: 'Checkers Mixed Depot', region: 'South', channel: 'Checkers', callsPlanned: 14, callsAchieved: 9, orderUnits: 150, unitPrice: 38 },
+  { store: 'Checkers MG Road', region: 'East', channel: 'Checkers', callsPlanned: 15, callsAchieved: 12, orderUnits: 210, unitPrice: 42 },
+  { store: 'Spar Salt Lake', region: 'East', channel: 'Spar', callsPlanned: 12, callsAchieved: 10, orderUnits: 190, unitPrice: 45 },
+  { store: 'Checkers Andheri', region: 'West', channel: 'Checkers', callsPlanned: 17, callsAchieved: 17, orderUnits: 305, unitPrice: 42 },
+  { store: 'Checkers Bandra', region: 'West', channel: 'Checkers', callsPlanned: 13, callsAchieved: 8, orderUnits: 95, unitPrice: 38 },
+];
+
+let state = { region: 'All', channel: 'All' };
+function matches(row) { return (state.region === 'All' || row.region === state.region) && (state.channel === 'All' || row.channel === state.channel); }
+function esc(s) { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
+const promoStatusStyle = { Active: ['#EAF1EE', '#2C3E50'], Upcoming: ['#FDF1E4', '#B5651D'], Ended: ['#F0EFEA', '#8A8676'] };
+
+function render() {
+  const promotions = PROMOTIONS.filter(matches);
+  const stock = STOCK.filter(matches);
+  const promoters = PROMOTERS.filter(matches);
+  const managers = MANAGERS.filter(matches);
+  const feedback = FEEDBACK.filter(matches);
+  const storeCalls = STORE_CALLS.filter(matches);
+
+  document.getElementById('kpi-active').textContent = promotions.filter(r => r.status === 'Active').length;
+  document.getElementById('kpi-promoters').textContent = promoters.length;
+  document.getElementById('kpi-feedback').textContent = feedback.length ? (feedback.reduce((s, r) => s + r.rating, 0) / feedback.length).toFixed(1) + ' / 5' : '–';
+  const plannedTotal = storeCalls.reduce((s, r) => s + r.callsPlanned, 0);
+  const achievedTotal = storeCalls.reduce((s, r) => s + r.callsAchieved, 0);
+  document.getElementById('kpi-calls').textContent = achievedTotal + ' / ' + plannedTotal;
+
+  document.getElementById('tbl-promotions').innerHTML = promotions.length ? promotions.map(r => {
+    const [bg, color] = promoStatusStyle[r.status];
+    return `<tr><td class="name-cell">${esc(r.name)}</td><td class="muted">${esc(r.region)}</td><td class="muted">${esc(r.channel)}</td><td class="muted" style="white-space:nowrap">${esc(r.dates)}</td><td><span class="badge" style="background:${bg};color:${color}">${esc(r.status)}</span></td></tr>`;
+  }).join('') : '<tr class="empty-row"><td colspan="5">No promotions match the selected filters.</td></tr>';
+
+  document.getElementById('tbl-stock').innerHTML = stock.length ? stock.map(r => {
+    const pct = Math.round(((r.allocated - r.used) / r.allocated) * 100);
+    const color = pct <= 10 ? '#C0432F' : pct <= 40 ? '#B5651D' : '#2C3E50';
+    return `<tr><td class="name-cell">${esc(r.sku)}</td><td class="muted">${esc(r.region)}</td><td class="muted num" style="white-space:nowrap">${r.used.toLocaleString()} / ${r.allocated.toLocaleString()}</td><td class="num" style="font-weight:600;color:${color}">${pct}%</td></tr>`;
+  }).join('') : '<tr class="empty-row"><td colspan="4">No stock records match the selected filters.</td></tr>';
+
+  document.getElementById('tbl-promoters').innerHTML = promoters.length ? promoters.map(r => {
+    const active = r.status === 'Active'; const bg = active ? '#EAF1EE' : '#F0EFEA', color = active ? '#2C3E50' : '#8A8676';
+    return `<tr><td class="name-cell">${esc(r.name)}</td><td class="muted">${esc(r.store)}</td><td><span class="badge" style="background:${bg};color:${color}">${esc(r.status)}</span></td></tr>`;
+  }).join('') : '<tr class="empty-row"><td colspan="3">No promoters match the selected filters.</td></tr>';
+
+  document.getElementById('tbl-managers').innerHTML = managers.length ? managers.map(r => {
+    const done = r.checkStatus === 'Completed'; const bg = done ? '#EAF1EE' : '#FDF1E4', color = done ? '#2C3E50' : '#B5651D';
+    return `<tr><td class="name-cell">${esc(r.name)}</td><td class="muted">${esc(r.stores)}</td><td><span class="badge" style="background:${bg};color:${color}">${esc(r.checkStatus)}</span></td></tr>`;
+  }).join('') : '<tr class="empty-row"><td colspan="3">No managers match the selected filters.</td></tr>';
+
+  document.getElementById('tbl-feedback').innerHTML = feedback.length ? feedback.map(r => {
+    const color = r.rating >= 4 ? '#2C3E50' : r.rating >= 3 ? '#B5651D' : '#C0432F';
+    return `<tr><td class="name-cell">${esc(r.store)}</td><td style="font-weight:600;color:${color};white-space:nowrap">${r.rating.toFixed(1)} ★</td><td class="muted" style="font-size:11px">${esc(r.comment)}</td></tr>`;
+  }).join('') : '<tr class="empty-row"><td colspan="3">No feedback matches the selected filters.</td></tr>';
+
+  document.getElementById('tbl-calls').innerHTML = storeCalls.length ? storeCalls.map(r => {
+    const sellIn = r.orderUnits * r.unitPrice;
+    const achColor = r.callsAchieved >= r.callsPlanned ? '#2C3E50' : (r.callsAchieved / r.callsPlanned >= 0.7 ? '#B5651D' : '#C0432F');
+    return `<tr><td class="name-cell">${esc(r.store)}</td><td class="muted">${esc(r.region)}</td><td class="muted">${esc(r.channel)}</td><td class="muted num">${r.callsPlanned}</td><td class="num" style="font-weight:600;color:${achColor}">${r.callsAchieved}</td><td class="muted num">${r.orderUnits}</td><td class="num" style="font-weight:600;color:#2C3E50">R${sellIn.toLocaleString('en-ZA')}</td></tr>`;
+  }).join('') : '<tr class="empty-row"><td colspan="7">No store call records match the selected filters.</td></tr>';
+
+  renderPills();
+}
+
+function renderPills() {
+  const regionBody = document.getElementById('pills-region');
+  regionBody.innerHTML = REGIONS.map(r => `<div class="pill ${r === state.region ? 'region-active' : ''}" data-region="${esc(r)}">${esc(r)}</div>`).join('');
+  const channelBody = document.getElementById('pills-channel');
+  channelBody.innerHTML = CHANNELS.map(c => `<div class="pill ${c === state.channel ? 'channel-active' : ''}" data-channel="${esc(c)}">${esc(c)}</div>`).join('');
+  regionBody.querySelectorAll('.pill').forEach(el => el.addEventListener('click', () => { state.region = el.dataset.region; render(); }));
+  channelBody.querySelectorAll('.pill').forEach(el => el.addEventListener('click', () => { state.channel = el.dataset.channel; render(); }));
+}
+
+document.querySelectorAll('.photo-slot').forEach(slot => {
+  slot.addEventListener('click', () => {
+    const input = document.createElement('input');
+    input.type = 'file'; input.accept = 'image/*';
+    input.onchange = () => {
+      const file = input.files[0];
+      if (!file) return;
+      const url = URL.createObjectURL(file);
+      slot.style.background = `url(${url}) center/cover no-repeat`;
+      slot.style.border = 'none';
+      slot.textContent = '';
+    };
+    input.click();
+  });
+});
+
+render();
+</script>
+</body>
+</html>

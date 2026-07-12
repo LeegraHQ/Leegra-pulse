@@ -15,6 +15,16 @@ const LEEGRA_ROLE_LABELS = {
   leegra_report_only: 'Report export only',
 };
 
+// Bespoke per-client report tools (static, unauthenticated, hosted under
+// public/reports/ — see /reports/<slug>/). Not every client has one yet.
+const CLIENT_REPORT_LINKS = {
+  'PH-201': '/reports/philips/',
+  'BRG-118': '/reports/bridgestone/',
+  'TWR-260': '/reports/tower/',
+  'HAT-009': '/reports/hatfield/',
+  'SUP-042': '/reports/supaquick/',
+};
+
 export default function App() {
   const [screen, setScreen] = useState('login'); // login | app | dashboard | superadmin
   const [session, setSession] = useState(null); // { token, role, client, isSuperAdmin }
@@ -282,6 +292,11 @@ export default function App() {
             <a href="#">Stores</a>
             <a href="#">Staff</a>
           </nav>
+          {CLIENT_REPORT_LINKS[client.code] && (
+            <a className="lp-tag lp-tag-outline" href={CLIENT_REPORT_LINKS[client.code]} target="_blank" rel="noreferrer">
+              View full report ↗
+            </a>
+          )}
           {session.isSuperAdmin ? (
             <button className="lp-tag lp-tag-outline" style={{ marginLeft: 'auto' }} onClick={() => setScreen('superadmin')}>All clients</button>
           ) : (
