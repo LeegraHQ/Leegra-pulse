@@ -24,7 +24,7 @@ function genericClient(code) {
   };
 }
 
-export async function login({ companyCode, email, password, role }) {
+export async function login({ companyCode, email, securityCode, role }) {
   if (USE_MOCK) {
     if (email.trim().toLowerCase() === SUPER_ADMIN_EMAIL) {
       return { token: 'mock-token', role: 'leegra_super_admin', email: email.trim().toLowerCase() };
@@ -35,7 +35,7 @@ export async function login({ companyCode, email, password, role }) {
   const res = await fetch(`${API_BASE}/auth-login`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ company_code: companyCode, email, password }),
+    body: JSON.stringify({ company_code: companyCode, email, security_code: securityCode }),
   });
   if (!res.ok) throw new Error('Invalid company code or credentials');
   return res.json(); // { token, role, client }

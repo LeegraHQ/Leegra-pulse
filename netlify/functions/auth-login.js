@@ -1,9 +1,11 @@
-// POST /api/auth-login  { company_code, email, password }
+// POST /api/auth-login  { company_code, email, security_code }
 // Resolves the tenant server-side from company_code — the frontend never
 // sends or trusts a tenant/client ID directly. Role and store access come
-// from whatever admin-users-assign has stored for this email, never from the
-// login request. Password isn't checked yet — there's no password storage
-// in this Blobs-backed setup; add real hashing once you're past the demo.
+// from whatever admin-users-assign has stored for this email, never from
+// the login request. security_code must match that exact user's own code
+// (set via admin-users-assign) — an email with no assignment at all, or the
+// wrong code, is rejected outright rather than falling back to some
+// default access.
 
 const { findTenantByCode, SUPER_ADMIN_EMAIL, TIER_TO_ROLE } = require('./_data');
 const jwt = require('./_lib/jwt');
@@ -14,8 +16,9 @@ exports.handler = async (event) => {
 
   let body;
   try { body = JSON.parse(event.body || '{}'); } catch { return { statusCode: 400, body: 'Invalid JSON' }; }
-  const { company_code, email } = body;
+  const { company_code, email, security_code } = body;
   const normalizedEmail = (email || '').trim().toLowerCase();
+  const submittedCode = (security_code || '').trim();
 
   if (normalizedEmail === SUPER_ADMIN_EMAIL) {
     const token = jwt.sign({ role: 'leegra_super_admin', email: normalizedEmail });
@@ -38,8 +41,11 @@ exports.handler = async (event) => {
 
   const users = await getUsers(tenant.code);
   const userRecord = users.find(u => u.email.toLowerCase() === normalizedEmail);
-  const role = userRecord?.role || 'field_rep';
-  const storeCodes = userRecord?.storeCodes || [];
+  if (!userRecord || !userRecord.securityCode || userRecord.securityCode !== submittedCode) {
+    return { statusCode: 401, body: JSON.stringify({ error: 'Invalid company code or credentials' }) };
+  }
+  const role = userRecord.role || 'field_rep';
+  const storeCodes = userRecord.storeCodes || [];
 
   const [stores, visits] = await Promise.all([getStores(tenant.code), getAllVisits(tenant.code)]);
   const dashboard = computeDashboard(stores, visits);

@@ -20,8 +20,9 @@ Reps no longer fill in a fixed 4-task checklist — each tenant defines its own 
 
 ## 4. Assigning users to stores
 1. `POST /api/admin-users-assign` with `{ email, role, store_codes: [...] }` for each staff member — `field_rep` should list only the stores that person covers; `client_manager`/`client_admin` don't need a list (they see the whole tenant).
-2. Re-running this for the same email updates their assignment — use it whenever a rep's route changes.
-3. This assignment list is exactly what scopes a rep's `/my/stores` view — nothing outside it is ever returned to their session.
+2. The response includes a generated 6-digit `securityCode` — that person needs it, along with their email and the client's company code, to actually log in. There's no other way in: an email with no assignment (or the wrong code) is rejected outright.
+3. Re-running this for the same email updates their assignment and keeps their existing code — pass an explicit `security_code` in the body to reset it instead.
+4. This assignment list is exactly what scopes a rep's `/my/stores` view — nothing outside it is ever returned to their session.
 
 ## 5. Backfilling the last 3 months of data
 1. Fill in `templates/visits-history-template.csv` from whatever system/spreadsheet you're tracking visits in today — one row per past visit.

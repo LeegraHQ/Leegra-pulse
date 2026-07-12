@@ -33,6 +33,7 @@ export default function App() {
   const [session, setSession] = useState(null); // { token, role, client, isSuperAdmin }
   const [companyCode, setCompanyCode] = useState('');
   const [email, setEmail] = useState('');
+  const [securityCode, setSecurityCode] = useState('');
   const [error, setError] = useState('');
   const [role, setRole] = useState('rep');
 
@@ -44,7 +45,7 @@ export default function App() {
   async function handleSignIn(e) {
     e.preventDefault();
     try {
-      const result = await login({ companyCode, email, password: '', role });
+      const result = await login({ companyCode, email, securityCode, role });
       if (LEEGRA_ROLES.includes(result.role)) {
         const { tenants } = await getDashboardSummary(result.token);
         setSession({ ...result, isSuperAdmin: true, tenants });
@@ -72,6 +73,7 @@ export default function App() {
     setScreen('login');
     setCompanyCode('');
     setEmail('');
+    setSecurityCode('');
   }
 
   async function handleToggleCheckin() {
@@ -142,6 +144,19 @@ export default function App() {
                 <option key={t.code} value={t.code}>{t.name} ({t.code})</option>
               ))}
             </select>
+          </label>
+
+          <label className="lp-field">
+            Security code
+            <input
+              className="lp-input"
+              type="password"
+              inputMode="numeric"
+              autoComplete="off"
+              placeholder="6-digit code"
+              value={securityCode}
+              onChange={e => { setSecurityCode(e.target.value); setError(''); }}
+            />
           </label>
 
           {error && <div className="lp-error">{error}</div>}
