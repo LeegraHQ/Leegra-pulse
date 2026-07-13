@@ -46,6 +46,7 @@ export default function App() {
   const [visitLogLoading, setVisitLogLoading] = useState(false);
   const [visitLogError, setVisitLogError] = useState('');
   const [clearTenantCode, setClearTenantCode] = useState('');
+  const [selectedStoreCode, setSelectedStoreCode] = useState('');
 
   async function handleSignIn(e) {
     e.preventDefault();
@@ -113,11 +114,13 @@ export default function App() {
     setCompanyCode('');
     setEmail('');
     setSecurityCode('');
+    setSelectedStoreCode('');
   }
 
   async function handleToggleCheckin() {
     if (!visit) {
-      const store = session.client.stores[0];
+      const stores = session.client.stores;
+      const store = stores.find(s => s.code === selectedStoreCode) || stores[0];
       const v = await checkIn(session.token, store.code);
       setVisit({ id: v.id, checkedInAt: new Date(v.checkin_at), questionnaire: v.questionnaire });
       setAnswers({});
@@ -332,7 +335,7 @@ export default function App() {
         </div>
       );
     }
-    const store = client.stores[0];
+    const store = client.stores.find(s => s.code === selectedStoreCode) || client.stores[0];
     return (
       <div className="lp-shell">
         <div className="lp-card" style={{ width: 380 }}>
@@ -341,14 +344,29 @@ export default function App() {
             <div className="lp-nav-brand">{client.name}</div>
             <button className="lp-tag lp-tag-outline" onClick={handleLogout}>Log out</button>
           </div>
-          <div className="lp-muted">{client.staffName} · Field rep</div>
+          <div className="lp-muted">{client.staffName} · Field rep · {client.repStoreCount} stores assigned</div>
 
-          <div className="lp-inner-card">
-            <div className="lp-kicker">Today · Stop 1 of {client.repStoreCount}</div>
-            <div className="lp-title">{store.name}</div>
-            <div className="lp-meta">{store.code} · {store.region}</div>
-            {visit && <span className="lp-tag lp-tag-accent2">Checked in {visit.checkedInAt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>}
-          </div>
+          {!visit ? (
+            <label className="lp-field">
+              Store
+              <select
+                className="lp-input"
+                value={store.code}
+                onChange={e => setSelectedStoreCode(e.target.value)}
+              >
+                {client.stores.map(s => (
+                  <option key={s.code} value={s.code}>{s.name} ({s.code}) · {s.region}</option>
+                ))}
+              </select>
+            </label>
+          ) : (
+            <div className="lp-inner-card">
+              <div className="lp-kicker">Checked in</div>
+              <div className="lp-title">{store.name}</div>
+              <div className="lp-meta">{store.code} · {store.region}</div>
+              <span className="lp-tag lp-tag-accent2">Checked in {visit.checkedInAt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+            </div>
+          )}
 
           {!visit && <button className="lp-btn lp-btn-primary lp-block" onClick={handleToggleCheckin}>Check in — verify GPS</button>}
 
