@@ -78,6 +78,11 @@ async function getLiveVisit(tenantCode, visitId) {
   return (await store.get(visitId, { type: 'json' })) || null;
 }
 
+async function deleteLiveVisit(tenantCode, visitId) {
+  const store = blobsStore(`visits-live-${tenantCode}`);
+  await store.delete(visitId);
+}
+
 // Visit photos — one blob per photo, keyed by a generated id, scoped per
 // tenant. Metadata carries the mime type so getPhoto can serve it back with
 // the right Content-Type.
@@ -94,6 +99,11 @@ async function getPhoto(tenantCode, photoId) {
   ]);
   if (!bytes) return null;
   return { bytes, mime: meta?.metadata?.mime || 'image/jpeg' };
+}
+
+async function deletePhoto(tenantCode, photoId) {
+  const store = blobsStore(`visit-photos-${tenantCode}`);
+  await store.delete(photoId);
 }
 
 async function getQuestionnaires(tenantCode) {
@@ -190,8 +200,8 @@ function computeDashboard(stores, visits) {
 
 module.exports = {
   blobsStore,
-  getStores, getUsers, getAllVisits, getImportedVisits, getLiveVisits, saveLiveVisit, getLiveVisit, computeDashboard,
+  getStores, getUsers, getAllVisits, getImportedVisits, getLiveVisits, saveLiveVisit, getLiveVisit, deleteLiveVisit, computeDashboard,
   getQuestionnaires, saveQuestionnaires, pickQuestionnaire,
   getStaff, saveStaff,
-  savePhoto, getPhoto,
+  savePhoto, getPhoto, deletePhoto,
 };

@@ -110,6 +110,17 @@ export async function getVisitLog(token) {
   return res.json();
 }
 
+export async function clearVisitHistory(token, tenantCode) {
+  const res = await fetch(`${API_BASE}/admin-visit-clear`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+    body: JSON.stringify({ tenant_code: tenantCode, all: true }),
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error || 'Could not clear visit history');
+  return data;
+}
+
 export async function downloadVisitLogExport(token, format) {
   const res = await fetch(`${API_BASE}/admin-visit-log?format=${format}`, { headers: { Authorization: `Bearer ${token}` } });
   if (!res.ok) throw new Error(`Could not export ${format}`);

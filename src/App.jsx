@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { login, getDashboardSummary, checkIn, checkOut, submitAnswer, uploadPhotoAnswer, getVisitLog, downloadVisitLogExport } from './api.js';
+import { login, getDashboardSummary, checkIn, checkOut, submitAnswer, uploadPhotoAnswer, getVisitLog, downloadVisitLogExport, clearVisitHistory } from './api.js';
 import { TRAINING_MATERIALS, TENANT_DIRECTORY } from './clients.js';
 import './theme.css';
 
@@ -45,6 +45,7 @@ export default function App() {
   const [visitLog, setVisitLog] = useState([]);
   const [visitLogLoading, setVisitLogLoading] = useState(false);
   const [visitLogError, setVisitLogError] = useState('');
+  const [clearTenantCode, setClearTenantCode] = useState('');
 
   async function handleSignIn(e) {
     e.preventDefault();
@@ -89,6 +90,18 @@ export default function App() {
   async function handleExportVisitLog(format) {
     try {
       await downloadVisitLogExport(session.token, format);
+    } catch (err) {
+      setVisitLogError(err.message);
+    }
+  }
+
+  async function handleClearVisitHistory(tenantCode) {
+    if (!tenantCode) return;
+    const tenantName = TENANT_DIRECTORY.find(t => t.code === tenantCode)?.name || tenantCode;
+    if (!window.confirm(`Delete ALL check-in history for ${tenantName}? This can't be undone.`)) return;
+    try {
+      await clearVisitHistory(session.token, tenantCode);
+      await handleOpenVisitLog();
     } catch (err) {
       setVisitLogError(err.message);
     }
@@ -238,9 +251,28 @@ export default function App() {
           </div>
           <div className="lp-muted" style={{ fontSize: 12 }}>Consolidated check-in/check-out log across every client.</div>
 
-          <div style={{ display: 'flex', gap: 8 }}>
+          <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
             <button className="lp-btn lp-btn-secondary" onClick={() => handleExportVisitLog('xlsx')}>Export Excel</button>
             <button className="lp-btn lp-btn-secondary" onClick={() => handleExportVisitLog('pdf')}>Export PDF</button>
+            <select
+              className="lp-input"
+              style={{ marginLeft: 'auto', width: 200 }}
+              value={clearTenantCode}
+              onChange={e => setClearTenantCode(e.target.value)}
+            >
+              <option value="">Clear history for…</option>
+              {TENANT_DIRECTORY.map(t => (
+                <option key={t.code} value={t.code}>{t.name} ({t.code})</option>
+              ))}
+            </select>
+            <button
+              className="lp-btn lp-btn-secondary"
+              style={{ color: 'var(--accent-300)' }}
+              disabled={!clearTenantCode}
+              onClick={() => handleClearVisitHistory(clearTenantCode)}
+            >
+              Clear
+            </button>
           </div>
 
           {visitLogError && <div className="lp-error">{visitLogError}</div>}
