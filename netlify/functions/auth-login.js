@@ -3,7 +3,8 @@
 // email is resolved server-side (see _lib/identity.js) and the one-time
 // code from auth-request-code.js is checked here. There's no separate
 // password/company-code field: possession of the emailed code plus that
-// exact email is the whole login.
+// exact email is the whole login. One exception: TEST_REP_EMAIL, which
+// logs in with a fixed TEST_REP_PERMANENT_CODE instead (see below).
 
 const { TIER_TO_ROLE } = require('./_data');
 const jwt = require('./_lib/jwt');
@@ -21,11 +22,21 @@ exports.handler = async (event) => {
     return { statusCode: 401, body: JSON.stringify({ error: 'Invalid or expired code' }) };
   }
 
-  const otp = await getOtp(normalizedEmail);
-  if (!otp || otp.code !== submittedCode || Date.now() > otp.expiresAt) {
-    return { statusCode: 401, body: JSON.stringify({ error: 'Invalid or expired code' }) };
+  // One test/demo account (set via env, not hardcoded) can use a fixed code
+  // instead of an emailed one-time code, so it doesn't need email access
+  // during live demos. Every other login still requires the emailed OTP.
+  const isTestRepLogin = process.env.TEST_REP_EMAIL
+    && process.env.TEST_REP_PERMANENT_CODE
+    && normalizedEmail === process.env.TEST_REP_EMAIL.trim().toLowerCase()
+    && submittedCode === process.env.TEST_REP_PERMANENT_CODE;
+
+  if (!isTestRepLogin) {
+    const otp = await getOtp(normalizedEmail);
+    if (!otp || otp.code !== submittedCode || Date.now() > otp.expiresAt) {
+      return { statusCode: 401, body: JSON.stringify({ error: 'Invalid or expired code' }) };
+    }
+    await clearOtp(normalizedEmail); // one-time use
   }
-  await clearOtp(normalizedEmail); // one-time use
 
   const identity = await resolveIdentityByEmail(normalizedEmail);
   if (!identity) {
