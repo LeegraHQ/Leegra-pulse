@@ -39,6 +39,35 @@ async function saveStaff(list) {
   await store.setJSON('list', list);
 }
 
+// One-time login codes — global, keyed by normalized email, short-lived.
+async function saveOtp(email, code, expiresAt) {
+  const store = blobsStore('login-otp');
+  await store.setJSON(email, { code, expiresAt });
+}
+
+async function getOtp(email) {
+  const store = blobsStore('login-otp');
+  return (await store.get(email, { type: 'json' })) || null;
+}
+
+async function clearOtp(email) {
+  const store = blobsStore('login-otp');
+  await store.delete(email);
+}
+
+// Per-tenant feature flags (e.g. whether Leegra Learning shows up for that
+// client) — separate from the static TENANTS identity data in _data.js so
+// it can be toggled without a redeploy.
+async function getTenantSettings(tenantCode) {
+  const store = blobsStore('tenant-settings');
+  return (await store.get(tenantCode, { type: 'json' })) || {};
+}
+
+async function saveTenantSettings(tenantCode, settings) {
+  const store = blobsStore('tenant-settings');
+  await store.setJSON(tenantCode, settings);
+}
+
 async function getImportedVisits(tenantCode) {
   const store = blobsStore(`visits-history-${tenantCode}`);
   const { blobs } = await store.list();
@@ -204,4 +233,6 @@ module.exports = {
   getQuestionnaires, saveQuestionnaires, pickQuestionnaire,
   getStaff, saveStaff,
   savePhoto, getPhoto, deletePhoto,
+  saveOtp, getOtp, clearOtp,
+  getTenantSettings, saveTenantSettings,
 };

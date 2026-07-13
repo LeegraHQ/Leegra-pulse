@@ -8,7 +8,7 @@
 
 const jwt = require('./_lib/jwt');
 const { TENANTS, findTenantByCode, LEEGRA_ROLES } = require('./_data');
-const { getStores, getAllVisits, computeDashboard } = require('./_lib/records');
+const { getStores, getAllVisits, computeDashboard, getTenantSettings } = require('./_lib/records');
 
 async function tenantDashboard(tenant) {
   const [stores, visits] = await Promise.all([getStores(tenant.code), getAllVisits(tenant.code)]);
@@ -24,8 +24,15 @@ exports.handler = async (event) => {
     if (tenantCode) {
       const tenant = findTenantByCode(tenantCode);
       if (!tenant) return { statusCode: 404, body: JSON.stringify({ error: 'Unknown tenant' }) };
-      const dashboard = await tenantDashboard(tenant);
-      return { statusCode: 200, body: JSON.stringify({ code: tenant.code, name: tenant.name, logo: tenant.logoUrl, ...dashboard }) };
+      const [dashboard, settings] = await Promise.all([tenantDashboard(tenant), getTenantSettings(tenant.code)]);
+      return {
+        statusCode: 200,
+        body: JSON.stringify({
+          code: tenant.code, name: tenant.name, logo: tenant.logoUrl,
+          learningEnabled: settings.learningEnabled !== false,
+          ...dashboard,
+        }),
+      };
     }
 
     const tenants = await Promise.all(TENANTS.map(async t => {

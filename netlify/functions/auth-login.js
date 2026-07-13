@@ -1,53 +1,57 @@
-// POST /api/auth-login  { company_code, email, security_code }
-// Resolves the tenant server-side from company_code — the frontend never
-// sends or trusts a tenant/client ID directly. Role and store access come
-// from whatever admin-users-assign has stored for this email, never from
-// the login request. security_code must match that exact user's own code
-// (set via admin-users-assign) — an email with no assignment at all, or the
-// wrong code, is rejected outright rather than falling back to some
-// default access.
+// POST /api/auth-login  { email, code }
+// The client never says which company or role it's logging into — the
+// email is resolved server-side (see _lib/identity.js) and the one-time
+// code from auth-request-code.js is checked here. There's no separate
+// password/company-code field: possession of the emailed code plus that
+// exact email is the whole login.
 
-const { findTenantByCode, SUPER_ADMIN_EMAIL, TIER_TO_ROLE } = require('./_data');
+const { TIER_TO_ROLE } = require('./_data');
 const jwt = require('./_lib/jwt');
-const { getStores, getUsers, getAllVisits, computeDashboard, getStaff } = require('./_lib/records');
+const { resolveIdentityByEmail } = require('./_lib/identity');
+const { getOtp, clearOtp, getStores, getAllVisits, computeDashboard, getTenantSettings } = require('./_lib/records');
 
 exports.handler = async (event) => {
   if (event.httpMethod !== 'POST') return { statusCode: 405, body: 'Method not allowed' };
 
   let body;
   try { body = JSON.parse(event.body || '{}'); } catch { return { statusCode: 400, body: 'Invalid JSON' }; }
-  const { company_code, email, security_code } = body;
-  const normalizedEmail = (email || '').trim().toLowerCase();
-  const submittedCode = (security_code || '').trim();
+  const normalizedEmail = (body.email || '').trim().toLowerCase();
+  const submittedCode = (body.code || '').trim();
+  if (!normalizedEmail || !submittedCode) {
+    return { statusCode: 401, body: JSON.stringify({ error: 'Invalid or expired code' }) };
+  }
 
-  if (normalizedEmail === SUPER_ADMIN_EMAIL) {
+  const otp = await getOtp(normalizedEmail);
+  if (!otp || otp.code !== submittedCode || Date.now() > otp.expiresAt) {
+    return { statusCode: 401, body: JSON.stringify({ error: 'Invalid or expired code' }) };
+  }
+  await clearOtp(normalizedEmail); // one-time use
+
+  const identity = await resolveIdentityByEmail(normalizedEmail);
+  if (!identity) {
+    return { statusCode: 401, body: JSON.stringify({ error: 'Invalid or expired code' }) };
+  }
+
+  if (identity.kind === 'super_admin') {
     const token = jwt.sign({ role: 'leegra_super_admin', email: normalizedEmail });
     return { statusCode: 200, body: JSON.stringify({ token, role: 'leegra_super_admin', email: normalizedEmail }) };
   }
 
-  const staff = await getStaff();
-  const staffRecord = staff.find(s => s.email === normalizedEmail);
-  if (staffRecord) {
-    const role = TIER_TO_ROLE[staffRecord.tier] || 'leegra_report_only';
+  if (identity.kind === 'staff') {
+    const role = TIER_TO_ROLE[identity.staffRecord.tier] || 'leegra_report_only';
     const token = jwt.sign({ role, email: normalizedEmail });
     return { statusCode: 200, body: JSON.stringify({ token, role, email: normalizedEmail }) };
   }
 
-  const tenant = findTenantByCode(company_code);
-  if (!tenant) {
-    // Generic error — never reveal whether the code or the password was wrong.
-    return { statusCode: 401, body: JSON.stringify({ error: 'Invalid company code or credentials' }) };
-  }
-
-  const users = await getUsers(tenant.code);
-  const userRecord = users.find(u => u.email.toLowerCase() === normalizedEmail);
-  if (!userRecord || !userRecord.securityCode || userRecord.securityCode !== submittedCode) {
-    return { statusCode: 401, body: JSON.stringify({ error: 'Invalid company code or credentials' }) };
-  }
+  const { tenant, userRecord } = identity;
   const role = userRecord.role || 'field_rep';
   const storeCodes = userRecord.storeCodes || [];
 
-  const [stores, visits] = await Promise.all([getStores(tenant.code), getAllVisits(tenant.code)]);
+  const [stores, visits, settings] = await Promise.all([
+    getStores(tenant.code),
+    getAllVisits(tenant.code),
+    getTenantSettings(tenant.code),
+  ]);
   const dashboard = computeDashboard(stores, visits);
   const visibleStores = role === 'field_rep'
     ? dashboard.stores.filter(s => storeCodes.includes(s.code))
@@ -73,6 +77,7 @@ exports.handler = async (event) => {
         oosIssues: dashboard.oosIssues,
         stores: visibleStores,
         leaderboard: dashboard.leaderboard,
+        learningEnabled: settings.learningEnabled !== false,
       },
     }),
   };

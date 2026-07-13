@@ -24,21 +24,36 @@ function genericClient(code) {
   };
 }
 
-export async function login({ companyCode, email, securityCode, role }) {
+export async function requestLoginCode(email) {
+  if (USE_MOCK) return { ok: true };
+  const res = await fetch(`${API_BASE}/auth-request-code`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email }),
+  });
+  if (!res.ok) throw new Error('Could not send login code — try again in a moment.');
+  return res.json();
+}
+
+export async function login({ email, code }) {
   if (USE_MOCK) {
-    if (email.trim().toLowerCase() === SUPER_ADMIN_EMAIL) {
-      return { token: 'mock-token', role: 'leegra_super_admin', email: email.trim().toLowerCase() };
+    const normalized = email.trim().toLowerCase();
+    if (normalized === SUPER_ADMIN_EMAIL) {
+      return { token: 'mock-token', role: 'leegra_super_admin', email: normalized };
     }
-    const client = CLIENTS.find(c => c.code.toLowerCase() === companyCode.trim().toLowerCase()) || genericClient(companyCode);
-    return { token: 'mock-token', role: role === 'rep' ? 'field_rep' : 'client_admin', client };
+    // Standalone mode has no real identity lookup — match by the mock
+    // client's own staff email, or fall back to a generic demo client.
+    const client = CLIENTS.find(c => c.staffEmail?.toLowerCase() === normalized) || genericClient('DEMO');
+    return { token: 'mock-token', role: 'field_rep', client };
   }
   const res = await fetch(`${API_BASE}/auth-login`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ company_code: companyCode, email, security_code: securityCode }),
+    body: JSON.stringify({ email, code }),
   });
-  if (!res.ok) throw new Error('Invalid company code or credentials');
-  return res.json(); // { token, role, client }
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error || 'Invalid or expired code');
+  return data; // { token, role, client }
 }
 
 export async function getDashboardSummary(token, tenantCode) {

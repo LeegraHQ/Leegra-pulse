@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { login, getDashboardSummary, checkIn, checkOut, submitAnswer, uploadPhotoAnswer, getVisitLog, downloadVisitLogExport, clearVisitHistory } from './api.js';
+import { login, requestLoginCode, getDashboardSummary, checkIn, checkOut, submitAnswer, uploadPhotoAnswer, getVisitLog, downloadVisitLogExport, clearVisitHistory } from './api.js';
 import { TRAINING_MATERIALS, TENANT_DIRECTORY } from './clients.js';
 import './theme.css';
 
@@ -31,11 +31,11 @@ const CLIENT_REPORT_LINKS = {
 export default function App() {
   const [screen, setScreen] = useState('login'); // login | app | dashboard | superadmin
   const [session, setSession] = useState(null); // { token, role, client, isSuperAdmin }
-  const [companyCode, setCompanyCode] = useState('');
   const [email, setEmail] = useState('');
-  const [securityCode, setSecurityCode] = useState('');
+  const [otpSent, setOtpSent] = useState(false);
+  const [otpCode, setOtpCode] = useState('');
   const [error, setError] = useState('');
-  const [role, setRole] = useState('rep');
+  const [sendingCode, setSendingCode] = useState(false);
 
   const [visit, setVisit] = useState(null); // { id, checkedInAt, questionnaire: { id, name, questions } }
   const [answers, setAnswers] = useState({}); // { [questionId]: answer }
@@ -48,10 +48,25 @@ export default function App() {
   const [clearTenantCode, setClearTenantCode] = useState('');
   const [selectedStoreCode, setSelectedStoreCode] = useState('');
 
+  async function handleRequestCode(e) {
+    e.preventDefault();
+    if (!email.trim()) return;
+    setSendingCode(true);
+    setError('');
+    try {
+      await requestLoginCode(email);
+      setOtpSent(true);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setSendingCode(false);
+    }
+  }
+
   async function handleSignIn(e) {
     e.preventDefault();
     try {
-      const result = await login({ companyCode, email, securityCode, role });
+      const result = await login({ email, code: otpCode });
       if (LEEGRA_ROLES.includes(result.role)) {
         const { tenants } = await getDashboardSummary(result.token);
         setSession({ ...result, isSuperAdmin: true, tenants });
@@ -111,9 +126,9 @@ export default function App() {
   function handleLogout() {
     setSession(null);
     setScreen('login');
-    setCompanyCode('');
     setEmail('');
-    setSecurityCode('');
+    setOtpSent(false);
+    setOtpCode('');
     setSelectedStoreCode('');
   }
 
@@ -155,7 +170,8 @@ export default function App() {
   if (screen === 'login') {
     return (
       <div className="lp-shell">
-        <form className="lp-card" style={{ width: 360 }} onSubmit={handleSignIn}>
+        <form className="lp-card" style={{ width: 360 }} onSubmit={otpSent ? handleSignIn : handleRequestCode}>
+          <img src="/logos/leegra-logo.png" alt="Leegra" height={28} style={{ alignSelf: 'flex-start' }} />
           <div className="lp-brand">Leegra Pulse</div>
           <div className="lp-slogan">Heartbeat of execution</div>
 
@@ -165,53 +181,49 @@ export default function App() {
               className="lp-input"
               placeholder="name@company.co.za"
               value={email}
+              disabled={otpSent}
               onChange={e => { setEmail(e.target.value); setError(''); }}
             />
           </label>
 
-          <div className="lp-seg">
-            <label className={role === 'rep' ? 'lp-seg-opt active' : 'lp-seg-opt'}>
-              <input type="radio" name="role" checked={role === 'rep'} onChange={() => { setRole('rep'); setCompanyCode(''); setError(''); }} />
-              Field rep
+          {otpSent && (
+            <label className="lp-field">
+              Code
+              <input
+                className="lp-input"
+                inputMode="numeric"
+                autoComplete="off"
+                placeholder="6-digit code from your email"
+                value={otpCode}
+                onChange={e => { setOtpCode(e.target.value); setError(''); }}
+                autoFocus
+              />
             </label>
-            <label className={role === 'manager' ? 'lp-seg-opt active' : 'lp-seg-opt'}>
-              <input type="radio" name="role" checked={role === 'manager'} onChange={() => { setRole('manager'); setCompanyCode(''); setError(''); }} />
-              Manager / Admin
-            </label>
-          </div>
-
-          <label className="lp-field">
-            Client
-            <select
-              className="lp-input"
-              value={companyCode}
-              onChange={e => { setCompanyCode(e.target.value); setError(''); }}
-            >
-              <option value="" disabled>Select a client…</option>
-              {TENANT_DIRECTORY.map(t => (
-                <option key={t.code} value={t.code}>{t.name} ({t.code})</option>
-              ))}
-            </select>
-          </label>
-
-          <label className="lp-field">
-            Security code
-            <input
-              className="lp-input"
-              type="password"
-              inputMode="numeric"
-              autoComplete="off"
-              placeholder="6-digit code"
-              value={securityCode}
-              onChange={e => { setSecurityCode(e.target.value); setError(''); }}
-            />
-          </label>
+          )}
 
           {error && <div className="lp-error">{error}</div>}
-          <div className="lp-muted" style={{ fontSize: 11 }}>Don't see your client listed? Contact your Leegra account manager.</div>
 
-          <button className="lp-btn lp-btn-primary lp-block" type="submit">Sign in</button>
-          <div className="lp-muted" style={{ textAlign: 'center', fontSize: 11 }}>Isolated per client — your login only ever sees your own client's data.</div>
+          {!otpSent ? (
+            <>
+              <button className="lp-btn lp-btn-primary lp-block" type="submit" disabled={sendingCode}>
+                {sendingCode ? 'Sending…' : 'Send login code'}
+              </button>
+              <div className="lp-muted" style={{ textAlign: 'center', fontSize: 11 }}>
+                We'll email a one-time code to sign in — no need to remember your client or a code.
+              </div>
+            </>
+          ) : (
+            <>
+              <button className="lp-btn lp-btn-primary lp-block" type="submit">Sign in</button>
+              <button
+                className="lp-btn lp-btn-secondary lp-block"
+                type="button"
+                onClick={() => { setOtpSent(false); setOtpCode(''); setError(''); }}
+              >
+                Use a different email
+              </button>
+            </>
+          )}
         </form>
       </div>
     );
@@ -222,6 +234,7 @@ export default function App() {
       <div className="lp-shell">
         <div className="lp-card" style={{ width: 820 }}>
           <div className="lp-nav">
+            <img src="/logos/leegra-logo.png" alt="Leegra" height={20} />
             <div className="lp-nav-brand">Leegra Pulse · {LEEGRA_ROLE_LABELS[session.role] || 'Super admin'}</div>
             <div className="lp-tag lp-tag-accent">{session.email}</div>
             <button className="lp-tag lp-tag-outline" style={{ marginLeft: 'auto' }} onClick={handleOpenVisitLog}>Visit Log</button>
@@ -247,6 +260,7 @@ export default function App() {
       <div className="lp-shell">
         <div className="lp-card" style={{ width: 980 }}>
           <div className="lp-nav">
+            <img src="/logos/leegra-logo.png" alt="Leegra" height={20} />
             <div className="lp-nav-brand">Leegra Pulse · Visit Log</div>
             <div className="lp-tag lp-tag-accent">{session.email}</div>
             <button className="lp-tag lp-tag-outline" style={{ marginLeft: 'auto' }} onClick={() => setScreen('superadmin')}>All clients</button>
@@ -328,6 +342,7 @@ export default function App() {
             <div className="lp-nav">
               {client.logo && <img src={client.logo} alt={client.name} height={22} />}
               <div className="lp-nav-brand">{client.name}</div>
+              <img src="/logos/leegra-logo.png" alt="Leegra" height={18} style={{ marginLeft: 'auto' }} />
               <button className="lp-tag lp-tag-outline" onClick={handleLogout}>Log out</button>
             </div>
             <div className="lp-muted">No stores have been assigned to you yet — check with your manager.</div>
@@ -342,6 +357,7 @@ export default function App() {
           <div className="lp-nav">
             {client.logo && <img src={client.logo} alt={client.name} height={22} />}
             <div className="lp-nav-brand">{client.name}</div>
+            <img src="/logos/leegra-logo.png" alt="Leegra" height={18} style={{ marginLeft: 'auto' }} />
             <button className="lp-tag lp-tag-outline" onClick={handleLogout}>Log out</button>
           </div>
           <div className="lp-muted">{client.staffName} · Field rep · {client.repStoreCount} stores assigned</div>
@@ -438,18 +454,20 @@ export default function App() {
             </>
           )}
 
-          <div>
-            <div className="lp-label">Leegra Learning</div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-              {TRAINING_MATERIALS.map(m => (
-                <div key={m.id} className="lp-row-card" onClick={() => handleToggleTraining(m.id)}>
-                  <span className="lp-dot" style={{ background: training[m.id] ? 'var(--accent-2-400)' : 'var(--neutral-500)' }} />
-                  <div style={{ flex: 1, fontSize: 13 }}>{m.title}</div>
-                  <div className={training[m.id] ? 'lp-tag lp-tag-accent2' : 'lp-tag lp-tag-neutral'}>{training[m.id] ? 'Completed' : 'Not started'}</div>
-                </div>
-              ))}
+          {client.learningEnabled !== false && (
+            <div>
+              <div className="lp-label">Leegra Learning</div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                {TRAINING_MATERIALS.map(m => (
+                  <div key={m.id} className="lp-row-card" onClick={() => handleToggleTraining(m.id)}>
+                    <span className="lp-dot" style={{ background: training[m.id] ? 'var(--accent-2-400)' : 'var(--neutral-500)' }} />
+                    <div style={{ flex: 1, fontSize: 13 }}>{m.title}</div>
+                    <div className={training[m.id] ? 'lp-tag lp-tag-accent2' : 'lp-tag lp-tag-neutral'}>{training[m.id] ? 'Completed' : 'Not started'}</div>
+                  </div>
+                ))}
+              </div>
             </div>
-          </div>
+          )}
         </div>
       </div>
     );
@@ -460,6 +478,7 @@ export default function App() {
     <div className="lp-shell">
       <div className="lp-card" style={{ width: 860 }}>
         <div className="lp-nav">
+          <img src="/logos/leegra-logo.png" alt="Leegra" height={20} />
           <div className="lp-nav-brand">Leegra Pulse</div>
           {client.logo && <img src={client.logo} alt={client.name} height={20} />}
           <div className="lp-tag lp-tag-accent">Client: {client.name}</div>
@@ -512,21 +531,23 @@ export default function App() {
           </div>
         </div>
 
-        <div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
-            <div className="lp-label" style={{ marginBottom: 0 }}>Leegra Learning — training material</div>
-            <button className="lp-btn" style={{ marginLeft: 'auto', fontSize: 12, color: 'var(--accent)' }}>+ Upload material</button>
+        {client.learningEnabled !== false && (
+          <div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+              <div className="lp-label" style={{ marginBottom: 0 }}>Leegra Learning — training material</div>
+              <button className="lp-btn" style={{ marginLeft: 'auto', fontSize: 12, color: 'var(--accent)' }}>+ Upload material</button>
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8 }}>
+              {TRAINING_MATERIALS.map(m => (
+                <div key={m.id} className="lp-inner-card">
+                  <div className="lp-title" style={{ fontSize: 14 }}>{m.title}</div>
+                  <div className="lp-meta">{m.type} · {m.meta}</div>
+                  <div className="lp-tag lp-tag-accent2">Assigned to all reps</div>
+                </div>
+              ))}
+            </div>
           </div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8 }}>
-            {TRAINING_MATERIALS.map(m => (
-              <div key={m.id} className="lp-inner-card">
-                <div className="lp-title" style={{ fontSize: 14 }}>{m.title}</div>
-                <div className="lp-meta">{m.type} · {m.meta}</div>
-                <div className="lp-tag lp-tag-accent2">Assigned to all reps</div>
-              </div>
-            ))}
-          </div>
-        </div>
+        )}
 
         <div className="lp-muted" style={{ fontSize: 11 }}>Visible to {client.name} only — other clients' data is not queryable from this session.</div>
       </div>
