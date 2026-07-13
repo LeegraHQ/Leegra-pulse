@@ -36,6 +36,7 @@ export default function App() {
   const [otpCode, setOtpCode] = useState('');
   const [error, setError] = useState('');
   const [sendingCode, setSendingCode] = useState(false);
+  const [tenantChoices, setTenantChoices] = useState(null); // set only for the shared demo account (assigned to multiple tenants)
 
   const [visit, setVisit] = useState(null); // { id, checkedInAt, questionnaire: { id, name, questions } }
   const [answers, setAnswers] = useState({}); // { [questionId]: answer }
@@ -63,10 +64,15 @@ export default function App() {
     }
   }
 
-  async function handleSignIn(e) {
-    e.preventDefault();
+  async function handleSignIn(e, tenantCode) {
+    if (e) e.preventDefault();
     try {
-      const result = await login({ email, code: otpCode });
+      const result = await login({ email, code: otpCode, tenantCode });
+      if (result.needsTenantChoice) {
+        setTenantChoices(result.tenants);
+        setError('');
+        return;
+      }
       if (LEEGRA_ROLES.includes(result.role)) {
         const { tenants } = await getDashboardSummary(result.token);
         setSession({ ...result, isSuperAdmin: true, tenants });
@@ -75,6 +81,7 @@ export default function App() {
         setSession({ ...result, isSuperAdmin: false });
         setScreen(result.role === 'field_rep' ? 'app' : 'dashboard');
       }
+      setTenantChoices(null);
       setError('');
       setVisit(null);
       setAnswers({});
@@ -130,6 +137,7 @@ export default function App() {
     setOtpSent(false);
     setOtpCode('');
     setSelectedStoreCode('');
+    setTenantChoices(null);
   }
 
   async function handleToggleCheckin() {
@@ -165,6 +173,39 @@ export default function App() {
 
   function handleToggleTraining(id) {
     setTraining(t => ({ ...t, [id]: !t[id] }));
+  }
+
+  if (screen === 'login' && tenantChoices) {
+    return (
+      <div className="lp-shell">
+        <div className="lp-card" style={{ width: 360 }}>
+          <img src="/logos/leegra-logo.png" alt="Leegra" height={28} style={{ alignSelf: 'flex-start' }} />
+          <div className="lp-brand">Leegra Pulse</div>
+          <div className="lp-slogan">Choose which client to enter</div>
+
+          {error && <div className="lp-error">{error}</div>}
+
+          {tenantChoices.map(t => (
+            <button
+              key={t.code}
+              className="lp-btn lp-btn-secondary lp-block"
+              type="button"
+              onClick={() => handleSignIn(null, t.code)}
+            >
+              {t.name}
+            </button>
+          ))}
+
+          <button
+            className="lp-btn lp-btn-secondary lp-block"
+            type="button"
+            onClick={() => { setTenantChoices(null); setOtpSent(false); setOtpCode(''); setError(''); }}
+          >
+            Use a different email
+          </button>
+        </div>
+      </div>
+    );
   }
 
   if (screen === 'login') {

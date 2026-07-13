@@ -1,10 +1,14 @@
-// POST /api/auth-login  { email, code }
+// POST /api/auth-login  { email, code, tenant_code? }
 // The client never says which company or role it's logging into — the
 // email is resolved server-side (see _lib/identity.js) and the one-time
 // code from auth-request-code.js is checked here. There's no separate
 // password/company-code field: possession of the emailed code plus that
 // exact email is the whole login. One exception: TEST_REP_EMAIL, which
-// logs in with a fixed TEST_REP_PERMANENT_CODE instead (see below).
+// logs in with a fixed TEST_REP_PERMANENT_CODE instead (see below), and
+// which admin-users-assign can attach to every tenant for demos — for that
+// one account only, identity resolves to 'multi_tenant_user' and this
+// returns { needsTenantChoice: true, tenants: [...] } until the caller
+// resubmits with tenant_code set to one of them.
 
 const { TIER_TO_ROLE } = require('./_data');
 const jwt = require('./_lib/jwt');
@@ -18,6 +22,7 @@ exports.handler = async (event) => {
   try { body = JSON.parse(event.body || '{}'); } catch { return { statusCode: 400, body: 'Invalid JSON' }; }
   const normalizedEmail = (body.email || '').trim().toLowerCase();
   const submittedCode = (body.code || '').trim();
+  const tenantCodeChoice = (body.tenant_code || '').trim().toUpperCase();
   if (!normalizedEmail || !submittedCode) {
     return { statusCode: 401, body: JSON.stringify({ error: 'Invalid or expired code' }) };
   }
@@ -52,6 +57,24 @@ exports.handler = async (event) => {
     const role = TIER_TO_ROLE[identity.staffRecord.tier] || 'leegra_report_only';
     const token = jwt.sign({ role, email: normalizedEmail });
     return { statusCode: 200, body: JSON.stringify({ token, role, email: normalizedEmail }) };
+  }
+
+  if (identity.kind === 'multi_tenant_user') {
+    if (!tenantCodeChoice) {
+      return {
+        statusCode: 200,
+        body: JSON.stringify({
+          needsTenantChoice: true,
+          tenants: identity.matches.map(m => ({ code: m.tenant.code, name: m.tenant.name, logo: m.tenant.logoUrl })),
+        }),
+      };
+    }
+    const chosen = identity.matches.find(m => m.tenant.code === tenantCodeChoice);
+    if (!chosen) {
+      return { statusCode: 400, body: JSON.stringify({ error: 'Not assigned to that client' }) };
+    }
+    identity.tenant = chosen.tenant;
+    identity.userRecord = chosen.userRecord;
   }
 
   const { tenant, userRecord } = identity;

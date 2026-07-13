@@ -35,7 +35,7 @@ export async function requestLoginCode(email) {
   return res.json();
 }
 
-export async function login({ email, code }) {
+export async function login({ email, code, tenantCode }) {
   if (USE_MOCK) {
     const normalized = email.trim().toLowerCase();
     if (normalized === SUPER_ADMIN_EMAIL) {
@@ -49,11 +49,11 @@ export async function login({ email, code }) {
   const res = await fetch(`${API_BASE}/auth-login`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ email, code }),
+    body: JSON.stringify({ email, code, tenant_code: tenantCode }),
   });
   const data = await res.json();
   if (!res.ok) throw new Error(data.error || 'Invalid or expired code');
-  return data; // { token, role, client }
+  return data; // { token, role, client } or { needsTenantChoice, tenants }
 }
 
 export async function getDashboardSummary(token, tenantCode) {
