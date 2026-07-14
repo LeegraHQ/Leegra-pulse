@@ -553,19 +553,34 @@ export default function App() {
             <table className="lp-table">
               <thead><tr><th>Store</th><th>Region</th><th>Last visit</th><th>Status</th></tr></thead>
               <tbody>
-                {client.stores.map(s => (
-                  <tr key={s.code}><td>{s.name}</td><td>{s.region}</td><td>{s.lastVisit}</td><td><span className="lp-tag lp-tag-outline">{s.status}</span></td></tr>
-                ))}
+                {client.stores.map(s => {
+                  const statusColor = s.status === 'Pending' ? '#e2a336' : s.status === 'Overdue' ? '#e2544a' : undefined;
+                  return (
+                    <tr key={s.code}>
+                      <td>{s.name}</td>
+                      <td>{s.region}</td>
+                      <td>{s.lastVisit}</td>
+                      <td>
+                        <span
+                          className="lp-tag lp-tag-outline"
+                          style={statusColor ? { color: statusColor, borderColor: statusColor } : undefined}
+                        >
+                          {s.status}
+                        </span>
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>
           <div>
-            <div className="lp-label">Staff leaderboard</div>
+            <div className="lp-label">Staff leaderboard — visit compliance</div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
               {client.leaderboard.map(row => (
                 <div key={row.rank} className="lp-row-card">
                   <div style={{ flex: 1, fontSize: 13 }}>{row.rank} · {row.name}</div>
-                  <div className="lp-tag lp-tag-accent">{row.score}</div>
+                  <div className="lp-tag lp-tag-accent">{row.score} compliance</div>
                 </div>
               ))}
             </div>

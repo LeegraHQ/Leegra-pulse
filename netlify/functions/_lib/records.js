@@ -177,8 +177,8 @@ function humanizeLastVisit(days) {
 
 function statusFor(days) {
   if (days === null) return 'Not yet visited';
-  if (days <= 3) return 'On track';
-  if (days <= 6) return 'Due';
+  if (days <= 14) return 'On track';
+  if (days <= 21) return 'Pending';
   return 'Overdue';
 }
 
