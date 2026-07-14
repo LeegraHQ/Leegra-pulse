@@ -23,7 +23,7 @@
 <div class="card" style="margin-bottom:16px"><div class="section-title"><h2>Detailed Dashboard Filters</h2><span class="small">Filters are created from every Excel heading</span></div><div class="searchbar"><input id="globalSearch" placeholder="Search across all columns, stores, regions, brands, warranty, POSM, comments..." oninput="applyFilters()"><button class="btn dark" onclick="toggleFilters()">Show / Hide Filters</button></div><div id="filters" class="filters"></div></div>
 <div class="grid" style="margin-bottom:16px"><div class="card"><div class="section-title"><h2>Executive Summary</h2><span id="summaryMeta" class="small"></span></div><div id="summary" class="summary"></div></div><div class="card"><div class="section-title"><h2>Performance Score</h2><span class="small">Average of each 1-5 condition/score field, raw scale as captured</span></div><div id="scoreBars"></div></div></div>
 <div class="grid3" style="margin-bottom:16px"><div class="card"><div class="section-title"><h2>Brand Recommended</h2></div><div id="brandChart"></div></div><div class="card"><div class="section-title"><h2>Region / Province</h2></div><div id="regionChart"></div></div><div class="card"><div class="section-title"><h2>Store Ranking</h2></div><div id="storeRanking"></div></div></div>
-<div class="card" style="margin-bottom:16px"><div class="section-title"><h2>Store Photos &amp; Videos</h2><span class="small">Field evidence from recent store visits</span></div><div class="media-grid" id="mediaGrid"></div></div>
+<div class="card" style="margin-bottom:16px"><div class="section-title"><h2>Store Media</h2><span class="small">Field evidence from recent store visits</span></div><div class="tabs" id="mediaTabs" style="margin-bottom:14px"></div><div class="media-grid" id="mediaGrid"></div></div>
 <div class="card"><div class="section-title"><h2>Granular Drill-Down Table</h2><span id="rowCount" class="small"></span></div><div class="table-wrap"><table id="dataTable"></table></div></div></div>
 <div class="lightbox" id="lightbox" onclick="this.classList.remove('open')"><img id="lightboxImg" src=""></div>
 <script>
@@ -61,32 +61,49 @@ function exportPDF(){window.print()}
 function escapeHtml(s){return clean(s).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
 function jsEsc(s){return String(s).replace(/\\/g,'\\\\').replace(/'/g,"\\'")}
 
-// Demo store evidence — not yet linked to a specific store/feedback row;
-// that association is a planned next step, this is just the media itself.
-const MEDIA_ITEMS = [
-  { type: 'photo', src: 'media/sq-klerksdorp-1.jpg', caption: 'Store Visit — Klerksdorp' },
-  { type: 'photo', src: 'media/sq-kimberley-1.jpg', caption: 'Store Visit — Kimberley' },
-  { type: 'photo', src: 'media/sq-kimberley-2.jpg', caption: 'Reception — Kimberley' },
-  { type: 'photo', src: 'media/sq-kimberley-3.jpg', caption: 'Signage — Kimberley' },
-  { type: 'photo', src: 'media/posm-1.jpg', caption: 'POSM Display' },
-  { type: 'photo', src: 'media/posm-2.jpg', caption: 'POSM Display' },
-  { type: 'photo', src: 'media/posm-3.jpg', caption: 'POSM Display' },
-  { type: 'photo', src: 'media/quote-1.jpg', caption: 'Customer Quote' },
-  { type: 'photo', src: 'media/quote-2.jpg', caption: 'Customer Quote' },
-  { type: 'photo', src: 'media/quote-3.jpg', caption: 'Customer Quote' },
-  { type: 'video', href: null, caption: 'SQ Knysna — video (link coming soon)' },
-];
+// Demo store evidence, grouped into tabs — not yet linked to a specific
+// store/feedback row; that association is a planned next step. Videos tab
+// is wired up but intentionally empty until a video link is provided.
+const MEDIA_TABS = {
+  'POSM': [
+    { src: 'media/posm-1.jpg', caption: 'POSM Display' },
+    { src: 'media/posm-2.jpg', caption: 'POSM Display' },
+    { src: 'media/posm-3.jpg', caption: 'POSM Display' },
+  ],
+  'Store Pictures': [
+    { src: 'media/sq-klerksdorp-1.jpg', caption: 'Store Visit — Klerksdorp' },
+    { src: 'media/sq-kimberley-1.jpg', caption: 'Store Visit — Kimberley' },
+    { src: 'media/sq-kimberley-2.jpg', caption: 'Reception — Kimberley' },
+    { src: 'media/sq-kimberley-3.jpg', caption: 'Signage — Kimberley' },
+    { src: 'media/quote-1.jpg', caption: 'Customer Quote' },
+    { src: 'media/quote-2.jpg', caption: 'Customer Quote' },
+    { src: 'media/quote-3.jpg', caption: 'Customer Quote' },
+  ],
+  'Store Videos': [],
+};
+
+let activeMediaTab = 'POSM';
+
+function renderMediaTabs(){
+  const tabsEl = document.getElementById('mediaTabs');
+  tabsEl.innerHTML = Object.keys(MEDIA_TABS).map(name =>
+    `<div class="tab ${name === activeMediaTab ? 'active' : ''}" data-media-tab="${escapeHtml(name)}">${escapeHtml(name)}</div>`
+  ).join('');
+  tabsEl.querySelectorAll('[data-media-tab]').forEach(el =>
+    el.addEventListener('click', () => { activeMediaTab = el.dataset.mediaTab; renderMediaTabs(); renderMedia(); })
+  );
+}
 
 function renderMedia(){
   const grid = document.getElementById('mediaGrid');
-  grid.innerHTML = MEDIA_ITEMS.map(m => {
-    if (m.type === 'video') {
-      return m.href
-        ? `<a class="media-item video-item" href="${escapeHtml(m.href)}" target="_blank" rel="noreferrer"><span class="play-icon">▶</span><span class="media-caption" style="color:white">${escapeHtml(m.caption)}</span></a>`
-        : `<div class="media-item video-item" style="opacity:.6;cursor:default"><span class="play-icon">▶</span><span class="media-caption" style="color:white">${escapeHtml(m.caption)}</span></div>`;
-    }
-    return `<div class="media-item" onclick="openLightbox('${jsEsc(m.src)}')"><img src="${escapeHtml(m.src)}" alt="${escapeHtml(m.caption)}"><div class="media-caption">${escapeHtml(m.caption)}</div></div>`;
-  }).join('');
+  const items = MEDIA_TABS[activeMediaTab] || [];
+  if (!items.length) {
+    grid.innerHTML = `<div class="small" style="padding:20px 0">No ${escapeHtml(activeMediaTab.toLowerCase())} uploaded yet.</div>`;
+    return;
+  }
+  grid.innerHTML = items.map(m =>
+    `<div class="media-item" onclick="openLightbox('${jsEsc(m.src)}')"><img src="${escapeHtml(m.src)}" alt="${escapeHtml(m.caption)}"><div class="media-caption">${escapeHtml(m.caption)}</div></div>`
+  ).join('');
 }
 
 function openLightbox(src){
@@ -95,5 +112,6 @@ function openLightbox(src){
 }
 
 init();
+renderMediaTabs();
 renderMedia();
 </script></body></html>
