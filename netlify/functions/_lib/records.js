@@ -195,10 +195,16 @@ function computeDashboard(stores, visits) {
     if (!prev || new Date(v.checkin_at) > new Date(prev)) lastVisitByStore[v.store_code] = v.checkin_at;
   }
 
-  const annotatedStores = stores.map(s => {
-    const days = daysAgo(lastVisitByStore[s.code]);
-    return { name: s.name, code: s.code, region: s.region, lastVisit: humanizeLastVisit(days), status: statusFor(days) };
-  });
+  // Sorted so the stores most overdue for a visit (or never visited) surface
+  // first — the store list is a compliance/coverage view, not a directory,
+  // so leading with what needs attention is more useful than store order.
+  const annotatedStores = stores
+    .map(s => {
+      const days = daysAgo(lastVisitByStore[s.code]);
+      return { name: s.name, code: s.code, region: s.region, lastVisit: humanizeLastVisit(days), status: statusFor(days), _days: days === null ? Infinity : days };
+    })
+    .sort((a, b) => b._days - a._days)
+    .map(({ _days, ...s }) => s);
 
   const totalStores = stores.length;
   const visitedStoreCount = Object.keys(lastVisitByStore).length;
