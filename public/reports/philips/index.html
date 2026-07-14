@@ -123,7 +123,7 @@
           <div style="background:#fff; border:1px solid #E4E9F0; border-radius:14px; padding:18px 20px;">
             <div style="font-size:13px; font-weight:700; color:#0B1B3A; margin-bottom:12px;">Response Rate by Region</div>
             <sc-for list="{{ feedbackByRegion }}" as="row" hint-placeholder-count="4">
-              <div style="margin-bottom:11px;">
+              <div style="{{ row.rowStyle }}" onClick="{{ row.onClick }}">
                 <div style="display:flex; justify-content:space-between; font-size:12px; color:#3A4658; margin-bottom:4px;"><span>{{ row.name }}</span><span style="font-weight:700;">{{ row.pct }}</span></div>
                 <div style="height:8px; background:#EEF1F6; border-radius:5px; overflow:hidden;"><div style="{{ row.barStyle }}"></div></div>
               </div>
@@ -132,7 +132,7 @@
           <div style="background:#fff; border:1px solid #E4E9F0; border-radius:14px; padding:18px 20px;">
             <div style="font-size:13px; font-weight:700; color:#0B1B3A; margin-bottom:12px;">Responses by Category</div>
             <sc-for list="{{ feedbackByCategory }}" as="row" hint-placeholder-count="4">
-              <div style="margin-bottom:11px;">
+              <div style="{{ row.rowStyle }}" onClick="{{ row.onClick }}">
                 <div style="display:flex; justify-content:space-between; font-size:12px; color:#3A4658; margin-bottom:4px;"><span>{{ row.name }}</span><span style="font-weight:700;">{{ row.count }}</span></div>
                 <div style="height:8px; background:#EEF1F6; border-radius:5px; overflow:hidden;"><div style="{{ row.barStyle }}"></div></div>
               </div>
@@ -157,7 +157,7 @@
           <div style="background:#fff; border:1px solid #E4E9F0; border-radius:14px; padding:18px 20px;">
             <div style="font-size:13px; font-weight:700; color:#0B1B3A; margin-bottom:12px;">Availability by Blitz Rep</div>
             <sc-for list="{{ feedbackByRep }}" as="row" hint-placeholder-count="6">
-              <div style="margin-bottom:11px;">
+              <div style="{{ row.rowStyle }}" onClick="{{ row.onClick }}">
                 <div style="display:flex; justify-content:space-between; font-size:12px; color:#3A4658; margin-bottom:4px;"><span>{{ row.name }}</span><span style="font-weight:700;">{{ row.pct }} · {{ row.count }}</span></div>
                 <div style="height:8px; background:#EEF1F6; border-radius:5px; overflow:hidden;"><div style="{{ row.barStyle }}"></div></div>
               </div>
@@ -167,7 +167,7 @@
             <div style="font-size:13px; font-weight:700; color:#0B1B3A; margin-bottom:12px;">Availability by Question</div>
             <div style="max-height:280px; overflow-y:auto; padding-right:4px;">
               <sc-for list="{{ feedbackByQuestion }}" as="row" hint-placeholder-count="6">
-                <div style="margin-bottom:11px;">
+                <div style="{{ row.rowStyle }}" onClick="{{ row.onClick }}">
                   <div style="display:flex; justify-content:space-between; gap:10px; font-size:11.5px; color:#3A4658; margin-bottom:4px;"><span style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">{{ row.name }}</span><span style="font-weight:700; white-space:nowrap;">{{ row.pct }} · {{ row.count }}</span></div>
                   <div style="height:8px; background:#EEF1F6; border-radius:5px; overflow:hidden;"><div style="{{ row.barStyle }}"></div></div>
                 </div>
@@ -789,19 +789,32 @@ class Component extends DCLogic {
       regionAgg[reg].total++;
       if (String(r[7]).toLowerCase() === 'yes') regionAgg[reg].yes++;
     });
+    // Clicking any block below drills the Survey Answers table by setting the
+    // matching cross filter — a second click on the same value clears it.
     const feedbackByRegion = Object.entries(regionAgg).map(([name, v]) => {
       const pct = v.total ? v.yes / v.total : 0;
-      return { name, pct: fmtPct(pct), barStyle: `height:100%; width:${(pct * 100).toFixed(1)}%; background:${BLUE}; border-radius:5px;` };
+      const selected = cf.region === name;
+      return {
+        name, pct: fmtPct(pct),
+        barStyle: `height:100%; width:${(pct * 100).toFixed(1)}%; background:${BLUE}; border-radius:5px;`,
+        rowStyle: `cursor:pointer; margin-bottom:11px; padding:4px 6px; border-radius:7px; background:${selected ? '#EEF3FF' : 'transparent'};`,
+        onClick: () => this.setCrossFilter('feedback', 'region', selected ? 'All' : name),
+      };
     });
 
     const catAgg = {};
     feedbackFiltered.forEach(r => { const c = r[4] || 'Unknown'; catAgg[c] = (catAgg[c] || 0) + 1; });
     const maxCatCount = Math.max(1, ...Object.values(catAgg));
-    const feedbackByCategory = Object.entries(catAgg).sort((a, b) => b[1] - a[1]).map(([name, count]) => ({
-      name,
-      count: fmtNum(count),
-      barStyle: `height:100%; width:${((count / maxCatCount) * 100).toFixed(1)}%; background:${LIME}; border-radius:5px;`,
-    }));
+    const feedbackByCategory = Object.entries(catAgg).sort((a, b) => b[1] - a[1]).map(([name, count]) => {
+      const selected = cf.category === name;
+      return {
+        name,
+        count: fmtNum(count),
+        barStyle: `height:100%; width:${((count / maxCatCount) * 100).toFixed(1)}%; background:${LIME}; border-radius:5px;`,
+        rowStyle: `cursor:pointer; margin-bottom:11px; padding:4px 6px; border-radius:7px; background:${selected ? '#EEF3FF' : 'transparent'};`,
+        onClick: () => this.setCrossFilter('feedback', 'category', selected ? 'All' : name),
+      };
+    });
 
     const repAgg = {};
     feedbackFiltered.forEach(r => {
@@ -812,7 +825,13 @@ class Component extends DCLogic {
     });
     const feedbackByRep = Object.entries(repAgg).sort((a, b) => b[1].total - a[1].total).map(([name, v]) => {
       const pct = v.total ? v.yes / v.total : 0;
-      return { name, pct: fmtPct(pct), count: fmtNum(v.total), barStyle: `height:100%; width:${(pct * 100).toFixed(1)}%; background:${BLUE}; border-radius:5px;` };
+      const selected = cf.rep === name;
+      return {
+        name, pct: fmtPct(pct), count: fmtNum(v.total),
+        barStyle: `height:100%; width:${(pct * 100).toFixed(1)}%; background:${BLUE}; border-radius:5px;`,
+        rowStyle: `cursor:pointer; margin-bottom:11px; padding:4px 6px; border-radius:7px; background:${selected ? '#EEF3FF' : 'transparent'};`,
+        onClick: () => this.setCrossFilter('feedback', 'rep', selected ? 'All' : name),
+      };
     });
 
     const qAgg = {};
@@ -824,7 +843,13 @@ class Component extends DCLogic {
     });
     const feedbackByQuestion = Object.entries(qAgg).sort((a, b) => b[1].total - a[1].total).slice(0, 14).map(([name, v]) => {
       const pct = v.total ? v.yes / v.total : 0;
-      return { name, pct: fmtPct(pct), count: fmtNum(v.total), barStyle: `height:100%; width:${(pct * 100).toFixed(1)}%; background:${LIME}; border-radius:5px;` };
+      const selected = cf.question === name;
+      return {
+        name, pct: fmtPct(pct), count: fmtNum(v.total),
+        barStyle: `height:100%; width:${(pct * 100).toFixed(1)}%; background:${LIME}; border-radius:5px;`,
+        rowStyle: `cursor:pointer; margin-bottom:11px; padding:4px 6px; border-radius:7px; background:${selected ? '#EEF3FF' : 'transparent'};`,
+        onClick: () => this.setCrossFilter('feedback', 'question', selected ? 'All' : name),
+      };
     });
 
     const feedbackAnswers = feedbackFiltered.slice(0, 200).map(r => ({
