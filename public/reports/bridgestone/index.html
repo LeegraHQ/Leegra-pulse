@@ -5,54 +5,80 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Bridgestone Mystery Shopper Dashboard</title>
 <style>
-:root{--red:#D71920;--dark:#111827;--light:#f5f7fb;--grey:#6b7280;--card:#fff;--green:#16a34a;--amber:#f59e0b;--border:#e5e7eb;}
-*{box-sizing:border-box}body{margin:0;font-family:Arial,Helvetica,sans-serif;background:var(--light);color:var(--dark)}
-.header{background:linear-gradient(135deg,#111 0%,#2b2b2b 55%,#D71920 100%);color:white;padding:18px 24px;display:flex;align-items:center;justify-content:space-between;gap:16px;position:sticky;top:0;z-index:10;box-shadow:0 4px 18px rgba(0,0,0,.18)}
+.viz-root{
+  --surface-1:#fcfcfb; --page:#f5f7fb; --text-primary:#0b0b0b; --text-secondary:#52514e; --text-muted:#898781;
+  --gridline:#e1e0d9; --baseline:#c3c2b7; --border:rgba(11,11,11,0.10);
+  --series-bridgestone:#e34948; --series-continental:#2a78d6; --series-other:#eda100;
+  --good:#0ca30c; --warning:#fab219; --serious:#ec835a; --critical:#d03b3b;
+  --delta-good:#006300; --brand-red:#D71920;
+}
+@media (prefers-color-scheme: dark){
+  .viz-root{
+    --surface-1:#1a1a19; --page:#0d0d0d; --text-primary:#ffffff; --text-secondary:#c3c2b7; --text-muted:#898781;
+    --gridline:#2c2c2a; --baseline:#383835; --border:rgba(255,255,255,0.10);
+    --series-bridgestone:#e66767; --series-continental:#3987e5; --series-other:#c98500;
+    --good:#0ca30c; --warning:#fab219; --serious:#ec835a; --critical:#d03b3b; --delta-good:#0ca30c;
+  }
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",sans-serif;background:var(--page);color:var(--text-primary)}
+.header{background:linear-gradient(135deg,#111 0%,#2b2b2b 55%,var(--brand-red) 100%);color:white;padding:18px 24px;display:flex;align-items:center;justify-content:space-between;gap:16px;position:sticky;top:0;z-index:10;box-shadow:0 4px 18px rgba(0,0,0,.18)}
 .brand{display:flex;align-items:center;gap:14px}.brand img{height:54px;background:white;border-radius:10px;padding:6px}.brand h1{margin:0;font-size:22px}.brand p{margin:4px 0 0;color:#e5e7eb;font-size:13px}
-.actions{display:flex;gap:10px;flex-wrap:wrap;justify-content:flex-end}.btn{border:0;border-radius:10px;padding:11px 14px;font-weight:700;cursor:pointer;background:white;color:#111;text-decoration:none;display:inline-block;font-size:13px}.btn.red{background:var(--red);color:white}
+.actions{display:flex;gap:10px;flex-wrap:wrap;justify-content:flex-end}
+.btn{border:0;border-radius:10px;padding:11px 14px;font-weight:700;cursor:pointer;background:white;color:#111;text-decoration:none;display:inline-block;font-size:13px}
+.btn.red{background:var(--brand-red);color:white}
 .wrap{padding:22px;max-width:1700px;margin:0 auto}
 .notice{background:#fff7ed;border:1px solid #fed7aa;padding:12px 14px;border-radius:12px;color:#7c2d12;margin-bottom:16px;font-size:13.5px;line-height:1.5}
-.kpis{display:grid;grid-template-columns:repeat(5,minmax(160px,1fr));gap:14px;margin-bottom:16px}
-.card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:16px;box-shadow:0 3px 12px rgba(15,23,42,.05)}
-.kpi .label{font-size:11.5px;color:var(--grey);font-weight:700;text-transform:uppercase}.kpi .value{font-size:27px;font-weight:800;margin-top:8px}.kpi .sub{font-size:12px;color:var(--grey);margin-top:4px}
-.grid2{display:grid;grid-template-columns:1.3fr .7fr;gap:16px}
+.kpis{display:grid;grid-template-columns:repeat(5,minmax(170px,1fr));gap:14px;margin-bottom:16px}
+.card{background:var(--surface-1);border:1px solid var(--border);border-radius:16px;padding:16px;box-shadow:0 3px 12px rgba(15,23,42,.05)}
+.kpi .label{font-size:11.5px;color:var(--text-muted);font-weight:700;text-transform:uppercase;letter-spacing:.02em}
+.kpi .value{font-size:28px;font-weight:700;margin-top:8px;color:var(--text-primary)}
+.kpi .delta{display:flex;align-items:center;gap:5px;font-size:12px;font-weight:700;margin-top:6px}
+.kpi .delta.critical{color:var(--critical)}.kpi .delta.warning{color:#a86200}.kpi .delta.good{color:var(--delta-good)}.kpi .delta.neutral{color:var(--text-muted)}
+.grid2{display:grid;grid-template-columns:1.3fr .9fr;gap:16px}
 .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
 .grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
-.section-title{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;gap:10px}.section-title h2{font-size:18px;margin:0}.section-title .small{font-size:12px;color:var(--grey)}
-.summary{line-height:1.6;font-size:14px}.summary b{color:#111}
-.rank{display:flex;justify-content:space-between;gap:10px;font-size:13px;padding:7px 0;border-bottom:1px solid #f1f5f9}
-.bar{height:20px;background:#e5e7eb;border-radius:999px;overflow:hidden;margin:5px 0 10px}
-.bar span{display:block;height:100%;background:var(--red);border-radius:999px}
-.bar.green span{background:var(--green)}.bar.amber span{background:var(--amber)}.bar.dark span{background:#111827}
-.metric-block{margin-bottom:16px}
-.metric-block .metric-title{font-weight:700;font-size:13px;margin-bottom:8px}
-.trend-row{display:grid;grid-template-columns:70px 1fr 42px;align-items:center;gap:8px;font-size:12.5px;margin-bottom:5px}
-.trend-row .m{color:var(--grey);font-weight:700}
-.trend-row .v{text-align:right;font-weight:700}
-.pill{display:inline-block;border-radius:999px;padding:3px 9px;font-weight:700;font-size:11.5px}
-.pill.up{background:#dcfce7;color:#166534}.pill.down{background:#fee2e2;color:#991b1b}
-table{border-collapse:separate;border-spacing:0;width:100%;font-size:12.5px}
-th,td{padding:9px 10px;border-bottom:1px solid var(--border);text-align:left}
-th{background:#111827;color:white;position:sticky;top:0}
-.table-wrap{overflow:auto;max-height:420px;border:1px solid var(--border);border-radius:14px;background:white}
-.tag{display:inline-block;background:#f3f4f6;border-radius:999px;padding:2px 9px;font-size:11px;font-weight:700;margin:2px 4px 2px 0}
+.section-title{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;gap:10px}
+.section-title h2{font-size:16px;margin:0;color:var(--text-primary)}
+.section-title .small{font-size:12px;color:var(--text-muted)}
+.summary{line-height:1.6;font-size:14px;color:var(--text-secondary)}.summary b{color:var(--text-primary)}
+.legend{display:flex;gap:16px;flex-wrap:wrap;margin-bottom:8px;font-size:12px;color:var(--text-secondary)}
+.legend-item{display:flex;align-items:center;gap:6px}
+.legend-swatch{width:14px;height:2px;border-radius:2px;display:inline-block}
+.chart-wrap{position:relative}
+.viz-tooltip{position:absolute;pointer-events:none;background:var(--text-primary);color:var(--surface-1);font-size:11.5px;padding:7px 10px;border-radius:8px;line-height:1.5;opacity:0;transition:opacity .1s;z-index:20;white-space:nowrap;box-shadow:0 4px 14px rgba(0,0,0,.25)}
+.viz-tooltip .t-val{font-weight:700}
+.table-toggle{background:none;border:none;color:var(--text-muted);font-size:11.5px;text-decoration:underline;cursor:pointer;padding:0}
+.data-table{display:none;margin-top:10px;font-size:12px;border-collapse:collapse;width:100%}
+.data-table.open{display:table}
+.data-table th,.data-table td{text-align:right;padding:5px 8px;border-bottom:1px solid var(--gridline);color:var(--text-secondary)}
+.data-table th:first-child,.data-table td:first-child{text-align:left;color:var(--text-primary)}
+.bar-rank{display:flex;align-items:center;gap:10px;font-size:12.5px;padding:5px 0}
+.bar-rank .name{flex:0 0 auto;min-width:150px;color:var(--text-secondary)}
+.bar-rank .track{flex:1;height:14px;background:var(--gridline);border-radius:7px;overflow:hidden;position:relative}
+.bar-rank .fill{position:absolute;left:0;top:0;bottom:0;border-radius:7px;background:var(--series-continental)}
+.bar-rank .val{flex:0 0 40px;text-align:right;font-weight:700;color:var(--text-primary);font-variant-numeric:tabular-nums}
+table.plain{border-collapse:separate;border-spacing:0;width:100%;font-size:12.5px}
+table.plain th,table.plain td{padding:9px 10px;border-bottom:1px solid var(--gridline);text-align:left;color:var(--text-secondary)}
+table.plain th{background:#111827;color:white;position:sticky;top:0;font-weight:700}
+table.plain td:first-child{color:var(--text-primary);font-weight:600}
+.table-wrap{overflow:auto;max-height:420px;border:1px solid var(--border);border-radius:14px}
+.status-tag{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:700;padding:3px 9px;border-radius:999px}
+.status-tag.critical{background:rgba(208,59,59,.12);color:var(--critical)}
+.status-tag.warning{background:rgba(250,178,25,.15);color:#a86200}
+.status-tag.good{background:rgba(12,163,12,.12);color:var(--good)}
 @media(max-width:1200px){.kpis{grid-template-columns:repeat(2,1fr)}.grid2,.grid3,.grid4{grid-template-columns:1fr}}
-</style></head><body>
+</style></head>
+<body class="viz-root">
 <div class="header">
   <div class="brand"><img src="/logos/bridgestone-logo.png" onerror="this.style.display='none'"/><div><h1>Bridgestone Mystery Shopper Dashboard</h1><p>Month-over-month trend • Feb – May 2026 assessments</p></div></div>
   <div class="actions"><a class="btn red" href="bridgestone-mystery-shopper-import-template.xlsx">Download Import Template</a></div>
 </div>
 <div class="wrap">
 
-<div class="notice"><b>About this data:</b> The figures below are real aggregate results pulled from Bridgestone's own monthly Mystery Shopper report decks (Feb, March, April and May 2026), not per-visit granular records — Leegra Pulse's live in-app tracking for Bridgestone has just gone live (103 stores loaded, 8 regions), so no live visits have been logged yet. Once reps start checking in with the new in-app Mystery Shopper questionnaire, this dashboard will be able to show real per-visit, per-store, per-rep drill-down alongside this historical trend. Use the <b>Import Template</b> to bulk-load any additional historical visits you want reflected here.</div>
+<div class="notice"><b>About this data:</b> The figures below are real aggregate results pulled from Bridgestone's own monthly Mystery Shopper report decks (Feb, March, April and May 2026), not per-visit granular records — Leegra Pulse's live in-app tracking for Bridgestone has just gone live (103 stores loaded, 8 regions), so no live visits have been logged yet. Once reps start checking in with the new in-app Mystery Shopper questionnaire — or a completed <a href="bridgestone-mystery-shopper-import-template.xlsx" style="color:#7c2d12">Import Template</a> is sent back — this dashboard will show real per-visit, per-store, per-rep drill-down alongside this historical trend.</div>
 
-<div class="kpis" id="kpis">
-  <div class="card kpi"><div class="label">Stores Loaded (Live App)</div><div class="value">103</div><div class="sub">8 regions — 0 visits logged yet</div></div>
-  <div class="card kpi"><div class="label">Bridgestone Recommendation Share</div><div class="value" style="color:#991b1b">12%</div><div class="sub">Down from 39% in February</div></div>
-  <div class="card kpi"><div class="label">Bridgestone Stock Available</div><div class="value">76%</div><div class="sub">May 2026 — overall</div></div>
-  <div class="card kpi"><div class="label">Promotion Mentioned (May)</div><div class="value" style="color:#991b1b">1%</div><div class="sub">Down from 79% in April</div></div>
-  <div class="card kpi"><div class="label">POSM Cube Visibility (May)</div><div class="value" style="color:#991b1b">31%</div><div class="sub">100% at Supa Quick, 20% at Tires &amp; More</div></div>
-</div>
+<div class="kpis" id="kpis"></div>
 
 <div class="grid2" style="margin-bottom:16px">
   <div class="card">
@@ -65,8 +91,8 @@ th{background:#111827;color:white;position:sticky;top:0}
     </div>
   </div>
   <div class="card">
-    <div class="section-title"><h2>Brand Recommendation Share Trend</h2></div>
-    <div id="brandTrend"></div>
+    <div class="section-title"><h2>Brand Recommendation Share Trend</h2><span class="small">% of visits</span></div>
+    <div class="chart-wrap" id="brandTrendChart"></div>
   </div>
 </div>
 
@@ -82,7 +108,7 @@ th{background:#111827;color:white;position:sticky;top:0}
     <div id="demoBlock"></div>
   </div>
   <div class="card">
-    <div class="section-title"><h2>Warranty &amp; Promotions Mentioned by Type</h2><span class="small">Best month on record (April)</span></div>
+    <div class="section-title"><h2>Warranty &amp; Promotions Mentioned</h2><span class="small">Best month on record (April)</span></div>
     <div id="warrantyPromoBlock"></div>
   </div>
 </div>
@@ -90,69 +116,133 @@ th{background:#111827;color:white;position:sticky;top:0}
 <div class="card" style="margin-bottom:16px">
   <div class="section-title"><h2>Brand Visibility &amp; POSM — Per Dealer Group</h2><span class="small">April 2026 snapshot — most complete per-channel dataset available</span></div>
   <div class="table-wrap">
-    <table id="channelTable"></table>
+    <table class="plain" id="channelTable"></table>
   </div>
 </div>
 
 <div class="card">
   <div class="section-title"><h2>Live In-App Data</h2><span class="small">Populates automatically once reps start checking in</span></div>
-  <div class="summary">Bridgestone's tenant (<b>BRG-118</b>) and 103 real stores across 8 regions are already loaded into Leegra Pulse, and the live <b>Bridgestone Mystery Shopper</b> questionnaire (27 questions covering demographics, brand visibility, POSM, stock, warranty, price/quality and photo evidence) is now the default questionnaire for every check-in. As reps complete visits in the app, this section will surface real per-visit, per-store and per-rep compliance and trend data alongside the historical deck data above — for now it shows 0 because rollout has just gone live.</div>
+  <div class="summary">Bridgestone's tenant (<b>BRG-118</b>) and 103 real stores across 8 regions are already loaded into Leegra Pulse, and the live <b>Bridgestone Mystery Shopper</b> questionnaire (27 questions covering demographics, brand visibility, POSM, stock, warranty, price/quality and photo evidence) is now the default questionnaire for every check-in. As reps complete visits in the app — or historical rows are imported from the template — this section will surface real per-visit, per-store and per-rep compliance and trend data alongside the historical deck data above. For now it shows 0 because rollout has just gone live.</div>
 </div>
 
 </div>
 <script>
+const MONTHS = ['Feb', 'March', 'April', 'May'];
+
+// ---------- shared SVG line-chart renderer ----------
+// series: [{ name, color, values:[n,n,n,n] }]
+function renderLineChart(containerId, series, opts) {
+  opts = opts || {};
+  const unit = opts.unit || '%';
+  const w = 520, h = 220, padL = 34, padR = 16, padT = 18, padB = 28;
+  const plotW = w - padL - padR, plotH = h - padT - padB;
+  const maxVal = 100;
+  const x = i => padL + (plotW * i) / (MONTHS.length - 1);
+  const y = v => padT + plotH - (plotH * v) / maxVal;
+
+  const gridLines = [0, 25, 50, 75, 100].map(v => `
+    <line x1="${padL}" y1="${y(v)}" x2="${w - padR}" y2="${y(v)}" stroke="var(--gridline)" stroke-width="1"/>
+    <text x="${padL - 8}" y="${y(v) + 4}" text-anchor="end" font-size="10" fill="var(--text-muted)">${v}</text>
+  `).join('');
+
+  const xLabels = MONTHS.map((m, i) => `<text x="${x(i)}" y="${h - 8}" text-anchor="middle" font-size="11" fill="var(--text-muted)">${m}</text>`).join('');
+
+  let paths = '', dots = '', endLabels = '';
+  series.forEach((s, si) => {
+    const pts = s.values.map((v, i) => `${x(i)},${y(v)}`).join(' ');
+    paths += `<polyline points="${pts}" fill="none" stroke="${s.color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>`;
+    s.values.forEach((v, i) => {
+      dots += `<circle class="pt" data-series="${si}" data-i="${i}" cx="${x(i)}" cy="${y(v)}" r="4" fill="${s.color}" stroke="var(--surface-1)" stroke-width="2"/>`;
+      dots += `<circle class="hit" data-series="${si}" data-i="${i}" cx="${x(i)}" cy="${y(v)}" r="12" fill="transparent"/>`;
+    });
+    const lastI = s.values.length - 1;
+    endLabels += `<text x="${x(lastI) + 6}" y="${y(s.values[lastI]) + 4}" font-size="11" font-weight="700" fill="var(--text-primary)">${s.values[lastI]}${unit}</text>`;
+  });
+
+  const legend = series.length > 1 ? `<div class="legend">${series.map(s => `<span class="legend-item"><span class="legend-swatch" style="background:${s.color}"></span>${s.name}</span>`).join('')}</div>` : '';
+
+  const svg = `
+    <svg viewBox="0 0 ${w} ${h}" width="100%" style="overflow:visible;display:block">
+      ${gridLines}
+      <line x1="${padL}" y1="${padT + plotH}" x2="${w - padR}" y2="${padT + plotH}" stroke="var(--baseline)" stroke-width="1"/>
+      ${paths}
+      ${dots}
+      ${xLabels}
+      ${endLabels}
+    </svg>
+    <div class="viz-tooltip"></div>
+  `;
+  const el = document.getElementById(containerId);
+  el.innerHTML = legend + svg;
+  el.classList.add('chart-wrap');
+
+  const tooltip = el.querySelector('.viz-tooltip');
+  el.querySelectorAll('.hit').forEach(hit => {
+    hit.addEventListener('pointerenter', (e) => {
+      const si = +hit.dataset.series, i = +hit.dataset.i;
+      const s = series[si];
+      tooltip.innerHTML = `<div>${MONTHS[i]}</div><div class="t-val">${s.name}: ${s.values[i]}${unit}</div>`;
+      tooltip.style.opacity = 1;
+    });
+    hit.addEventListener('pointermove', (e) => {
+      const rect = el.getBoundingClientRect();
+      tooltip.style.left = (e.clientX - rect.left + 12) + 'px';
+      tooltip.style.top = (e.clientY - rect.top - 30) + 'px';
+    });
+    hit.addEventListener('pointerleave', () => { tooltip.style.opacity = 0; });
+  });
+
+  if (opts.tableId) {
+    const t = document.getElementById(opts.tableId);
+    let rows = `<tr><th>Series</th>${MONTHS.map(m => `<th>${m}</th>`).join('')}</tr>`;
+    series.forEach(s => { rows += `<tr><th style="text-align:left">${s.name}</th>${s.values.map(v => `<td>${v}${unit}</td>`).join('')}</tr>`; });
+    t.innerHTML = rows;
+  }
+}
+
+// ---------- KPI stat tiles ----------
+const KPIS = [
+  { label: 'Stores Loaded (Live App)', value: '103', delta: '8 regions — 0 visits logged yet', deltaClass: 'neutral', icon: '' },
+  { label: 'Bridgestone Recommendation Share', value: '12%', delta: '27pp since February', deltaClass: 'critical', icon: '▼' },
+  { label: 'Bridgestone Stock Available', value: '76%', delta: 'Healthy — May 2026', deltaClass: 'good', icon: '●' },
+  { label: 'Promotion Mentioned (May)', value: '1%', delta: '78pp since April', deltaClass: 'critical', icon: '▼' },
+  { label: 'POSM Cube Visibility (May)', value: '31%', delta: '100% at Supa Quick, 20% at Tires & More', deltaClass: 'warning', icon: '▲' },
+];
+
+function renderKpis() {
+  const el = document.getElementById('kpis');
+  el.innerHTML = KPIS.map(k => `
+    <div class="card kpi">
+      <div class="label">${k.label}</div>
+      <div class="value">${k.value}</div>
+      <div class="delta ${k.deltaClass}">${k.icon ? `<span>${k.icon}</span>` : ''}<span>${k.delta}</span></div>
+    </div>
+  `).join('');
+}
+
+// ---------- bar rankings ----------
+function renderBarList(containerId, items, opts) {
+  opts = opts || {};
+  const max = opts.max || 100;
+  const el = document.getElementById(containerId);
+  el.innerHTML = items.map(([name, val]) => `
+    <div class="bar-rank">
+      <span class="name">${name}</span>
+      <span class="track"><span class="fill" style="width:${val === null ? 0 : Math.max(2, (val / max) * 100)}%;background:${opts.color || 'var(--series-continental)'}"></span></span>
+      <span class="val">${val === null ? '—' : val + '%'}</span>
+    </div>
+  `).join('');
+}
+
+// ---------- data ----------
 const MONTHLY = {
-  months: ['Feb', 'March', 'April', 'May'],
   bridgestoneShare: [39, 32, 17, 12],
   continentalShare: [14, 13, 21, 18],
   stockAvailable: [74, 91, 90, 76],
   warrantyOffered: [31, 45, 73, 0],
   promotionMentioned: [42, 51, 79, 1],
   priceBasis: [61, 58, 43, 75],
-  qualityBasis: [39, 42, 57, 25],
 };
-
-function bar(pct, cls) {
-  return `<div class="bar ${cls||''}"><span style="width:${Math.max(2,pct)}%"></span></div>`;
-}
-
-function renderBrandTrend() {
-  const el = document.getElementById('brandTrend');
-  let html = '<div class="metric-block"><div class="metric-title">Bridgestone recommended (%)</div>';
-  MONTHLY.months.forEach((m, i) => {
-    html += `<div class="trend-row"><span class="m">${m}</span>${bar(MONTHLY.bridgestoneShare[i])}<span class="v">${MONTHLY.bridgestoneShare[i]}%</span></div>`;
-  });
-  html += '</div><div class="metric-block"><div class="metric-title">Continental recommended (%)</div>';
-  MONTHLY.months.forEach((m, i) => {
-    html += `<div class="trend-row"><span class="m">${m}</span>${bar(MONTHLY.continentalShare[i], 'dark')}<span class="v">${MONTHLY.continentalShare[i]}%</span></div>`;
-  });
-  html += '</div>';
-  el.innerHTML = html;
-}
-
-function renderMetricTrends() {
-  const el = document.getElementById('metricTrends');
-  const metrics = [
-    { title: 'Bridgestone Stock Available', data: MONTHLY.stockAvailable, cls: 'green' },
-    { title: 'Warranty Offered', data: MONTHLY.warrantyOffered, cls: 'amber' },
-    { title: 'Promotion Mentioned', data: MONTHLY.promotionMentioned, cls: '' },
-    { title: 'Recommendation Basis: Price vs Quality', data: null, cls: '' },
-  ];
-  let html = '';
-  metrics.slice(0, 3).forEach(metric => {
-    html += `<div class="card"><div class="section-title"><h2 style="font-size:14px">${metric.title}</h2></div>`;
-    MONTHLY.months.forEach((m, i) => {
-      html += `<div class="trend-row"><span class="m">${m}</span>${bar(metric.data[i], metric.cls)}<span class="v">${metric.data[i]}%</span></div>`;
-    });
-    html += '</div>';
-  });
-  html += `<div class="card"><div class="section-title"><h2 style="font-size:14px">Price vs Quality Basis</h2></div>`;
-  MONTHLY.months.forEach((m, i) => {
-    html += `<div class="trend-row"><span class="m">${m}</span>${bar(MONTHLY.priceBasis[i])}<span class="v">${MONTHLY.priceBasis[i]}% Price</span></div>`;
-  });
-  html += '</div>';
-  el.innerHTML = html;
-}
 
 const COMPETITION = [
   { label: 'POSM Cube Visibility', overall: 31, groups: [['Supa Quick', 100], ['TWT', 41], ['Tires & More', 20]] },
@@ -164,49 +254,45 @@ const COMPETITION = [
 function renderCompetition() {
   const el = document.getElementById('competitionBlock');
   let html = '';
-  COMPETITION.forEach(c => {
-    html += `<div class="metric-block"><div class="metric-title">${c.label} — ${c.overall}% overall</div>`;
-    c.groups.forEach(([name, pct]) => {
-      html += `<div class="rank"><span>${name}</span><b>${pct}%</b></div>`;
-    });
-    html += '</div>';
+  COMPETITION.forEach((c, ci) => {
+    html += `<div style="margin-bottom:14px"><div style="font-weight:700;font-size:12.5px;margin-bottom:6px;color:var(--text-primary)">${c.label} — ${c.overall}% overall</div><div id="comp-${ci}"></div></div>`;
   });
   el.innerHTML = html;
+  COMPETITION.forEach((c, ci) => renderBarList(`comp-${ci}`, c.groups, { color: 'var(--series-bridgestone)' }));
 }
 
 const DEMO = {
   age: [['30-40 years', 45], ['<25 years', 25], ['40-50 years', 20], ['25-30 years', 10]],
-  vehicle: [['4x4 / SUV / Off Road / Crossover', 30], ['4 door Sedan', 25], ['3/5 door hatchback', 15], ['Double cab Bakkie', 15], ['Single cab Bakkie', 10], ['Coupe', 5]],
-  gender: [95, 5],
+  vehicle: [['4x4 / SUV / Crossover', 30], ['4 door Sedan', 25], ['3/5 door hatchback', 15], ['Double cab Bakkie', 15], ['Single cab Bakkie', 10], ['Coupe', 5]],
 };
 
 function renderDemo() {
   const el = document.getElementById('demoBlock');
-  let html = '<div class="metric-block"><div class="metric-title">Shopper Age Group</div>';
-  DEMO.age.forEach(([name, pct]) => { html += `<div class="rank"><span>${name}</span><b>${pct}%</b></div><div class="bar"><span style="width:${pct}%"></span></div>`; });
-  html += '</div><div class="metric-block"><div class="metric-title">Vehicle Type</div>';
-  DEMO.vehicle.forEach(([name, pct]) => { html += `<div class="rank"><span>${name}</span><b>${pct}%</b></div><div class="bar dark"><span style="width:${pct}%"></span></div>`; });
-  html += `</div><div class="metric-block"><div class="metric-title">Gender Split</div><div class="rank"><span>Split A</span><b>${DEMO.gender[0]}%</b></div><div class="bar"><span style="width:${DEMO.gender[0]}%"></span></div><div class="rank"><span>Split B</span><b>${DEMO.gender[1]}%</b></div><div class="bar amber"><span style="width:${DEMO.gender[1]}%"></span></div></div>`;
-  el.innerHTML = html;
+  el.innerHTML = `
+    <div style="margin-bottom:14px"><div style="font-weight:700;font-size:12.5px;margin-bottom:6px">Shopper Age Group</div><div id="demo-age"></div></div>
+    <div><div style="font-weight:700;font-size:12.5px;margin-bottom:6px">Vehicle Type</div><div id="demo-vehicle"></div></div>
+  `;
+  renderBarList('demo-age', DEMO.age, { color: 'var(--series-continental)' });
+  renderBarList('demo-vehicle', DEMO.vehicle, { color: 'var(--series-other)' });
 }
 
 const WARRANTY_TYPES = [
   ['Bridgestone Firestone 1 Year', 95], ['TWT Manufacturer Warranty', 100], ['TWT Black Rhino Wheels', 10],
-  ['Dunlop 18 Month Insurance', 85], ['Michelin 5 Year Warranty', 50], ['Suttimo 8 Year Product Warranty', 100], ['Suttimo 10 000km Mileage Warranty', 100],
+  ['Dunlop 18 Month Insurance', 85], ['Michelin 5 Year Warranty', 50], ['Suttimo 8 Year Warranty', 100], ['Suttimo 10 000km Warranty', 100],
 ];
 const PROMO_TYPES = [
   ['Supa Quick 40th Birthday Bash', 100], ['Lombaard Cyber Sale', 100], ['Tyremart Buy Now Pay Later', 90],
-  ['Tyreworx Online Win 4 Tyres', 100], ['TWT Buy 4 Tyres + Free Apparel', 100], ['Hi-Q Spend R3000 or More', 100], ['Hi-Q Ceat Set + 12mo Tyre Damage', 100],
+  ['Tyreworx Online Win 4 Tyres', 100], ['TWT Buy 4 Tyres + Free Apparel', 100], ['Hi-Q Spend R3000+', 100], ['Hi-Q Ceat Set + Tyre Damage', 100],
 ];
 
 function renderWarrantyPromo() {
   const el = document.getElementById('warrantyPromoBlock');
-  let html = '<div class="metric-block"><div class="metric-title">Warranty types mentioned (% of stores offering, where offered)</div>';
-  WARRANTY_TYPES.forEach(([name, pct]) => { html += `<div class="rank"><span>${name}</span><b>${pct}%</b></div><div class="bar amber"><span style="width:${pct}%"></span></div>`; });
-  html += '</div><div class="metric-block"><div class="metric-title">Promotions mentioned</div>';
-  PROMO_TYPES.forEach(([name, pct]) => { html += `<div class="rank"><span>${name}</span><b>${pct}%</b></div><div class="bar"><span style="width:${pct}%"></span></div>`; });
-  html += '</div>';
-  el.innerHTML = html;
+  el.innerHTML = `
+    <div style="margin-bottom:14px"><div style="font-weight:700;font-size:12.5px;margin-bottom:6px">Warranty types (where offered)</div><div id="wp-warranty"></div></div>
+    <div><div style="font-weight:700;font-size:12.5px;margin-bottom:6px">Promotions mentioned</div><div id="wp-promo"></div></div>
+  `;
+  renderBarList('wp-warranty', WARRANTY_TYPES, { color: 'var(--warning)' });
+  renderBarList('wp-promo', PROMO_TYPES, { color: 'var(--series-bridgestone)' });
 }
 
 const CHANNEL_DATA = [
@@ -226,17 +312,46 @@ function renderChannelTable() {
   const el = document.getElementById('channelTable');
   let html = '<tr><th>Dealer Group</th><th>Bridgestone Fixed Signage</th><th>Firestone Fixed Signage</th><th>Bridgestone POSM Available</th><th>Firestone POSM Available</th></tr>';
   CHANNEL_DATA.forEach(row => {
-    html += '<tr>' + row.map((v, i) => i === 0 ? `<td><b>${v}</b></td>` : `<td>${v === null ? '—' : v + '%'}</td>`).join('') + '</tr>';
+    html += '<tr>' + row.map((v, i) => i === 0 ? `<td>${v}</td>` : `<td>${v === null ? '—' : v + '%'}</td>`).join('') + '</tr>';
   });
   el.innerHTML = html;
 }
 
-renderBrandTrend();
+function renderMetricTrends() {
+  const el = document.getElementById('metricTrends');
+  const cards = [
+    { id: 'mt-stock', title: 'Bridgestone Stock Available', color: 'var(--good)', values: MONTHLY.stockAvailable },
+    { id: 'mt-warranty', title: 'Warranty Offered', color: 'var(--warning)', values: MONTHLY.warrantyOffered },
+    { id: 'mt-promo', title: 'Promotion Mentioned', color: 'var(--series-bridgestone)', values: MONTHLY.promotionMentioned },
+    { id: 'mt-price', title: 'Recommendation Basis: Price', color: 'var(--series-continental)', values: MONTHLY.priceBasis },
+  ];
+  el.innerHTML = cards.map(c => `<div class="card"><div class="section-title"><h2>${c.title}</h2></div><div class="chart-wrap" id="${c.id}"></div></div>`).join('');
+  cards.forEach(c => renderLineChart(c.id, [{ name: c.title, color: c.color, values: c.values }]));
+}
+
+renderKpis();
+renderLineChart('brandTrendChart', [
+  { name: 'Bridgestone', color: 'var(--series-bridgestone)', values: MONTHLY.bridgestoneShare },
+  { name: 'Continental', color: 'var(--series-continental)', values: MONTHLY.continentalShare },
+]);
 renderMetricTrends();
 renderCompetition();
 renderDemo();
 renderWarrantyPromo();
 renderChannelTable();
+
+// resolve CSS custom properties to concrete colors for SVG stroke/fill (some
+// browsers don't resolve var() inside dynamically-injected SVG attribute strings
+// reliably across light/dark re-renders, so re-run chart renders on scheme change)
+if (window.matchMedia) {
+  window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
+    renderLineChart('brandTrendChart', [
+      { name: 'Bridgestone', color: 'var(--series-bridgestone)', values: MONTHLY.bridgestoneShare },
+      { name: 'Continental', color: 'var(--series-continental)', values: MONTHLY.continentalShare },
+    ]);
+    renderMetricTrends();
+  });
+}
 </script>
 </body>
 </html>
