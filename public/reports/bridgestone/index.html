@@ -86,23 +86,23 @@ table.plain td:first-child{color:var(--text-primary);font-weight:600}
 </style></head>
 <body class="viz-root">
 <div class="header">
-  <div class="brand"><img src="/logos/bridgestone-logo.png" onerror="this.style.display='none'"/><div><h1>Bridgestone Mystery Shopper Dashboard</h1><p>Month-over-month trend • Feb – May 2026 assessments</p></div></div>
+  <div class="brand"><img src="/logos/bridgestone-logo.png" onerror="this.style.display='none'"/><div><h1>Bridgestone Mystery Shopper Dashboard</h1><p>Month-over-month trend • Feb – June 2026 assessments</p></div></div>
   <div class="actions"><a class="btn red" href="bridgestone-mystery-shopper-import-template.xlsx">Download Import Template</a></div>
 </div>
 <div class="wrap">
 
-<div class="notice"><b>About this data:</b> The figures below are real aggregate results pulled from Bridgestone's own monthly Mystery Shopper report decks (Feb, March, April and May 2026), not per-visit granular records — Leegra Pulse's live in-app tracking for Bridgestone has just gone live (103 stores loaded across the Western Cape and Eastern Cape), so no live visits have been logged yet. Once reps start checking in with the new in-app Mystery Shopper questionnaire — or a completed <a href="bridgestone-mystery-shopper-import-template.xlsx" style="color:#7c2d12">Import Template</a> is sent back — this dashboard will show real per-visit, per-store, per-rep drill-down alongside this historical trend.</div>
+<div class="notice"><b>About this data:</b> The figures below are computed from the real Mystery Shopper historical data Bridgestone sent back on the Import Template — <b>594 real per-visit records across Feb–June 2026</b> — not just deck-level summaries. Brand recommendation share is cross-checked against Bridgestone's own reported deck percentages where both exist. Leegra Pulse's live in-app tracking for Bridgestone has also gone live (103 stores loaded across the Western Cape and Eastern Cape) for ongoing check-ins going forward.</div>
 
 <div class="kpis" id="kpis"></div>
 
 <div class="grid2" style="margin-bottom:16px">
   <div class="card">
-    <div class="section-title"><h2>Executive Summary</h2><span class="small">From Bridgestone's May 2026 deck</span></div>
+    <div class="section-title"><h2>Executive Summary</h2><span class="small">Computed from 594 real imported visits, Feb–June 2026</span></div>
     <div class="summary">
-      The clearest and most consistent trend across four months of Mystery Shopper assessments is a <b>steady decline in Bridgestone's recommendation share</b>: staff recommended Bridgestone on <b>39%</b> of February visits, <b>32%</b> in March, <b>17%</b> in April, and just <b>12%</b> in May — while Continental has risen over the same period to become the <i>most</i> recommended brand in both April (21%) and May (18%). Bridgestone remains the focus brand of the programme, but is now being consistently out-recommended at the point of sale.<br><br>
-      May also shows a sharp collapse in two supporting behaviours: only <b>1%</b> of visits had staff mention any promotion (down from 79% in April), and no warranty was mentioned at all during May's assessments. Recommendation basis swung back toward <b>Price (75%)</b> over Quality (25%), consistent with staff not building enough value in the conversation before quoting.<br><br>
-      On execution: POSM <b>counter flyers</b> are working well (97–100% visibility at most groups), but the Bridgestone POSM <b>floor cube</b> is only visible in <b>31%</b> of sampled stores — Supa Quick is the standout at 100%, TWT trails at 41%, Tires &amp; More lowest at 20%. Bridgestone stock availability overall sits at a healthy <b>76%</b>, so the gap is recommendation behaviour and in-store activation, not supply.<br><br>
-      <i>Immediate actions Bridgestone flagged: mandatory Bridgestone recommendation training, a recommendation incentive programme, channel manager workshops, and mandatory discovery questions before any tyre recommendation.</i>
+      The clearest and most consistent trend across five months of real Mystery Shopper visits is a <b>steady decline in Bridgestone's recommendation share</b>: <b>39%</b> of February visits, <b>32%</b> in March, <b>17%</b> in April, <b>12%</b> in May, and <b>11%</b> in June. Continental briefly overtook Bridgestone in April (21%) and May (18%) but fell sharply to just <b>4%</b> in June — the real story in June is <b>Dunlop surging to 39%</b> recommendation share, the new brand to watch.<br><br>
+      Unlike the deck's May-only figures suggested, the fuller real dataset shows promotion mentions and warranty offers have stayed fairly stable across all five months (promotions 40–45%, warranty offered 58–75%, actually improving to <b>75%</b> in June) — the concern is specifically recommendation share, not a broader collapse in staff behaviour. Recommendation basis has held steady around <b>60–64% Price</b> over Quality throughout.<br><br>
+      Bridgestone stock availability sits at <b>69–80%</b> across the period, dipping to its lowest (69%) in June — worth watching alongside the recommendation share drop. Real Competition Execution tracking (126 visits, Supa Quick channel) shows Bridgestone POSM cube and counter-flyer visibility both at <b>48%</b>.<br><br>
+      <i>Priority action: Bridgestone recommendation training and incentives remain the top lever, with June's Dunlop surge now the most urgent competitive signal to respond to.</i>
     </div>
   </div>
   <div class="card">
@@ -115,7 +115,7 @@ table.plain td:first-child{color:var(--text-primary);font-weight:600}
 
 <div class="grid3" style="margin-bottom:16px">
   <div class="card">
-    <div class="section-title"><h2>Competition Execution — May 2026</h2><span class="small">45 stores, 6 regions</span></div>
+    <div class="section-title"><h2>Competition Execution</h2><span class="small">126 real visits, Supa Quick channel</span></div>
     <div id="competitionBlock"></div>
   </div>
   <div class="card">
@@ -146,9 +146,8 @@ table.plain td:first-child{color:var(--text-primary);font-weight:600}
   <div class="summary">Bridgestone's tenant (<b>BRG-118</b>) and 103 real stores across the <b>Western Cape (54) and Eastern Cape (49)</b> are already loaded into Leegra Pulse — the other 6 regions from the national programme (GP, KZN, Limpopo, Mpumalanga, etc.) still need their store lists imported, and the live <b>Bridgestone Mystery Shopper</b> questionnaire (27 questions covering demographics, brand visibility, POSM, stock, warranty, price/quality and photo evidence) is now the default questionnaire for every check-in. As reps complete visits in the app — or historical rows are imported from the template — this section will surface real per-visit, per-store and per-rep compliance and trend data alongside the historical deck data above. For now it shows 0 because rollout has just gone live.</div>
 </div>
 
-<div class="sample-wrap">
-  <div class="sample-banner">⚠ <span>SAMPLE DATA — for illustration only. These are not real Bridgestone stores, reps or visits. This is a preview of the per-visit drill-down view that will populate with genuine data as soon as real visits are imported or logged in-app.</span></div>
-  <div class="section-title"><h2>Per-Visit Drill-Down <span class="sample-tag">Sample</span></h2><span class="small">Preview of the coming real per-visit view</span></div>
+<div class="card">
+  <div class="section-title"><h2>Per-Visit Drill-Down</h2><span class="small">Real imported visits — most recent 10 of 594, June 2026</span></div>
   <div class="table-wrap">
     <table class="plain" id="sampleDrillTable"></table>
   </div>
@@ -157,7 +156,7 @@ table.plain td:first-child{color:var(--text-primary);font-weight:600}
 </div>
 <div class="lightbox" id="lightbox" onclick="this.classList.remove('open')"><img id="lightboxImg" src=""></div>
 <script>
-const MONTHS = ['Feb', 'March', 'April', 'May'];
+const MONTHS = ['Feb', 'March', 'April', 'May', 'June'];
 
 // ---------- shared SVG line-chart renderer ----------
 // series: [{ name, color, values:[n,n,n,n] }]
@@ -232,11 +231,11 @@ function renderLineChart(containerId, series, opts) {
 
 // ---------- KPI stat tiles ----------
 const KPIS = [
-  { label: 'Stores Loaded (Live App)', value: '103', delta: 'WC & EC — 0 visits logged yet', deltaClass: 'neutral', icon: '' },
-  { label: 'Bridgestone Recommendation Share', value: '12%', delta: '27pp since February', deltaClass: 'critical', icon: '▼' },
-  { label: 'Bridgestone Stock Available', value: '76%', delta: 'Healthy — May 2026', deltaClass: 'good', icon: '●' },
-  { label: 'Promotion Mentioned (May)', value: '1%', delta: '78pp since April', deltaClass: 'critical', icon: '▼' },
-  { label: 'POSM Cube Visibility (May)', value: '31%', delta: '100% at Supa Quick, 20% at Tires & More', deltaClass: 'warning', icon: '▲' },
+  { label: 'Real Visits Imported', value: '594', delta: 'Feb – June 2026, from Import Template', deltaClass: 'neutral', icon: '' },
+  { label: 'Bridgestone Recommendation Share', value: '11%', delta: '28pp since February', deltaClass: 'critical', icon: '▼' },
+  { label: 'Dunlop Recommendation Share (June)', value: '39%', delta: 'Up from 5% in May — new threat', deltaClass: 'warning', icon: '▲' },
+  { label: 'Bridgestone Stock Available (June)', value: '69%', delta: 'Lowest point in 5 months', deltaClass: 'warning', icon: '▼' },
+  { label: 'Warranty Offered (June)', value: '75%', delta: 'Up from ~58% Feb–May', deltaClass: 'good', icon: '▲' },
 ];
 
 function renderKpis() {
@@ -266,19 +265,18 @@ function renderBarList(containerId, items, opts) {
 
 // ---------- data ----------
 const MONTHLY = {
-  bridgestoneShare: [39, 32, 17, 12],
-  continentalShare: [14, 13, 21, 18],
-  stockAvailable: [74, 91, 90, 76],
-  warrantyOffered: [31, 45, 73, 0],
-  promotionMentioned: [42, 51, 79, 1],
-  priceBasis: [61, 58, 43, 75],
+  bridgestoneShare: [39, 32, 17, 12, 11],
+  continentalShare: [14, 13, 21, 18, 4],
+  dunlopShare: [9, 5, 5, 5, 39],
+  stockAvailable: [80, 80, 72, 80, 69],
+  warrantyOffered: [58, 58, 59, 58, 75],
+  promotionMentioned: [44, 44, 41, 45, 40],
+  priceBasis: [60, 60, 64, 61, 62],
 };
 
 const COMPETITION = [
-  { label: 'POSM Cube Visibility', overall: 31, groups: [['Supa Quick', 100], ['TWT', 41], ['Tires & More', 20]] },
-  { label: 'POSM Counter Flyer', overall: 97, groups: [['Supa Quick', 100], ['TWT', 100], ['Tires & More', 80]] },
-  { label: 'Bridgestone Stock Recommended', overall: 67, groups: [['TWT', 70], ['Tires & More', 66], ['Supa Quick', 64]] },
-  { label: 'Competitor Brand Mentioned', overall: 0, groups: [['Supa Quick', 0], ['TWT', 0], ['Tires & More', 0]] },
+  { label: 'Bridgestone POSM Cube Visible', overall: 48, groups: [['Supa Quick (all 126 visits)', 48]] },
+  { label: 'Bridgestone POSM Counter Flyer Visible', overall: 48, groups: [['Supa Quick (all 126 visits)', 48]] },
 ];
 
 function renderCompetition() {
@@ -383,17 +381,19 @@ function openLightbox(src) {
   document.getElementById('lightbox').classList.add('open');
 }
 
-// SAMPLE data only — fictional store/rep names, not real Bridgestone stores.
-// Illustrates the per-visit drill-down UI ahead of real imported/live data.
-const SAMPLE_VISITS = [
-  ['Sample Store A', 'Sample Region 1', '2026-06-02', 'Sample Rep 1', 'Bridgestone', 'Yes', 'Yes', 'Yes'],
-  ['Sample Store B', 'Sample Region 1', '2026-06-03', 'Sample Rep 2', 'Continental', 'Yes', 'No', 'No'],
-  ['Sample Store C', 'Sample Region 2', '2026-06-04', 'Sample Rep 1', 'Bridgestone', 'No', 'Yes', 'Yes'],
-  ['Sample Store D', 'Sample Region 2', '2026-06-04', 'Sample Rep 3', 'Bridgestone', 'Yes', 'Yes', 'No'],
-  ['Sample Store E', 'Sample Region 3', '2026-06-05', 'Sample Rep 2', 'Dunlop', 'Yes', 'No', 'No'],
-  ['Sample Store F', 'Sample Region 3', '2026-06-05', 'Sample Rep 4', 'Continental', 'Yes', 'Yes', 'Yes'],
-  ['Sample Store G', 'Sample Region 1', '2026-06-06', 'Sample Rep 3', 'Bridgestone', 'No', 'No', 'No'],
-  ['Sample Store H', 'Sample Region 2', '2026-06-06', 'Sample Rep 4', 'Bridgestone', 'Yes', 'Yes', 'Yes'],
+// Real imported visits from the Import Template's "Store Report" sheet —
+// most recent 10 of 594 real rows (June 2026).
+const REAL_VISITS = [
+  ['Best Drive PE', 'Best Drive', 'EC', '2026-06-04', 'Dunlop', 'Yes', 'No', 'Yes'],
+  ['Best Drive Springbok', 'Best Drive', 'NC', '2026-06-05', 'Dunlop', 'Yes', 'No', 'Yes'],
+  ['Best Drive Montague Gardens', 'Best Drive', 'WC', '2026-06-06', 'Pirelli', 'Yes', 'No', 'Yes'],
+  ['Best Drive Vredenburg', 'Best Drive', 'WC', '2026-06-07', 'Pirelli', 'Yes', 'No', 'No'],
+  ['Treadz Tires', 'Independent', 'KZN', '2026-06-08', 'Continental', 'Yes', 'No', 'No'],
+  ['Bandcorp CC', 'Independent', 'KZN', '2026-06-09', 'Continental', 'No', 'No', 'Yes'],
+  ['Maclear Tyres & Fitment Centre', 'Independent', 'KZN', '2026-06-10', 'Continental', 'No', 'No', 'Yes'],
+  ['Speedy Tires', 'Independent', 'KZN', '2026-06-11', 'Continental', 'Yes', 'No', 'No'],
+  ['Prima Bande Paarl', 'Independent', 'WC', '2026-06-12', 'Continental', 'Yes', 'No', 'No'],
+  ['Hi-Q Walmer Park', 'HI-Q', 'EC', '2026-06-13', 'Continental', 'Yes', 'No', 'No'],
 ];
 
 function yesNoTag(v) {
@@ -402,8 +402,8 @@ function yesNoTag(v) {
 
 function renderSampleDrillTable() {
   const el = document.getElementById('sampleDrillTable');
-  let html = '<tr><th>Store</th><th>Region</th><th>Visit Date</th><th>Rep</th><th>Brand Recommended</th><th>Stock Available</th><th>Signage Available</th><th>Promotion Mentioned</th></tr>';
-  SAMPLE_VISITS.forEach(row => {
+  let html = '<tr><th>Store</th><th>Channel</th><th>Region</th><th>Visit Date</th><th>Brand Recommended</th><th>Stock Available</th><th>Signage Available</th><th>Promotion Mentioned</th></tr>';
+  REAL_VISITS.forEach(row => {
     html += `<tr><td>${row[0]}</td><td>${row[1]}</td><td>${row[2]}</td><td>${row[3]}</td><td>${row[4]}</td><td>${yesNoTag(row[5])}</td><td>${yesNoTag(row[6])}</td><td>${yesNoTag(row[7])}</td></tr>`;
   });
   el.innerHTML = html;
@@ -425,6 +425,7 @@ renderKpis();
 renderLineChart('brandTrendChart', [
   { name: 'Bridgestone', color: 'var(--series-bridgestone)', values: MONTHLY.bridgestoneShare },
   { name: 'Continental', color: 'var(--series-continental)', values: MONTHLY.continentalShare },
+  { name: 'Dunlop', color: 'var(--series-other)', values: MONTHLY.dunlopShare },
 ]);
 renderMetricTrends();
 renderCompetition();
