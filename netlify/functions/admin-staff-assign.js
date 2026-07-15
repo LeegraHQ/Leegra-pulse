@@ -1,13 +1,17 @@
 // GET  /api/admin-staff-assign               — list Leegra's internal staff roster
-// POST /api/admin-staff-assign  { email, name, tier }  — add or update a staff member
+// POST /api/admin-staff-assign  { email, name, tier, tenant_code? }  — add or update a staff member
 // tier: 'super_user' | 'admin' | 'report_export_only'
+// tenant_code (optional): restricts this staff member to that one tenant
+// only, regardless of tier — omit/clear it to restore normal cross-tenant
+// access. Useful for someone who sits on the Leegra roster but should only
+// ever see one client's data (e.g. a dedicated account manager).
 //
 // This is the one action even the 'admin' tier can't do — only a super_user
 // can grant or change anyone's cross-tenant access, so a compromised or
 // careless admin account can't hand out more access than it has itself.
 
 const jwt = require('./_lib/jwt');
-const { TIER_TO_ROLE } = require('./_data');
+const { TIER_TO_ROLE, findTenantByCode } = require('./_data');
 const { getStaff, saveStaff } = require('./_lib/records');
 
 exports.handler = async (event) => {
@@ -30,9 +34,16 @@ exports.handler = async (event) => {
     return { statusCode: 400, body: JSON.stringify({ error: 'email and a valid tier (super_user, admin, report_export_only) required' }) };
   }
 
+  let scopedTenantCode = null;
+  if (body.tenant_code) {
+    const tenant = findTenantByCode(body.tenant_code);
+    if (!tenant) return { statusCode: 400, body: JSON.stringify({ error: 'Unknown tenant_code' }) };
+    scopedTenantCode = tenant.code;
+  }
+
   const email = body.email.trim().toLowerCase();
   const staff = await getStaff();
-  const record = { email, name: body.name || '', tier: body.tier, updatedAt: new Date().toISOString() };
+  const record = { email, name: body.name || '', tier: body.tier, scopedTenantCode, updatedAt: new Date().toISOString() };
   const idx = staff.findIndex(s => s.email === email);
   if (idx >= 0) staff[idx] = record; else staff.push(record);
   await saveStaff(staff);

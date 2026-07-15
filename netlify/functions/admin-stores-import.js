@@ -13,6 +13,7 @@
 const jwt = require('./_lib/jwt');
 const { blobsStore } = require('./_lib/records');
 const { LEEGRA_WRITE_ROLES } = require('./_data');
+const { tenantScopeOk } = require('./_lib/scope');
 
 exports.handler = async (event) => {
   const claims = jwt.fromAuthHeader(event);
@@ -24,8 +25,11 @@ exports.handler = async (event) => {
 
   let body;
   try { body = JSON.parse(event.body || '{}'); } catch { return { statusCode: 400, body: 'Invalid JSON' }; }
-  const tenantCode = claims.role === 'client_admin' ? claims.tenantCode : body.tenant_code;
+  const tenantCode = claims.role === 'client_admin' ? claims.tenantCode : (body.tenant_code || claims.scopedTenantCode);
   if (!tenantCode) return { statusCode: 400, body: JSON.stringify({ error: 'tenant_code required for super-admin imports' }) };
+  if (claims.role !== 'client_admin' && !tenantScopeOk(claims, tenantCode)) {
+    return { statusCode: 403, body: JSON.stringify({ error: 'Not permitted for that tenant' }) };
+  }
   if (!Array.isArray(body.rows) || !body.rows.length) return { statusCode: 400, body: JSON.stringify({ error: 'rows[] required' }) };
 
   // Demo storage: Netlify Blobs, one JSON blob per tenant. Swap for an

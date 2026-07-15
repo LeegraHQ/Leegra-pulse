@@ -7,6 +7,7 @@
 
 const jwt = require('./_lib/jwt');
 const { LEEGRA_ROLES } = require('./_data');
+const { tenantScopeOk } = require('./_lib/scope');
 const { getLiveVisit, saveLiveVisit, savePhoto, getPhoto } = require('./_lib/records');
 
 exports.handler = async (event) => {
@@ -17,7 +18,7 @@ exports.handler = async (event) => {
     const tenantCode = event.queryStringParameters?.tenant_code;
     const photoId = event.queryStringParameters?.photo_id;
     if (!tenantCode || !photoId) return { statusCode: 400, body: JSON.stringify({ error: 'tenant_code and photo_id required' }) };
-    const allowed = LEEGRA_ROLES.includes(claims.role) || claims.tenantCode === tenantCode;
+    const allowed = (LEEGRA_ROLES.includes(claims.role) && tenantScopeOk(claims, tenantCode)) || claims.tenantCode === tenantCode;
     if (!allowed) return { statusCode: 403, body: JSON.stringify({ error: 'Not permitted' }) };
 
     const photo = await getPhoto(tenantCode, photoId);

@@ -8,6 +8,7 @@ const XLSX = require('xlsx');
 const { PDFDocument, StandardFonts, rgb } = require('pdf-lib');
 const jwt = require('./_lib/jwt');
 const { TENANTS, LEEGRA_ROLES, findTenantByCode } = require('./_data');
+const { tenantScopeOk } = require('./_lib/scope');
 const { getStores, getImportedVisits, getLiveVisits, getPhoto } = require('./_lib/records');
 
 // Historical CSV imports don't have structured per-question answers, just
@@ -74,14 +75,23 @@ exports.handler = async (event) => {
     return { statusCode: 403, body: JSON.stringify({ error: 'Not permitted' }) };
   }
 
-  const tenantCodeParam = event.queryStringParameters?.tenant_code;
+  const tenantCodeParam = event.queryStringParameters?.tenant_code || claims.scopedTenantCode;
   const format = event.queryStringParameters?.format || 'json';
 
   let tenants = TENANTS;
   if (tenantCodeParam) {
+    if (!tenantScopeOk(claims, tenantCodeParam)) {
+      return { statusCode: 403, body: JSON.stringify({ error: 'Not permitted for that tenant' }) };
+    }
     const tenant = findTenantByCode(tenantCodeParam);
     if (!tenant) return { statusCode: 404, body: JSON.stringify({ error: 'Unknown tenant' }) };
     tenants = [tenant];
+  } else if (claims.scopedTenantCode) {
+    // Unreachable in practice (tenantCodeParam already falls back to
+    // scopedTenantCode above), kept as a defensive second gate so a scoped
+    // staff member can never see every tenant's log even if that fallback
+    // is ever removed.
+    tenants = TENANTS.filter(t => t.code === claims.scopedTenantCode);
   }
 
   const perTenant = await Promise.all(tenants.map(tenantVisitRows));

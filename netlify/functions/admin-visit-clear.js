@@ -10,6 +10,7 @@
 
 const jwt = require('./_lib/jwt');
 const { LEEGRA_WRITE_ROLES } = require('./_data');
+const { tenantScopeOk } = require('./_lib/scope');
 const { getLiveVisits, deleteLiveVisit, deletePhoto } = require('./_lib/records');
 
 exports.handler = async (event) => {
@@ -24,6 +25,9 @@ exports.handler = async (event) => {
   try { body = JSON.parse(event.body || '{}'); } catch { return { statusCode: 400, body: 'Invalid JSON' }; }
   const { tenant_code, all, before, visit_ids } = body;
   if (!tenant_code) return { statusCode: 400, body: JSON.stringify({ error: 'tenant_code required' }) };
+  if (!tenantScopeOk(claims, tenant_code)) {
+    return { statusCode: 403, body: JSON.stringify({ error: 'Not permitted for that tenant' }) };
+  }
 
   const modesGiven = [all === true, !!before, Array.isArray(visit_ids)].filter(Boolean).length;
   if (modesGiven !== 1) {

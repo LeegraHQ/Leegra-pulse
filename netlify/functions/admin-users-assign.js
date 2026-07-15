@@ -10,6 +10,7 @@
 const jwt = require('./_lib/jwt');
 const { blobsStore } = require('./_lib/records');
 const { LEEGRA_WRITE_ROLES } = require('./_data');
+const { tenantScopeOk } = require('./_lib/scope');
 
 exports.handler = async (event) => {
   const claims = jwt.fromAuthHeader(event);
@@ -21,9 +22,12 @@ exports.handler = async (event) => {
 
   let body;
   try { body = JSON.parse(event.body || '{}'); } catch { return { statusCode: 400, body: 'Invalid JSON' }; }
-  const tenantCode = claims.role === 'client_admin' ? claims.tenantCode : body.tenant_code;
+  const tenantCode = claims.role === 'client_admin' ? claims.tenantCode : (body.tenant_code || claims.scopedTenantCode);
   if (!tenantCode || !body.email || !Array.isArray(body.store_codes)) {
     return { statusCode: 400, body: JSON.stringify({ error: 'tenant_code, email and store_codes[] required' }) };
+  }
+  if (claims.role !== 'client_admin' && !tenantScopeOk(claims, tenantCode)) {
+    return { statusCode: 403, body: JSON.stringify({ error: 'Not permitted for that tenant' }) };
   }
 
   const store = blobsStore(`users-${tenantCode}`);

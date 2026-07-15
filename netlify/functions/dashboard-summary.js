@@ -4,10 +4,14 @@
 // drill into one tenant's full dashboard (any other role's tenant_code
 // param is ignored). All three staff tiers can read every tenant's
 // dashboard — the tiers only differ on write access (see the admin-*
-// endpoints), not on this read-only summary.
+// endpoints), not on this read-only summary. A staff member can also be
+// scoped to a single tenant (claims.scopedTenantCode, see _lib/scope.js) —
+// for them, ?tenant_code= must match that tenant (or defaults to it), and
+// the no-param "every tenant" list collapses to just their one tenant.
 
 const jwt = require('./_lib/jwt');
 const { TENANTS, findTenantByCode, LEEGRA_ROLES } = require('./_data');
+const { tenantScopeOk } = require('./_lib/scope');
 const { getStores, getAllVisits, computeDashboard, getTenantSettings } = require('./_lib/records');
 
 async function tenantDashboard(tenant) {
@@ -20,8 +24,11 @@ exports.handler = async (event) => {
   if (!claims) return { statusCode: 401, body: JSON.stringify({ error: 'Not authenticated' }) };
 
   if (LEEGRA_ROLES.includes(claims.role)) {
-    const tenantCode = event.queryStringParameters?.tenant_code;
+    const tenantCode = event.queryStringParameters?.tenant_code || claims.scopedTenantCode;
     if (tenantCode) {
+      if (!tenantScopeOk(claims, tenantCode)) {
+        return { statusCode: 403, body: JSON.stringify({ error: 'Not permitted for that tenant' }) };
+      }
       const tenant = findTenantByCode(tenantCode);
       if (!tenant) return { statusCode: 404, body: JSON.stringify({ error: 'Unknown tenant' }) };
       const [dashboard, settings] = await Promise.all([tenantDashboard(tenant), getTenantSettings(tenant.code)]);

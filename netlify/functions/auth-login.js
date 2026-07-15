@@ -55,8 +55,9 @@ exports.handler = async (event) => {
 
   if (identity.kind === 'staff') {
     const role = TIER_TO_ROLE[identity.staffRecord.tier] || 'leegra_report_only';
-    const token = jwt.sign({ role, email: normalizedEmail });
-    return { statusCode: 200, body: JSON.stringify({ token, role, email: normalizedEmail }) };
+    const scopedTenantCode = identity.staffRecord.scopedTenantCode || null;
+    const token = jwt.sign({ role, email: normalizedEmail, scopedTenantCode });
+    return { statusCode: 200, body: JSON.stringify({ token, role, email: normalizedEmail, scopedTenantCode }) };
   }
 
   if (identity.kind === 'multi_tenant_user') {
