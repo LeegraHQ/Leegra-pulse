@@ -67,6 +67,10 @@ table.plain td:first-child{color:var(--text-primary);font-weight:600}
 .status-tag.critical{background:rgba(208,59,59,.12);color:var(--critical)}
 .status-tag.warning{background:rgba(250,178,25,.15);color:#a86200}
 .status-tag.good{background:rgba(12,163,12,.12);color:var(--good)}
+.sample-wrap{position:relative;border:2px dashed #9b8cff;border-radius:16px;padding:16px;background:repeating-linear-gradient(135deg,rgba(155,140,255,.06),rgba(155,140,255,.06) 10px,transparent 10px,transparent 20px)}
+.sample-banner{display:flex;align-items:center;gap:10px;background:#efeaff;border:1px solid #c9bdff;color:#4b2fa8;border-radius:10px;padding:10px 14px;font-size:13px;font-weight:700;margin-bottom:14px}
+@media (prefers-color-scheme: dark){.sample-banner{background:#241f3d;border-color:#4b3fa8;color:#c9bdff}}
+.sample-tag{display:inline-block;background:#7c5cff;color:white;font-size:10.5px;font-weight:800;letter-spacing:.04em;padding:2px 8px;border-radius:999px;text-transform:uppercase}
 @media(max-width:1200px){.kpis{grid-template-columns:repeat(2,1fr)}.grid2,.grid3,.grid4{grid-template-columns:1fr}}
 </style></head>
 <body class="viz-root">
@@ -120,9 +124,17 @@ table.plain td:first-child{color:var(--text-primary);font-weight:600}
   </div>
 </div>
 
-<div class="card">
+<div class="card" style="margin-bottom:16px">
   <div class="section-title"><h2>Live In-App Data</h2><span class="small">Populates automatically once reps start checking in</span></div>
   <div class="summary">Bridgestone's tenant (<b>BRG-118</b>) and 103 real stores across 8 regions are already loaded into Leegra Pulse, and the live <b>Bridgestone Mystery Shopper</b> questionnaire (27 questions covering demographics, brand visibility, POSM, stock, warranty, price/quality and photo evidence) is now the default questionnaire for every check-in. As reps complete visits in the app — or historical rows are imported from the template — this section will surface real per-visit, per-store and per-rep compliance and trend data alongside the historical deck data above. For now it shows 0 because rollout has just gone live.</div>
+</div>
+
+<div class="sample-wrap">
+  <div class="sample-banner">⚠ <span>SAMPLE DATA — for illustration only. These are not real Bridgestone stores, reps or visits. This is a preview of the per-visit drill-down view that will populate with genuine data as soon as real visits are imported or logged in-app.</span></div>
+  <div class="section-title"><h2>Per-Visit Drill-Down <span class="sample-tag">Sample</span></h2><span class="small">Preview of the coming real per-visit view</span></div>
+  <div class="table-wrap">
+    <table class="plain" id="sampleDrillTable"></table>
+  </div>
 </div>
 
 </div>
@@ -317,6 +329,32 @@ function renderChannelTable() {
   el.innerHTML = html;
 }
 
+// SAMPLE data only — fictional store/rep names, not real Bridgestone stores.
+// Illustrates the per-visit drill-down UI ahead of real imported/live data.
+const SAMPLE_VISITS = [
+  ['Sample Store A', 'Sample Region 1', '2026-06-02', 'Sample Rep 1', 'Bridgestone', 'Yes', 'Yes', 'Yes'],
+  ['Sample Store B', 'Sample Region 1', '2026-06-03', 'Sample Rep 2', 'Continental', 'Yes', 'No', 'No'],
+  ['Sample Store C', 'Sample Region 2', '2026-06-04', 'Sample Rep 1', 'Bridgestone', 'No', 'Yes', 'Yes'],
+  ['Sample Store D', 'Sample Region 2', '2026-06-04', 'Sample Rep 3', 'Bridgestone', 'Yes', 'Yes', 'No'],
+  ['Sample Store E', 'Sample Region 3', '2026-06-05', 'Sample Rep 2', 'Dunlop', 'Yes', 'No', 'No'],
+  ['Sample Store F', 'Sample Region 3', '2026-06-05', 'Sample Rep 4', 'Continental', 'Yes', 'Yes', 'Yes'],
+  ['Sample Store G', 'Sample Region 1', '2026-06-06', 'Sample Rep 3', 'Bridgestone', 'No', 'No', 'No'],
+  ['Sample Store H', 'Sample Region 2', '2026-06-06', 'Sample Rep 4', 'Bridgestone', 'Yes', 'Yes', 'Yes'],
+];
+
+function yesNoTag(v) {
+  return v === 'Yes' ? '<span class="status-tag good">Yes</span>' : '<span class="status-tag critical">No</span>';
+}
+
+function renderSampleDrillTable() {
+  const el = document.getElementById('sampleDrillTable');
+  let html = '<tr><th>Store</th><th>Region</th><th>Visit Date</th><th>Rep</th><th>Brand Recommended</th><th>Stock Available</th><th>Signage Available</th><th>Promotion Mentioned</th></tr>';
+  SAMPLE_VISITS.forEach(row => {
+    html += `<tr><td>${row[0]}</td><td>${row[1]}</td><td>${row[2]}</td><td>${row[3]}</td><td>${row[4]}</td><td>${yesNoTag(row[5])}</td><td>${yesNoTag(row[6])}</td><td>${yesNoTag(row[7])}</td></tr>`;
+  });
+  el.innerHTML = html;
+}
+
 function renderMetricTrends() {
   const el = document.getElementById('metricTrends');
   const cards = [
@@ -339,6 +377,7 @@ renderCompetition();
 renderDemo();
 renderWarrantyPromo();
 renderChannelTable();
+renderSampleDrillTable();
 
 // resolve CSS custom properties to concrete colors for SVG stroke/fill (some
 // browsers don't resolve var() inside dynamically-injected SVG attribute strings
