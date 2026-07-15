@@ -71,7 +71,18 @@ table.plain td:first-child{color:var(--text-primary);font-weight:600}
 .sample-banner{display:flex;align-items:center;gap:10px;background:#efeaff;border:1px solid #c9bdff;color:#4b2fa8;border-radius:10px;padding:10px 14px;font-size:13px;font-weight:700;margin-bottom:14px}
 @media (prefers-color-scheme: dark){.sample-banner{background:#241f3d;border-color:#4b3fa8;color:#c9bdff}}
 .sample-tag{display:inline-block;background:#7c5cff;color:white;font-size:10.5px;font-weight:800;letter-spacing:.04em;padding:2px 8px;border-radius:999px;text-transform:uppercase}
-@media(max-width:1200px){.kpis{grid-template-columns:repeat(2,1fr)}.grid2,.grid3,.grid4{grid-template-columns:1fr}}
+.media-tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+.media-tab{border:1px solid var(--border);background:var(--surface-1);color:var(--text-secondary);border-radius:999px;padding:8px 14px;cursor:pointer;font-weight:700;font-size:12.5px}
+.media-tab.active{background:var(--brand-red);color:white;border-color:var(--brand-red)}
+.media-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:14px}
+.media-item{cursor:pointer;border-radius:12px;overflow:hidden;border:1px solid var(--border);background:var(--gridline)}
+.media-item img{width:100%;height:130px;object-fit:cover;display:block}
+.media-caption{padding:8px 10px;font-size:12px;font-weight:700;color:var(--text-primary);background:var(--surface-1)}
+.media-empty{border:2px dashed var(--border);border-radius:14px;padding:28px;text-align:center;color:var(--text-muted);font-size:13.5px;line-height:1.6}
+.lightbox{display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:100;align-items:center;justify-content:center;cursor:zoom-out}
+.lightbox.open{display:flex}
+.lightbox img{max-width:92%;max-height:92%;border-radius:8px}
+@media(max-width:1200px){.kpis{grid-template-columns:repeat(2,1fr)}.grid2,.grid3,.grid4{grid-template-columns:1fr}.media-grid{grid-template-columns:repeat(2,1fr)}}
 </style></head>
 <body class="viz-root">
 <div class="header">
@@ -125,6 +136,12 @@ table.plain td:first-child{color:var(--text-primary);font-weight:600}
 </div>
 
 <div class="card" style="margin-bottom:16px">
+  <div class="section-title"><h2>Store &amp; POSM Pictures</h2><span class="small">Field evidence per store, per channel</span></div>
+  <div class="media-tabs" id="mediaTabs"></div>
+  <div id="mediaGrid"></div>
+</div>
+
+<div class="card" style="margin-bottom:16px">
   <div class="section-title"><h2>Live In-App Data</h2><span class="small">Populates automatically once reps start checking in</span></div>
   <div class="summary">Bridgestone's tenant (<b>BRG-118</b>) and 103 real stores across the <b>Western Cape (54) and Eastern Cape (49)</b> are already loaded into Leegra Pulse — the other 6 regions from the national programme (GP, KZN, Limpopo, Mpumalanga, etc.) still need their store lists imported, and the live <b>Bridgestone Mystery Shopper</b> questionnaire (27 questions covering demographics, brand visibility, POSM, stock, warranty, price/quality and photo evidence) is now the default questionnaire for every check-in. As reps complete visits in the app — or historical rows are imported from the template — this section will surface real per-visit, per-store and per-rep compliance and trend data alongside the historical deck data above. For now it shows 0 because rollout has just gone live.</div>
 </div>
@@ -138,6 +155,7 @@ table.plain td:first-child{color:var(--text-primary);font-weight:600}
 </div>
 
 </div>
+<div class="lightbox" id="lightbox" onclick="this.classList.remove('open')"><img id="lightboxImg" src=""></div>
 <script>
 const MONTHS = ['Feb', 'March', 'April', 'May'];
 
@@ -329,6 +347,42 @@ function renderChannelTable() {
   el.innerHTML = html;
 }
 
+// ---------- Store & POSM pictures ----------
+// Empty until real photos are sent in (matching the Import Template's
+// Signage/POSM/Cube/Counter-Flyer filename columns) — then each becomes
+// { channel, store, caption, src }.
+const MEDIA_ITEMS = [];
+let mediaChannel = 'All';
+
+function renderMediaTabs() {
+  const channels = ['All', ...new Set(MEDIA_ITEMS.map(m => m.channel))];
+  const el = document.getElementById('mediaTabs');
+  el.innerHTML = channels.map(c => `<button class="media-tab ${c === mediaChannel ? 'active' : ''}" data-channel="${c}">${c}</button>`).join('');
+  el.querySelectorAll('.media-tab').forEach(btn => {
+    btn.addEventListener('click', () => { mediaChannel = btn.dataset.channel; renderMediaTabs(); renderMedia(); });
+  });
+}
+
+function renderMedia() {
+  const el = document.getElementById('mediaGrid');
+  const items = mediaChannel === 'All' ? MEDIA_ITEMS : MEDIA_ITEMS.filter(m => m.channel === mediaChannel);
+  if (!items.length) {
+    el.innerHTML = `<div class="media-empty">No store or POSM pictures loaded yet.<br>Send photos through to Leegra — name each file starting with the store code (matching the Import Template's Signage / POSM / Cube / Counter Flyer filename columns, e.g. <code>BRG-0001_signage.jpg</code>) — and they'll appear here per store and per channel.</div>`;
+    return;
+  }
+  el.innerHTML = `<div class="media-grid">${items.map(m => `
+    <div class="media-item" onclick="openLightbox('${m.src}')">
+      <img src="${m.src}" loading="lazy">
+      <div class="media-caption">${m.caption}</div>
+    </div>
+  `).join('')}</div>`;
+}
+
+function openLightbox(src) {
+  document.getElementById('lightboxImg').src = src;
+  document.getElementById('lightbox').classList.add('open');
+}
+
 // SAMPLE data only — fictional store/rep names, not real Bridgestone stores.
 // Illustrates the per-visit drill-down UI ahead of real imported/live data.
 const SAMPLE_VISITS = [
@@ -377,6 +431,8 @@ renderCompetition();
 renderDemo();
 renderWarrantyPromo();
 renderChannelTable();
+renderMediaTabs();
+renderMedia();
 renderSampleDrillTable();
 
 // resolve CSS custom properties to concrete colors for SVG stroke/fill (some
