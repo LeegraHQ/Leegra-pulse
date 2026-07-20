@@ -33,12 +33,17 @@ exports.handler = async (event) => {
   if (!Array.isArray(body.rows) || !body.rows.length) return { statusCode: 400, body: JSON.stringify({ error: 'rows[] required' }) };
 
   // Demo storage: Netlify Blobs, one JSON blob per tenant. Swap for an
-  // INSERT into a real `stores` table (see BACKEND.md) once a DB exists —
+  // UPSERT into a real `stores` table (see BACKEND.md) once a DB exists —
   // the important part to keep is that tenant_code always drives the key,
   // never something taken from the row data itself.
+  // Merge by code (last write wins) rather than blind-append — a retried
+  // call (e.g. after a transient 401 from the Blobs backend that actually
+  // wrote before erroring) must not duplicate every store it already added.
   const store = blobsStore(`stores-${tenantCode}`);
   const existing = (await store.get('base', { type: 'json' })) || [];
-  const merged = [...existing, ...body.rows];
+  const byCode = new Map(existing.map(s => [s.code, s]));
+  for (const row of body.rows) byCode.set(row.code, row);
+  const merged = [...byCode.values()];
   await store.setJSON('base', merged);
 
   return { statusCode: 200, body: JSON.stringify({ ok: true, tenant_code: tenantCode, total_stores: merged.length }) };
