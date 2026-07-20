@@ -27,6 +27,26 @@ async function getUsers(tenantCode) {
   return (await store.get('list', { type: 'json' })) || [];
 }
 
+async function saveUsers(tenantCode, list) {
+  const store = blobsStore(`users-${tenantCode}`);
+  await store.setJSON('list', list);
+}
+
+// Stamps lastLoginAt on a tenant user's record so admin-users-assign can
+// answer "has this person actually logged in yet" without polling their
+// inbox. Best-effort — a failure here must never block the login itself.
+async function recordUserLogin(tenantCode, email) {
+  try {
+    const users = await getUsers(tenantCode);
+    const idx = users.findIndex(u => u.email.toLowerCase() === email.toLowerCase());
+    if (idx < 0) return;
+    users[idx] = { ...users[idx], lastLoginAt: new Date().toISOString() };
+    await saveUsers(tenantCode, users);
+  } catch {
+    // best-effort, swallow
+  }
+}
+
 // Leegra's own internal staff roster — global, not scoped to a tenant.
 // tier is one of 'super_user' | 'admin' | 'report_export_only'.
 async function getStaff() {
@@ -235,7 +255,7 @@ function computeDashboard(stores, visits) {
 
 module.exports = {
   blobsStore,
-  getStores, getUsers, getAllVisits, getImportedVisits, getLiveVisits, saveLiveVisit, getLiveVisit, deleteLiveVisit, computeDashboard,
+  getStores, getUsers, saveUsers, recordUserLogin, getAllVisits, getImportedVisits, getLiveVisits, saveLiveVisit, getLiveVisit, deleteLiveVisit, computeDashboard,
   getQuestionnaires, saveQuestionnaires, pickQuestionnaire,
   getStaff, saveStaff,
   savePhoto, getPhoto, deletePhoto,

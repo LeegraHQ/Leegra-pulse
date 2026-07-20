@@ -1,3 +1,6 @@
+// GET  /api/admin-users-assign?tenant_code=X   — list a tenant's user roster
+//   (includes lastLoginAt so you can check whether someone has actually
+//   logged in yet, without needing their inbox)
 // POST /api/admin-users-assign
 // Body: { email, role: 'field_rep'|'client_manager'|'client_admin', store_codes: ['GAM-118', ...] }
 // Provisions (or updates) a staff login and which of the tenant's stores
@@ -8,17 +11,28 @@
 // only ever includes stores present in this assignment list.
 
 const jwt = require('./_lib/jwt');
-const { blobsStore } = require('./_lib/records');
+const { blobsStore, getUsers } = require('./_lib/records');
 const { LEEGRA_WRITE_ROLES } = require('./_data');
 const { tenantScopeOk } = require('./_lib/scope');
 
 exports.handler = async (event) => {
   const claims = jwt.fromAuthHeader(event);
   if (!claims) return { statusCode: 401, body: JSON.stringify({ error: 'Not authenticated' }) };
-  if (event.httpMethod !== 'POST') return { statusCode: 405, body: 'Method not allowed' };
   if (![...LEEGRA_WRITE_ROLES, 'client_admin'].includes(claims.role)) {
     return { statusCode: 403, body: JSON.stringify({ error: 'Not permitted' }) };
   }
+
+  if (event.httpMethod === 'GET') {
+    const tenantCode = claims.role === 'client_admin' ? claims.tenantCode : (event.queryStringParameters?.tenant_code || claims.scopedTenantCode);
+    if (!tenantCode) return { statusCode: 400, body: JSON.stringify({ error: 'tenant_code required for super-admin' }) };
+    if (claims.role !== 'client_admin' && !tenantScopeOk(claims, tenantCode)) {
+      return { statusCode: 403, body: JSON.stringify({ error: 'Not permitted for that tenant' }) };
+    }
+    const users = await getUsers(tenantCode);
+    return { statusCode: 200, body: JSON.stringify({ tenant_code: tenantCode, users }) };
+  }
+
+  if (event.httpMethod !== 'POST') return { statusCode: 405, body: 'Method not allowed' };
 
   let body;
   try { body = JSON.parse(event.body || '{}'); } catch { return { statusCode: 400, body: 'Invalid JSON' }; }
@@ -37,6 +51,9 @@ exports.handler = async (event) => {
     email: body.email,
     role: body.role || 'field_rep',
     storeCodes: body.store_codes,
+    // Preserve lastLoginAt across a re-assignment (e.g. adding more stores
+    // to someone who's already logged in) rather than silently wiping it.
+    ...(idx >= 0 && users[idx].lastLoginAt ? { lastLoginAt: users[idx].lastLoginAt } : {}),
     updatedAt: new Date().toISOString(),
   };
   if (idx >= 0) users[idx] = record; else users.push(record);

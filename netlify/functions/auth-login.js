@@ -13,7 +13,7 @@
 const { TIER_TO_ROLE } = require('./_data');
 const jwt = require('./_lib/jwt');
 const { resolveIdentityByEmail } = require('./_lib/identity');
-const { getOtp, clearOtp, getStores, getAllVisits, computeDashboard, getTenantSettings } = require('./_lib/records');
+const { getOtp, clearOtp, getStores, getAllVisits, computeDashboard, getTenantSettings, recordUserLogin } = require('./_lib/records');
 
 exports.handler = async (event) => {
   if (event.httpMethod !== 'POST') return { statusCode: 405, body: 'Method not allowed' };
@@ -86,6 +86,7 @@ exports.handler = async (event) => {
     getStores(tenant.code),
     getAllVisits(tenant.code),
     getTenantSettings(tenant.code),
+    recordUserLogin(tenant.code, normalizedEmail),
   ]);
   const dashboard = computeDashboard(stores, visits);
   const visibleStores = role === 'field_rep'
