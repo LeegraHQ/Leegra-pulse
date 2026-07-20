@@ -1,14 +1,24 @@
 // POST /api/auth-login  { email, code, tenant_code? }
 // The client never says which company or role it's logging into — the
-// email is resolved server-side (see _lib/identity.js) and the one-time
-// code from auth-request-code.js is checked here. There's no separate
-// password/company-code field: possession of the emailed code plus that
-// exact email is the whole login. One exception: TEST_REP_EMAIL, which
-// logs in with a fixed TEST_REP_PERMANENT_CODE instead (see below), and
-// which admin-users-assign can attach to every tenant for demos — for that
-// one account only, identity resolves to 'multi_tenant_user' and this
-// returns { needsTenantChoice: true, tenants: [...] } until the caller
-// resubmits with tenant_code set to one of them.
+// email is resolved server-side (see _lib/identity.js) first, then the
+// submitted code is checked against whichever credential applies to that
+// person:
+//   - Leegra staff / super-admin: always the emailed OTP (auth-request-code.js).
+//   - A tenant user (field_rep/client_manager/client_admin) with a fixedCode
+//     set on their record (see admin-users-assign.js's reset_code action):
+//     that persistent code, instead of the emailed OTP. This exists for
+//     people who reliably don't receive the OTP email — Leegra sets a fixed
+//     code for them once and relays it out of band (phone/WhatsApp); it
+//     never expires on its own and only changes when explicitly reset.
+//   - Everyone else: the emailed one-time code, as before.
+// One more exception: TEST_REP_EMAIL, which logs in with a fixed
+// TEST_REP_PERMANENT_CODE (see below), and which admin-users-assign can
+// attach to every tenant for demos — for that one account only, identity
+// resolves to 'multi_tenant_user' and this returns
+// { needsTenantChoice: true, tenants: [...] } until the caller resubmits
+// with tenant_code set to one of them (that path stays OTP/fixed-test-code
+// only — a multi-tenant login doesn't have a single user record to hold a
+// fixedCode until a tenant is chosen).
 
 const { TIER_TO_ROLE } = require('./_data');
 const jwt = require('./_lib/jwt');
@@ -29,23 +39,28 @@ exports.handler = async (event) => {
 
   // One test/demo account (set via env, not hardcoded) can use a fixed code
   // instead of an emailed one-time code, so it doesn't need email access
-  // during live demos. Every other login still requires the emailed OTP.
+  // during live demos.
   const isTestRepLogin = process.env.TEST_REP_EMAIL
     && process.env.TEST_REP_PERMANENT_CODE
     && normalizedEmail === process.env.TEST_REP_EMAIL.trim().toLowerCase()
     && submittedCode === process.env.TEST_REP_PERMANENT_CODE;
 
-  if (!isTestRepLogin) {
+  const identity = await resolveIdentityByEmail(normalizedEmail);
+  if (!identity) {
+    return { statusCode: 401, body: JSON.stringify({ error: 'Invalid or expired code' }) };
+  }
+
+  // A tenant user's fixedCode (if set) is checked here, before falling back
+  // to OTP — it's persistent, so unlike the OTP it's never cleared on use.
+  const fixedCode = identity.kind === 'tenant_user' ? identity.userRecord.fixedCode : null;
+  const isFixedCodeLogin = fixedCode && submittedCode === fixedCode;
+
+  if (!isTestRepLogin && !isFixedCodeLogin) {
     const otp = await getOtp(normalizedEmail);
     if (!otp || otp.code !== submittedCode || Date.now() > otp.expiresAt) {
       return { statusCode: 401, body: JSON.stringify({ error: 'Invalid or expired code' }) };
     }
     await clearOtp(normalizedEmail); // one-time use
-  }
-
-  const identity = await resolveIdentityByEmail(normalizedEmail);
-  if (!identity) {
-    return { statusCode: 401, body: JSON.stringify({ error: 'Invalid or expired code' }) };
   }
 
   if (identity.kind === 'super_admin') {
