@@ -1,7 +1,10 @@
-// GET  /api/admin-users-assign?tenant_code=X   — list a tenant's user roster
+// GET    /api/admin-users-assign?tenant_code=X   — list a tenant's user roster
 //   (includes lastLoginAt so you can check whether someone has actually
 //   logged in yet, without needing their inbox; also shows hasFixedCode,
 //   never the code value itself, once one's been set)
+// DELETE /api/admin-users-assign?tenant_code=X&email=Y   — remove a user's
+//   access entirely (e.g. a wrong email address was assigned by mistake —
+//   deletes rather than leaving it around with a still-working login code)
 // POST /api/admin-users-assign
 // Body: { email, role: 'field_rep'|'client_manager'|'client_admin', store_codes: ['GAM-118', ...] }
 // Provisions (or updates) a staff login and which of the tenant's stores
@@ -43,6 +46,23 @@ exports.handler = async (event) => {
     // could end up in logs — just whether one's set.
     const redacted = users.map(({ fixedCode, ...u }) => ({ ...u, hasFixedCode: !!fixedCode }));
     return { statusCode: 200, body: JSON.stringify({ tenant_code: tenantCode, users: redacted }) };
+  }
+
+  if (event.httpMethod === 'DELETE') {
+    const tenantCode = claims.role === 'client_admin' ? claims.tenantCode : (event.queryStringParameters?.tenant_code || claims.scopedTenantCode);
+    const email = event.queryStringParameters?.email;
+    if (!tenantCode || !email) return { statusCode: 400, body: JSON.stringify({ error: 'tenant_code and email required' }) };
+    if (claims.role !== 'client_admin' && !tenantScopeOk(claims, tenantCode)) {
+      return { statusCode: 403, body: JSON.stringify({ error: 'Not permitted for that tenant' }) };
+    }
+    const store = blobsStore(`users-${tenantCode}`);
+    const users = (await store.get('list', { type: 'json' })) || [];
+    const remaining = users.filter(u => u.email.toLowerCase() !== email.toLowerCase());
+    if (remaining.length === users.length) {
+      return { statusCode: 404, body: JSON.stringify({ error: 'No user with that email' }) };
+    }
+    await store.setJSON('list', remaining);
+    return { statusCode: 200, body: JSON.stringify({ ok: true, tenant_code: tenantCode, removed: email }) };
   }
 
   if (event.httpMethod !== 'POST') return { statusCode: 405, body: 'Method not allowed' };
