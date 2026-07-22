@@ -270,24 +270,64 @@
       <!-- SECTION: Blitz Call Diary -->
       <sc-if value="{{ isBlitz }}" hint-placeholder-val="{{ false }}">
         <div style="background:#FFFBEA; border:1px solid #F5E6A3; border-radius:12px; padding:10px 16px; margin-bottom:16px; font-size:12px; color:#8A6A00;">
-          Source sheet had no logged call data — showing a demo call plan per Blitz member (planned vs completed).
+          Jose Kelly and Mmuluki Makhurane show real call-diary-vs-attendance data (see the "Real" badge on their card). Everyone else still shows a sample plan until their diary + attendance files are uploaded.
         </div>
         <div style="display:grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap:14px; margin-bottom:22px;">
           <sc-for list="{{ blitzMembers }}" as="m" hint-placeholder-count="7">
             <div style="background:#fff; border:1px solid #E4E9F0; border-radius:14px; padding:16px 18px;">
-              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
                 <div style="font-size:13.5px; font-weight:700; color:#0B1B3A;">{{ m.name }}</div>
                 <span style="{{ m.rateStyle }}">{{ m.rate }}</span>
               </div>
+              <div style="margin-bottom:10px;"><span style="{{ m.sourceTagStyle }}">{{ m.sourceTag }}</span></div>
               <div style="display:flex; justify-content:space-between; font-size:11px; color:#8592A6; margin-bottom:6px;">
                 <span>Planned {{ m.planned }}</span><span>Completed {{ m.completed }}</span>
               </div>
-              <div style="height:10px; background:#EEF1F6; border-radius:6px; overflow:hidden; position:relative;">
+              <div style="height:10px; background:#EEF1F6; border-radius:6px; overflow:hidden; position:relative; margin-bottom:10px;">
                 <div style="{{ m.barStyle }}"></div>
               </div>
+              <sc-if value="{{ m.hasFlags }}" hint-placeholder-val="{{ false }}">
+                <div style="border-top:1px solid #F0F2F6; padding-top:8px; font-size:10.5px; color:#8592A6; display:grid; grid-template-columns:1fr 1fr; gap:4px;">
+                  <div>Check-in &gt;8am: <b style="color:#0B1B3A">{{ m.flagLateCheckin }}</b></div>
+                  <div>Check-out &gt;17:00: <b style="color:#0B1B3A">{{ m.flagLateCheckout }}</b></div>
+                  <div>Duration &gt;60min: <b style="color:#0B1B3A">{{ m.flagLongDuration }}</b></div>
+                  <div>Location &gt;1km: <b style="color:#0B1B3A">{{ m.flagLocationDrift }}</b></div>
+                </div>
+              </sc-if>
             </div>
           </sc-for>
         </div>
+
+        <sc-if value="{{ hasBlitzChannelPerf }}" hint-placeholder-val="{{ false }}">
+          <div style="background:#fff; border:1px solid #E4E9F0; border-radius:14px; padding:18px 20px;">
+            <div style="font-size:13px; font-weight:700; color:#0B1B3A; margin-bottom:4px;">Blitz Performance by Channel</div>
+            <div style="font-size:11px; color:#8592A6; margin-bottom:14px;">Real YTD sales matched to each Blitz rep via the store allocation list — use the Channel / Store filters above to narrow this down</div>
+            <table style="width:100%; border-collapse:collapse; font-size:12px;">
+              <thead>
+                <tr style="border-bottom:1px solid #E4E9F0;">
+                  <th style="text-align:left; padding:8px; color:#8592A6; font-weight:700; text-transform:uppercase; font-size:10.5px;">Blitz Rep</th>
+                  <th style="text-align:left; padding:8px; color:#8592A6; font-weight:700; text-transform:uppercase; font-size:10.5px;">Channel</th>
+                  <th style="text-align:right; padding:8px; color:#8592A6; font-weight:700; text-transform:uppercase; font-size:10.5px;">Stores</th>
+                  <th style="text-align:right; padding:8px; color:#8592A6; font-weight:700; text-transform:uppercase; font-size:10.5px;">Current YTD</th>
+                  <th style="text-align:right; padding:8px; color:#8592A6; font-weight:700; text-transform:uppercase; font-size:10.5px;">Previous YTD</th>
+                  <th style="text-align:right; padding:8px; color:#8592A6; font-weight:700; text-transform:uppercase; font-size:10.5px;">YoY Growth</th>
+                </tr>
+              </thead>
+              <tbody>
+                <sc-for list="{{ blitzPerformanceByChannel }}" as="row" hint-placeholder-count="8">
+                  <tr style="border-bottom:1px solid #F5F6F9;">
+                    <td style="padding:8px; font-weight:700; color:#0B1B3A;">{{ row.rep }}</td>
+                    <td style="padding:8px; color:#3A4658;">{{ row.channel }}</td>
+                    <td style="padding:8px; text-align:right; color:#3A4658;">{{ row.stores }}</td>
+                    <td style="padding:8px; text-align:right; color:#3A4658;">{{ row.curr }}</td>
+                    <td style="padding:8px; text-align:right; color:#3A4658;">{{ row.prev }}</td>
+                    <td style="padding:8px; text-align:right; {{ row.growthStyle }}">{{ row.growth }}</td>
+                  </tr>
+                </sc-for>
+              </tbody>
+            </table>
+          </div>
+        </sc-if>
       </sc-if>
 
       <!-- SECTION: Sales Value / Volume -->
@@ -925,17 +965,78 @@ class Component extends DCLogic {
       };
     });
 
-    // ================= BLITZ (synthetic demo) =================
+    // ================= BLITZ =================
+    // Real call diary vs actual attendance data exists for Jose Kelly and
+    // Mmuluki Makhurane (matched by store name across their diary + real
+    // 2026 attendance log, with fuzzy-name reconciliation manually
+    // reviewed) — everyone else still shows a synthetic demo plan until
+    // their diary + attendance files are uploaded, clearly labeled as such
+    // so it's never mistaken for real performance.
+    const blitzReal = d.blitzReal || {};
     const blitzMembers = REP_NAMES.filter(n => !selectedSet || selectedSet.has(n)).map((name, i) => {
-      const rnd = seedRand(i * 97 + 13);
-      const planned = 18 + Math.floor(rnd() * 10);
-      const completed = Math.max(4, Math.round(planned * (0.55 + rnd() * 0.4)));
-      const rate = completed / planned;
+      const real = blitzReal[name];
+      let planned, completed, flags = null, totalVisits = null;
+      if (real) {
+        planned = real.planned; completed = real.completed; totalVisits = real.totalVisits;
+        flags = real.flags;
+      } else {
+        const rnd = seedRand(i * 97 + 13);
+        planned = 18 + Math.floor(rnd() * 10);
+        completed = Math.max(4, Math.round(planned * (0.55 + rnd() * 0.4)));
+      }
+      const rate = planned ? completed / planned : 0;
       return {
         name, planned, completed,
+        isReal: !!real,
+        sourceTag: real ? 'REAL — diary vs attendance' : 'SAMPLE — diary not uploaded yet',
+        sourceTagStyle: `font-size:9.5px; font-weight:800; letter-spacing:.03em; text-transform:uppercase; padding:2px 7px; border-radius:999px; background:${real ? '#E6F6EC' : '#F1F0FF'}; color:${real ? '#1E8A4C' : '#6C4CC4'};`,
         rate: fmtPct(rate),
         rateStyle: `font-size:11px; font-weight:700; color:${rate >= 0.8 ? '#1E8A4C' : rate >= 0.6 ? '#B8860B' : '#C0392B'};`,
         barStyle: `height:100%; width:${(rate * 100).toFixed(1)}%; background:${rate >= 0.8 ? '#2FA860' : LIME}; border-radius:6px;`,
+        hasFlags: !!flags,
+        flagLateCheckin: flags ? `${flags.lateCheckin}/${totalVisits}` : null,
+        flagLateCheckout: flags ? `${flags.lateCheckout}/${totalVisits}` : null,
+        flagLongDuration: flags ? `${flags.longDuration}/${totalVisits}` : null,
+        flagLocationDrift: flags ? `${flags.locationDrift}/${totalVisits}` : null,
+      };
+    });
+
+    // ---- Blitz Performance by Channel (real sales, per rep, per channel) ----
+    // Uses the real store->rep map from the Custom Store List where a store
+    // matches directly; falls back to the existing region approximation
+    // for any store not in that map (see REP_REGION comment above).
+    const storeRepMap = d.storeRepMap || {};
+    function repForStore(storeName, region) {
+      if (storeRepMap[storeName]) return storeRepMap[storeName];
+      return null;
+    }
+    let blitzChannelRows = d.salesValue.filter(r => r[0] === 'JUL-YTD');
+    const blitzChannelSelected = cf.blitzChannel;
+    const blitzStoreSelected = cf.blitzStore;
+    if (blitzChannelSelected && blitzChannelSelected !== 'All') blitzChannelRows = blitzChannelRows.filter(r => r[2] === blitzChannelSelected);
+    if (blitzStoreSelected && blitzStoreSelected !== 'All') blitzChannelRows = blitzChannelRows.filter(r => r[1] === blitzStoreSelected);
+    const blitzChannelOptions = ['All', ...new Set(d.salesValue.filter(r => r[0] === 'JUL-YTD').map(r => r[2]))].filter(Boolean);
+    const blitzStoreOptions = ['All', ...new Set(d.salesValue.filter(r => r[0] === 'JUL-YTD').map(r => r[1]))].filter(Boolean).slice(0, 500);
+
+    const repChannelAgg = {};
+    blitzChannelRows.forEach(r => {
+      const rep = repForStore(r[1], r[3]);
+      if (!rep) return;
+      if (!selectedSet || selectedSet.has(rep)) {
+        const key = rep + '||' + r[2];
+        repChannelAgg[key] = repChannelAgg[key] || { rep, channel: r[2], prev: 0, curr: 0, stores: 0 };
+        repChannelAgg[key].prev += (r[4] || 0);
+        repChannelAgg[key].curr += (r[5] || 0);
+        repChannelAgg[key].stores += 1;
+      }
+    });
+    const blitzPerformanceByChannel = Object.values(repChannelAgg).sort((a, b) => b.curr - a.curr).map(v => {
+      const growth = v.prev ? (v.curr - v.prev) / v.prev : 0;
+      return {
+        rep: v.rep, channel: v.channel, stores: v.stores,
+        curr: fmtR(v.curr), prev: fmtR(v.prev),
+        growth: (growth >= 0 ? '+' : '') + fmtPct(growth),
+        growthStyle: `font-weight:700; color:${growth >= 0 ? '#1E8A4C' : '#C0392B'};`,
       };
     });
 
@@ -1091,6 +1192,11 @@ class Component extends DCLogic {
         { label: 'Blitz Member', value: cf.blitz || 'All', options: attBlitzMembers, onChange: (e) => this.setCrossFilter('attendance', 'blitz', e.target.value) },
         { label: 'Search Store', value: cf.storeSearch || '', options: null, isSearch: true, onChange: (e) => this.setCrossFilter('attendance', 'storeSearch', e.target.value) },
       ];
+    } else if (active === 'blitz') {
+      crossFilters = [
+        { label: 'Channel', value: cf.blitzChannel || 'All', options: blitzChannelOptions, onChange: (e) => this.setCrossFilter('blitz', 'blitzChannel', e.target.value) },
+        { label: 'Store', value: cf.blitzStore || 'All', options: blitzStoreOptions, onChange: (e) => this.setCrossFilter('blitz', 'blitzStore', e.target.value) },
+      ];
     } else if (active === 'salesValue') {
       const stores = ['All', ...new Set(d.salesValue.map(r => r[1]))].filter(Boolean).slice(0, 500);
       crossFilters = [
@@ -1137,10 +1243,12 @@ class Component extends DCLogic {
     } else if (active === 'blitz') {
       const totalPlanned = blitzMembers.reduce((a, m) => a + m.planned, 0);
       const totalCompleted = blitzMembers.reduce((a, m) => a + m.completed, 0);
+      const realCount = blitzMembers.filter(m => m.isReal).length;
       kpis = [
         { label: 'Planned Calls', value: fmtNum(totalPlanned), delta: '', deltaStyle: '' },
         { label: 'Completed Calls', value: fmtNum(totalCompleted), delta: '', deltaStyle: '' },
         { label: 'Completion Rate', value: fmtPct(totalPlanned ? totalCompleted / totalPlanned : 0), delta: '', deltaStyle: '' },
+        { label: 'Reps with Real Data', value: realCount + ' / ' + blitzMembers.length, delta: '', deltaStyle: '' },
       ];
     } else if (active === 'salesValue' || active === 'salesVolume') {
       const totalPrev = salesFiltered.reduce((a, r) => a + (r[isSalesValue ? 4 : 3] || 0), 0);
@@ -1173,7 +1281,7 @@ class Component extends DCLogic {
     const activeSubMap = {
       feedback: 'Store survey responses & field photo evidence',
       attendance: 'Field rep check-in / check-out log',
-      blitz: 'Planned vs completed calls per Blitz team member',
+      blitz: 'Planned vs completed calls per Blitz team member, plus real sales performance by channel & store',
       salesValue: 'Store-level value sales, year on year',
       salesVolume: 'Store-level unit sales, year on year',
       growth: 'Category value forecast, FY2025–FY2027',
@@ -1210,6 +1318,8 @@ class Component extends DCLogic {
       attendanceRows,
       attendanceTrends,
       blitzMembers,
+      blitzPerformanceByChannel,
+      hasBlitzChannelPerf: blitzPerformanceByChannel.length > 0,
       salesRows,
       salesByChannel,
       salesFilteredCount: salesFiltered.length,
