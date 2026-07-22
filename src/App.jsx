@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { login, requestLoginCode, getDashboardSummary, checkIn, checkOut, submitAnswer, uploadPhotoAnswer, getVisitLog, downloadVisitLogExport, clearVisitHistory } from './api.js';
+import { login, requestLoginCode, getDashboardSummary, checkIn, checkOut, submitAnswer, uploadPhotoAnswer, getVisitLog, downloadVisitLogExport, clearVisitHistory, getLoginStatus } from './api.js';
 import { TRAINING_MATERIALS, TENANT_DIRECTORY } from './clients.js';
 import './theme.css';
 
@@ -49,6 +49,10 @@ export default function App() {
   const [clearTenantCode, setClearTenantCode] = useState('');
   const [selectedStoreCode, setSelectedStoreCode] = useState('');
   const [visitType, setVisitType] = useState(''); // '' = tenant's default questionnaire; set to pick a visit_type-scoped one instead (see pickQuestionnaire)
+
+  const [loginStatus, setLoginStatus] = useState({ users: [], count: 0, loggedInCount: 0 });
+  const [loginStatusLoading, setLoginStatusLoading] = useState(false);
+  const [loginStatusError, setLoginStatusError] = useState('');
 
   async function handleRequestCode(e) {
     e.preventDefault();
@@ -108,6 +112,20 @@ export default function App() {
       setVisitLogError(err.message);
     } finally {
       setVisitLogLoading(false);
+    }
+  }
+
+  async function handleOpenLoginStatus() {
+    setScreen('loginstatus');
+    setLoginStatusLoading(true);
+    setLoginStatusError('');
+    try {
+      const data = await getLoginStatus(session.token);
+      setLoginStatus(data);
+    } catch (err) {
+      setLoginStatusError(err.message);
+    } finally {
+      setLoginStatusLoading(false);
     }
   }
 
@@ -282,6 +300,7 @@ export default function App() {
             <div className="lp-nav-brand">Leegra Pulse · {LEEGRA_ROLE_LABELS[session.role] || 'Super admin'}</div>
             <div className="lp-tag lp-tag-accent">{session.email}</div>
             <button className="lp-tag lp-tag-outline" style={{ marginLeft: 'auto' }} onClick={handleOpenVisitLog}>Visit Log</button>
+            <button className="lp-tag lp-tag-outline" onClick={handleOpenLoginStatus}>Login Status</button>
             <button className="lp-tag lp-tag-outline" onClick={handleLogout}>Log out</button>
           </div>
           <div className="lp-muted" style={{ fontSize: 12 }}>All client accounts — select one to view its dashboard.</div>
@@ -364,6 +383,55 @@ export default function App() {
                 ))}
                 {!visitLog.length && (
                   <tr><td colSpan={7} className="lp-muted" style={{ textAlign: 'center' }}>No visits recorded yet.</td></tr>
+                )}
+              </tbody>
+            </table>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  if (screen === 'loginstatus') {
+    return (
+      <div className="lp-shell">
+        <div className="lp-card" style={{ width: 900 }}>
+          <div className="lp-nav">
+            <img src="/logos/leegra-logo.png" alt="Leegra" height={20} />
+            <div className="lp-nav-brand">Leegra Pulse · Login Status</div>
+            <div className="lp-tag lp-tag-accent">{session.email}</div>
+            <button className="lp-tag lp-tag-outline" style={{ marginLeft: 'auto' }} onClick={() => setScreen('superadmin')}>All clients</button>
+            <button className="lp-tag lp-tag-outline" onClick={handleLogout}>Log out</button>
+          </div>
+          <div className="lp-muted" style={{ fontSize: 12 }}>
+            Every assigned client user, across every tenant you can see — who's actually logged in and when.
+            {!loginStatusLoading && !loginStatusError && ` ${loginStatus.loggedInCount} of ${loginStatus.count} have logged in at least once.`}
+          </div>
+
+          {loginStatusError && <div className="lp-error">{loginStatusError}</div>}
+          {loginStatusLoading && <div className="lp-muted">Loading…</div>}
+
+          {!loginStatusLoading && !loginStatusError && (
+            <table className="lp-table">
+              <thead>
+                <tr><th>Client</th><th>Email</th><th>Role</th><th>Last login</th><th>Fixed code set</th></tr>
+              </thead>
+              <tbody>
+                {loginStatus.users.map((u, i) => (
+                  <tr key={i}>
+                    <td>{u.tenantName}</td>
+                    <td>{u.email}</td>
+                    <td>{u.role}</td>
+                    <td>
+                      {u.lastLoginAt
+                        ? <span className="lp-tag lp-tag-accent2">{new Date(u.lastLoginAt).toLocaleString()}</span>
+                        : <span className="lp-tag lp-tag-neutral">Never logged in</span>}
+                    </td>
+                    <td>{u.hasFixedCode ? 'Yes' : '—'}</td>
+                  </tr>
+                ))}
+                {!loginStatus.users.length && (
+                  <tr><td colSpan={5} className="lp-muted" style={{ textAlign: 'center' }}>No users assigned yet.</td></tr>
                 )}
               </tbody>
             </table>

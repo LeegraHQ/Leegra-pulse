@@ -125,6 +125,13 @@ export async function getVisitLog(token) {
   return res.json();
 }
 
+export async function getLoginStatus(token) {
+  if (USE_MOCK) return { count: 0, loggedInCount: 0, users: [] };
+  const res = await fetch(`${API_BASE}/admin-login-status`, { headers: { Authorization: `Bearer ${token}` } });
+  if (!res.ok) throw new Error('Could not load login status');
+  return res.json();
+}
+
 export async function clearVisitHistory(token, tenantCode) {
   const res = await fetch(`${API_BASE}/admin-visit-clear`, {
     method: 'POST',
