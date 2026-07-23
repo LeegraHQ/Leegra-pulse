@@ -411,6 +411,72 @@
         </sc-if>
       </sc-if>
 
+      <!-- SECTION: Stock Count & Pricing (new weekly cadence, separate slicer) -->
+      <sc-if value="{{ isStockPricing }}" hint-placeholder-val="{{ false }}">
+        <div style="background:#FFFBEA; border:1px solid #F5E6A3; border-radius:12px; padding:10px 16px; margin-bottom:16px; font-size:12px; color:#8A6A00;">
+          New reporting cadence, running alongside the Weekly Feedback Report. No submissions yet — this starts fresh from rollout; upload the weekly Stock Count/Pricing template to populate this table.
+        </div>
+        <div style="background:#fff; border:1px solid #E4E9F0; border-radius:14px; overflow:auto;">
+          <table style="width:100%; min-width:1400px; border-collapse:collapse; font-size:12px;">
+            <thead><tr style="background:#F8FAFC;">
+              <th style="{{ thStyle }}">Blitz</th><th style="{{ thStyle }}">Channel</th><th style="{{ thStyle }}">Store</th><th style="{{ thStyle }}">Region</th><th style="{{ thStyle }}">Category</th><th style="{{ thStyle }}">SKU</th><th style="{{ thStyleRight }}">Philips RRP</th><th style="{{ thStyleRight }}">Store RRP</th><th style="{{ thStyleRight }}">Promo Price</th><th style="{{ thStyle }}">On Promo</th><th style="{{ thStyle }}">SKU Status</th><th style="{{ thStyle }}">Listed</th><th style="{{ thStyleRight }}">MDQ</th><th style="{{ thStyleRight }}">Total SOH</th><th style="{{ thStyleRight }}">On Shelf</th><th style="{{ thStyleRight }}">Damages</th><th style="{{ thStyleRight }}">Returns</th><th style="{{ thStyle }}">Restock?</th>
+            </tr></thead>
+            <tbody>
+              <sc-for list="{{ stockPricingRows }}" as="row" hint-placeholder-count="8">
+                <tr style="border-top:1px solid #F1F3F7;">
+                  <td style="{{ tdStyle }}">{{ row.blitz }}</td><td style="{{ tdStyle }}">{{ row.channel }}</td><td style="{{ tdStyle }}">{{ row.storeName }}</td><td style="{{ tdStyle }}">{{ row.region }}</td><td style="{{ tdStyle }}">{{ row.category }}</td><td style="{{ tdStyle }}">{{ row.sku }}</td><td style="{{ tdStyleRight }}">{{ row.philipsRRP }}</td><td style="{{ tdStyleRight }}">{{ row.storeRRP }}</td><td style="{{ tdStyleRight }}">{{ row.promoPrice }}</td><td style="{{ tdStyle }}">{{ row.onPromo }}</td><td style="{{ tdStyle }}">{{ row.skuStatus }}</td><td style="{{ tdStyle }}">{{ row.listed }}</td><td style="{{ tdStyleRight }}">{{ row.mdq }}</td><td style="{{ tdStyleRight }}">{{ row.totalSoh }}</td><td style="{{ tdStyleRight }}">{{ row.qtyOnShelf }}</td><td style="{{ tdStyleRight }}">{{ row.boxDamages }}</td><td style="{{ tdStyleRight }}">{{ row.returned }}</td><td style="{{ tdStyle }}">{{ row.additionalStock }}</td>
+                </tr>
+              </sc-for>
+            </tbody>
+          </table>
+          <div style="padding:12px 16px; font-size:11.5px; color:#8592A6; border-top:1px solid #F1F3F7;">Showing {{ stockPricingRows.length }} of {{ stockPricingFilteredCount }} matching rows</div>
+        </div>
+      </sc-if>
+
+      <!-- SECTION: Competitor Feedback (new weekly cadence, separate slicer) -->
+      <sc-if value="{{ isCompetitorFeedback }}" hint-placeholder-val="{{ false }}">
+        <div style="background:#FFFBEA; border:1px solid #F5E6A3; border-radius:12px; padding:10px 16px; margin-bottom:16px; font-size:12px; color:#8A6A00;">
+          New reporting cadence, running alongside the Weekly Feedback Report. No submissions yet — this starts fresh from rollout; upload the weekly Competitor Feedback template to populate this table.
+        </div>
+        <div style="background:#fff; border:1px solid #E4E9F0; border-radius:14px; overflow:auto;">
+          <table style="width:100%; min-width:1200px; border-collapse:collapse; font-size:12px;">
+            <thead><tr style="background:#F8FAFC;">
+              <th style="{{ thStyle }}">Blitz</th><th style="{{ thStyle }}">Channel</th><th style="{{ thStyle }}">Store</th><th style="{{ thStyle }}">Region</th><th style="{{ thStyle }}">Category</th><th style="{{ thStyle }}">Competitor</th><th style="{{ thStyle }}">Competitor SKU</th><th style="{{ thStyle }}">SKU Status</th><th style="{{ thStyleRight }}">Competitor Price</th><th style="{{ thStyle }}">On Promo</th><th style="{{ thStyleRight }}">Total SOH</th><th style="{{ thStyle }}">Philips SKU</th><th style="{{ thStyleRight }}">Philips Price</th>
+            </tr></thead>
+            <tbody>
+              <sc-for list="{{ competitorRows }}" as="row" hint-placeholder-count="8">
+                <tr style="border-top:1px solid #F1F3F7;">
+                  <td style="{{ tdStyle }}">{{ row.blitz }}</td><td style="{{ tdStyle }}">{{ row.channel }}</td><td style="{{ tdStyle }}">{{ row.storeName }}</td><td style="{{ tdStyle }}">{{ row.region }}</td><td style="{{ tdStyle }}">{{ row.category }}</td><td style="{{ tdStyle }}">{{ row.competitor }}</td><td style="{{ tdStyle }}">{{ row.competitorSku }}</td><td style="{{ tdStyle }}">{{ row.skuStatus }}</td><td style="{{ tdStyleRight }}">{{ row.competitorPrice }}</td><td style="{{ tdStyle }}">{{ row.onPromo }}</td><td style="{{ tdStyleRight }}">{{ row.totalSoh }}</td><td style="{{ tdStyle }}">{{ row.philipsSku }}</td><td style="{{ tdStyleRight }}">{{ row.philipsPrice }}</td>
+                </tr>
+              </sc-for>
+            </tbody>
+          </table>
+          <div style="padding:12px 16px; font-size:11.5px; color:#8592A6; border-top:1px solid #F1F3F7;">Showing {{ competitorRows.length }} of {{ competitorFilteredCount }} matching rows</div>
+        </div>
+      </sc-if>
+
+      <!-- SECTION: Execution (Image Report) (new weekly cadence, separate slicer) -->
+      <sc-if value="{{ isExecutionReport }}" hint-placeholder-val="{{ false }}">
+        <div style="background:#FFFBEA; border:1px solid #F5E6A3; border-radius:12px; padding:10px 16px; margin-bottom:16px; font-size:12px; color:#8A6A00;">
+          New reporting cadence, running alongside the Weekly Feedback Report. No submissions yet — this starts fresh from rollout; upload the weekly Execution (Image Report) template to populate this table.
+        </div>
+        <div style="background:#fff; border:1px solid #E4E9F0; border-radius:14px; overflow:auto;">
+          <table style="width:100%; min-width:1000px; border-collapse:collapse; font-size:12px;">
+            <thead><tr style="background:#F8FAFC;">
+              <th style="{{ thStyle }}">Blitz</th><th style="{{ thStyle }}">Channel</th><th style="{{ thStyle }}">Store</th><th style="{{ thStyle }}">Region</th><th style="{{ thStyle }}">Category</th><th style="{{ thStyle }}">Display Area</th><th style="{{ thStyle }}">SKU</th><th style="{{ thStyle }}">Before</th><th style="{{ thStyle }}">After</th>
+            </tr></thead>
+            <tbody>
+              <sc-for list="{{ executionRows }}" as="row" hint-placeholder-count="8">
+                <tr style="border-top:1px solid #F1F3F7;">
+                  <td style="{{ tdStyle }}">{{ row.blitz }}</td><td style="{{ tdStyle }}">{{ row.channel }}</td><td style="{{ tdStyle }}">{{ row.storeName }}</td><td style="{{ tdStyle }}">{{ row.region }}</td><td style="{{ tdStyle }}">{{ row.category }}</td><td style="{{ tdStyle }}">{{ row.displayArea }}</td><td style="{{ tdStyle }}">{{ row.sku }}</td><td style="{{ tdStyle }}">{{ row.beforeImage }}</td><td style="{{ tdStyle }}">{{ row.afterImage }}</td>
+                </tr>
+              </sc-for>
+            </tbody>
+          </table>
+          <div style="padding:12px 16px; font-size:11.5px; color:#8592A6; border-top:1px solid #F1F3F7;">Showing {{ executionRows.length }} of {{ executionFilteredCount }} matching rows</div>
+        </div>
+      </sc-if>
+
       <!-- SECTION: Sales Value / Volume -->
       <sc-if value="{{ isSales }}" hint-placeholder-val="{{ false }}">
         <div style="background:#fff; border:1px solid #E4E9F0; border-radius:14px; padding:18px 20px; margin-bottom:16px;">
@@ -502,6 +568,9 @@ const SECTION_DEFS = [
   { key: 'attendance', label: 'Time & Attendance' },
   { key: 'blitz', label: 'Blitz Call Diary' },
   { key: 'blitzPerformance', label: 'Blitz Performance' },
+  { key: 'stockPricing', label: 'Stock Count & Pricing' },
+  { key: 'competitorFeedback', label: 'Competitor Feedback' },
+  { key: 'executionReport', label: 'Execution (Image Report)' },
   { key: 'salesValue', label: 'Sales Per Store Value' },
   { key: 'salesVolume', label: 'Sales Per Store Volume' },
   { key: 'growth', label: 'Growth Forecast' },
@@ -595,7 +664,7 @@ class Component extends DCLogic {
     fetch('phillips_data.json').then(r => r.json()).then(data => {
       this.setState({ data, loaded: true });
     }).catch(() => {
-      this.setState({ data: { feedback: [], attendance: [], salesValue: [], salesVolume: [], growth: [], stock: [] }, loaded: true });
+      this.setState({ data: { feedback: [], attendance: [], salesValue: [], salesVolume: [], growth: [], stock: [], stockPricing: [], competitorFeedback: [], executionReport: [] }, loaded: true });
     });
 
     const demoFiles = [
@@ -805,6 +874,9 @@ class Component extends DCLogic {
       growth: { headers: ['Category','FY2025','FY2026 Projection','FY2027 Ambition','Growth 25-26','Growth 26-27'], rows: d.growth || [] },
       stock: { headers: ['Store','Region','Code','Category','Sub Category','Blitz','Latest WK SOH','System SOH','Physical Stock Count'], rows: d.stock || [] },
       blitz: { headers: ['Rep','Planned Calls','Completed Calls'], rows: [] },
+      stockPricing: { headers: ['Blitz','Channel','Store Code','Store Name','Region','Category','SKU Code','Philips RRP','Store System RRP','Promotional Price','On Promo','SKU Status','Listing','Proof of Delisting','Store System MDQ','Total SOH','QTY on Shelf','QTY Box Damages','QTY Returned','Additional Stock Required'], rows: d.stockPricing || [] },
+      competitorFeedback: { headers: ['Blitz','Channel','Store Code','Store Name','Region','Category','Competitor','Competitor SKU Code','SKU Status','Competitor On-shelf Price','On Promo','Total SOH','Product Image','Philips SKU Code','Philips On-shelf Price'], rows: d.competitorFeedback || [] },
+      executionReport: { headers: ['Blitz','Channel','Store Code','Store Name','Region','Category','Before Image','Display Area','SKU Code','After Image'], rows: d.executionReport || [] },
     };
     return map[section] || { headers: [], rows: [] };
   }
@@ -827,7 +899,10 @@ class Component extends DCLogic {
 
   renderVals() {
     const s = this.state;
-    const d = s.data || { feedback: [], attendance: [], salesValue: [], salesVolume: [], growth: [], stock: [] };
+    const d = s.data || { feedback: [], attendance: [], salesValue: [], salesVolume: [], growth: [], stock: [], stockPricing: [], competitorFeedback: [], executionReport: [] };
+    d.stockPricing = d.stockPricing || [];
+    d.competitorFeedback = d.competitorFeedback || [];
+    d.executionReport = d.executionReport || [];
     const active = s.activeSection;
 
     // ---- counts for sidebar badges ----
@@ -836,6 +911,9 @@ class Component extends DCLogic {
       attendance: d.attendance.length,
       blitz: REP_NAMES.length,
       blitzPerformance: REP_NAMES.length,
+      stockPricing: d.stockPricing.length,
+      competitorFeedback: d.competitorFeedback.length,
+      executionReport: d.executionReport.length,
       salesValue: d.salesValue.length,
       salesVolume: d.salesVolume.length,
       growth: d.growth.length,
@@ -860,6 +938,9 @@ class Component extends DCLogic {
       attendance: d.attendance.map(r => r[0]),
       blitz: REP_NAMES,
       blitzPerformance: REP_NAMES,
+      stockPricing: d.stockPricing.map(r => r[0]),
+      competitorFeedback: d.competitorFeedback.map(r => r[0]),
+      executionReport: d.executionReport.map(r => r[0]),
       salesValue: d.salesValue.map(r => r[0]),
       salesVolume: d.salesVolume.map(r => r[0]),
       growth: d.growth.map(r => r[0]),
@@ -870,6 +951,9 @@ class Component extends DCLogic {
       attendance: 'Filter: Rep Name',
       blitz: 'Filter: Blitz Member',
       blitzPerformance: 'Filter: Blitz Member',
+      stockPricing: 'Filter: Blitz Member',
+      competitorFeedback: 'Filter: Blitz Member',
+      executionReport: 'Filter: Blitz Member',
       salesValue: 'Filter: Month',
       salesVolume: 'Filter: Month',
       growth: 'Filter: Category',
@@ -1334,6 +1418,62 @@ class Component extends DCLogic {
       };
     }).sort((a, b) => a.name.localeCompare(b.name));
 
+    // ================= STOCK COUNT & PRICING (new weekly cadence, runs
+    // alongside the existing Weekly Feedback Report — separate slicer, own
+    // dataset. Row schema mirrors the import template column-for-column:
+    // 0 blitz,1 channel,2 storeCode,3 storeName,4 region,5 category,6 skuCode,
+    // 7 philipsRRP,8 storeSystemRRP,9 promoPrice,10 onPromo,11 skuStatus,
+    // 12 listed,13 proofOfDelisting,14 mdq,15 totalSoh,16 qtyOnShelf,
+    // 17 boxDamages,18 returned,19 additionalStockNeeded =================
+    let stockPricingFiltered = applySub(d.stockPricing);
+    const spChannels = ['All', ...new Set(d.stockPricing.map(r => r[1]))].filter(Boolean);
+    const spRegions = ['All', ...new Set(d.stockPricing.map(r => r[4]))].filter(Boolean);
+    const spCategories = ['All', ...new Set(d.stockPricing.map(r => r[5]))].filter(Boolean);
+    if (cf.channel && cf.channel !== 'All') stockPricingFiltered = stockPricingFiltered.filter(r => r[1] === cf.channel);
+    if (cf.region && cf.region !== 'All') stockPricingFiltered = stockPricingFiltered.filter(r => r[4] === cf.region);
+    if (cf.category && cf.category !== 'All') stockPricingFiltered = stockPricingFiltered.filter(r => r[5] === cf.category);
+    const stockPricingRows = stockPricingFiltered.slice(0, 300).map(r => ({
+      blitz: r[0], channel: r[1], storeCode: r[2], storeName: r[3], region: r[4], category: r[5], sku: r[6],
+      philipsRRP: r[7] != null ? fmtR(r[7]) : '—', storeRRP: r[8] != null ? fmtR(r[8]) : '—', promoPrice: r[9] != null ? fmtR(r[9]) : '—',
+      onPromo: r[10] || '—', skuStatus: r[11] || '—', listed: r[12] || '—', mdq: r[14] != null ? fmtNum(r[14]) : '—',
+      totalSoh: r[15] != null ? fmtNum(r[15]) : '—', qtyOnShelf: r[16] != null ? fmtNum(r[16]) : '—',
+      boxDamages: r[17] != null ? fmtNum(r[17]) : '—', returned: r[18] != null ? fmtNum(r[18]) : '—', additionalStock: r[19] || '—',
+    }));
+
+    // ================= COMPETITOR FEEDBACK =================
+    // 0 blitz,1 channel,2 storeCode,3 storeName,4 region,5 category,6 competitor,
+    // 7 competitorSku,8 skuStatus,9 competitorPrice,10 onPromo,11 totalSoh,
+    // 12 productImage,13 philipsSku,14 philipsPrice
+    let competitorFiltered = applySub(d.competitorFeedback);
+    const cfChannels = ['All', ...new Set(d.competitorFeedback.map(r => r[1]))].filter(Boolean);
+    const cfRegions = ['All', ...new Set(d.competitorFeedback.map(r => r[4]))].filter(Boolean);
+    const cfCategories = ['All', ...new Set(d.competitorFeedback.map(r => r[5]))].filter(Boolean);
+    if (cf.channel && cf.channel !== 'All') competitorFiltered = competitorFiltered.filter(r => r[1] === cf.channel);
+    if (cf.region && cf.region !== 'All') competitorFiltered = competitorFiltered.filter(r => r[4] === cf.region);
+    if (cf.category && cf.category !== 'All') competitorFiltered = competitorFiltered.filter(r => r[5] === cf.category);
+    const competitorRows = competitorFiltered.slice(0, 300).map(r => ({
+      blitz: r[0], channel: r[1], storeCode: r[2], storeName: r[3], region: r[4], category: r[5],
+      competitor: r[6], competitorSku: r[7], skuStatus: r[8] || '—',
+      competitorPrice: r[9] != null ? fmtR(r[9]) : '—', onPromo: r[10] || '—', totalSoh: r[11] != null ? fmtNum(r[11]) : '—',
+      philipsSku: r[13], philipsPrice: r[14] != null ? fmtR(r[14]) : '—',
+    }));
+
+    // ================= EXECUTION (IMAGE REPORT) =================
+    // 0 blitz,1 channel,2 storeCode,3 storeName,4 region,5 category,
+    // 6 beforeImage,7 displayArea,8 skuCode,9 afterImage
+    let executionFiltered = applySub(d.executionReport);
+    const erChannels = ['All', ...new Set(d.executionReport.map(r => r[1]))].filter(Boolean);
+    const erRegions = ['All', ...new Set(d.executionReport.map(r => r[4]))].filter(Boolean);
+    const erAreas = ['All', ...new Set(d.executionReport.map(r => r[7]))].filter(Boolean);
+    if (cf.channel && cf.channel !== 'All') executionFiltered = executionFiltered.filter(r => r[1] === cf.channel);
+    if (cf.region && cf.region !== 'All') executionFiltered = executionFiltered.filter(r => r[4] === cf.region);
+    if (cf.area && cf.area !== 'All') executionFiltered = executionFiltered.filter(r => r[7] === cf.area);
+    const executionRows = executionFiltered.slice(0, 300).map(r => ({
+      blitz: r[0], channel: r[1], storeCode: r[2], storeName: r[3], region: r[4], category: r[5],
+      beforeImage: r[6], displayArea: r[7], sku: r[8], afterImage: r[9],
+      hasBefore: !!r[6], hasAfter: !!r[9],
+    }));
+
     // ================= CROSS FILTERS PER SECTION =================
     let crossFilters = [];
     if (active === 'feedback') {
@@ -1389,6 +1529,24 @@ class Component extends DCLogic {
         { label: 'Category', value: cf.category || 'All', options: stockCategories, onChange: (e) => this.setCrossFilter('stock', 'category', e.target.value) },
         { label: 'Sub Category', value: cf.subcategory || 'All', options: stockSubcats, onChange: (e) => this.setCrossFilter('stock', 'subcategory', e.target.value) },
         { label: 'Blitz Member', value: cf.blitz || 'All', options: stockBlitzMembers, onChange: (e) => this.setCrossFilter('stock', 'blitz', e.target.value) },
+      ];
+    } else if (active === 'stockPricing') {
+      crossFilters = [
+        { label: 'Channel', value: cf.channel || 'All', options: spChannels, onChange: (e) => this.setCrossFilter('stockPricing', 'channel', e.target.value) },
+        { label: 'Region', value: cf.region || 'All', options: spRegions, onChange: (e) => this.setCrossFilter('stockPricing', 'region', e.target.value) },
+        { label: 'Category', value: cf.category || 'All', options: spCategories, onChange: (e) => this.setCrossFilter('stockPricing', 'category', e.target.value) },
+      ];
+    } else if (active === 'competitorFeedback') {
+      crossFilters = [
+        { label: 'Channel', value: cf.channel || 'All', options: cfChannels, onChange: (e) => this.setCrossFilter('competitorFeedback', 'channel', e.target.value) },
+        { label: 'Region', value: cf.region || 'All', options: cfRegions, onChange: (e) => this.setCrossFilter('competitorFeedback', 'region', e.target.value) },
+        { label: 'Category', value: cf.category || 'All', options: cfCategories, onChange: (e) => this.setCrossFilter('competitorFeedback', 'category', e.target.value) },
+      ];
+    } else if (active === 'executionReport') {
+      crossFilters = [
+        { label: 'Channel', value: cf.channel || 'All', options: erChannels, onChange: (e) => this.setCrossFilter('executionReport', 'channel', e.target.value) },
+        { label: 'Region', value: cf.region || 'All', options: erRegions, onChange: (e) => this.setCrossFilter('executionReport', 'region', e.target.value) },
+        { label: 'Display Area', value: cf.area || 'All', options: erAreas, onChange: (e) => this.setCrossFilter('executionReport', 'area', e.target.value) },
       ];
     }
 
@@ -1450,6 +1608,27 @@ class Component extends DCLogic {
         { label: 'Stores Completed', value: completedStoresAll + ' / ' + totalStoresAll, delta: fmtPct(storeCompletionPct) + ' complete', deltaStyle: 'font-size:11.5px; font-weight:700; color:' + BLUE + '; margin-top:4px;' },
         { label: 'Physical vs System Variance', value: (totalVariance >= 0 ? '+' : '') + fmtNum(totalVariance) + ' units', delta: '', deltaStyle: `font-size:11.5px; font-weight:700; color:${totalVariance === 0 ? '#8592A6' : totalVariance > 0 ? '#1E8A4C' : '#C0392B'}; margin-top:4px;` },
       ];
+    } else if (active === 'stockPricing') {
+      const additionalStockCount = stockPricingFiltered.filter(r => String(r[19]).toLowerCase() === 'yes').length;
+      const delistedCount = stockPricingFiltered.filter(r => String(r[12]).toLowerCase() === 'no').length;
+      kpis = [
+        { label: 'SKUs Logged', value: fmtNum(stockPricingFiltered.length), delta: '', deltaStyle: '' },
+        { label: 'Stores Covered', value: fmtNum(new Set(stockPricingFiltered.map(r => r[2])).size), delta: '', deltaStyle: '' },
+        { label: 'Flagged Delisted', value: fmtNum(delistedCount), delta: '', deltaStyle: '' },
+        { label: 'Additional Stock Needed', value: fmtNum(additionalStockCount), delta: '', deltaStyle: '' },
+      ];
+    } else if (active === 'competitorFeedback') {
+      kpis = [
+        { label: 'Comparisons Logged', value: fmtNum(competitorFiltered.length), delta: '', deltaStyle: '' },
+        { label: 'Stores Covered', value: fmtNum(new Set(competitorFiltered.map(r => r[2])).size), delta: '', deltaStyle: '' },
+        { label: 'Competitors Tracked', value: fmtNum(new Set(competitorFiltered.map(r => r[6])).size), delta: '', deltaStyle: '' },
+      ];
+    } else if (active === 'executionReport') {
+      kpis = [
+        { label: 'Execution Rows Logged', value: fmtNum(executionFiltered.length), delta: '', deltaStyle: '' },
+        { label: 'Stores Covered', value: fmtNum(new Set(executionFiltered.map(r => r[2])).size), delta: '', deltaStyle: '' },
+        { label: 'Display Areas Tracked', value: fmtNum(new Set(executionFiltered.map(r => r[7])).size), delta: '', deltaStyle: '' },
+      ];
     }
 
     const activeLabelMap = Object.fromEntries(SECTION_DEFS.map(x => [x.key, x.label]));
@@ -1458,6 +1637,9 @@ class Component extends DCLogic {
       attendance: 'Field rep check-in / check-out log',
       blitz: 'Planned vs completed calls per Blitz team member, with per-visit drill-down',
       blitzPerformance: 'Real Blitz rep sales performance by channel & store',
+      stockPricing: 'Weekly per-SKU stock count & pricing audit',
+      competitorFeedback: 'Weekly per-SKU competitor pricing & stock comparison',
+      executionReport: 'Before/after execution photos per display area',
       salesValue: 'Store-level value sales, year on year',
       salesVolume: 'Store-level unit sales, year on year',
       growth: 'Category value forecast, FY2025–FY2027',
@@ -1477,6 +1659,9 @@ class Component extends DCLogic {
       isAttendance: active === 'attendance',
       isBlitz: active === 'blitz',
       isBlitzPerformance: active === 'blitzPerformance',
+      isStockPricing: active === 'stockPricing',
+      isCompetitorFeedback: active === 'competitorFeedback',
+      isExecutionReport: active === 'executionReport',
       isSales: isSalesValue || isSalesVolume,
       isGrowth: active === 'growth',
       isStock: active === 'stock',
@@ -1502,6 +1687,15 @@ class Component extends DCLogic {
       expandedBlitzRep,
       blitzDetailRows,
       hasBlitzDetail,
+      stockPricingRows,
+      hasStockPricing: stockPricingRows.length > 0,
+      stockPricingFilteredCount: stockPricingFiltered.length,
+      competitorRows,
+      hasCompetitorRows: competitorRows.length > 0,
+      competitorFilteredCount: competitorFiltered.length,
+      executionRows,
+      hasExecutionRows: executionRows.length > 0,
+      executionFilteredCount: executionFiltered.length,
       salesRows,
       salesByChannel,
       salesFilteredCount: salesFiltered.length,
