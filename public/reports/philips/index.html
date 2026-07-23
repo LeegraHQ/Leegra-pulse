@@ -290,7 +290,7 @@
             <tbody>
               <sc-for list="{{ blitzMembers }}" as="m" hint-placeholder-count="9">
                 <tr style="border-bottom:1px solid #F5F6F9;">
-                  <td style="padding:7px 10px; font-weight:700; color:#0B1B3A;">{{ m.name }}</td>
+                  <td style="padding:7px 10px; font-weight:700; color:#0B1B3A;">{{ m.name }}<sc-if value="{{ m.hasRole }}" hint-placeholder-val="{{ false }}"><span style="{{ m.roleStyle }}">{{ m.role }}</span></sc-if></td>
                   <td style="padding:7px 10px;"><span style="{{ m.sourceTagStyle }}">{{ m.sourceTag }}</span></td>
                   <td style="padding:7px 10px; text-align:right; color:#3A4658;">{{ m.planned }}</td>
                   <td style="padding:7px 10px; text-align:right; color:#3A4658;">{{ m.completed }}</td>
@@ -1063,6 +1063,7 @@ class Component extends DCLogic {
     // flags but no diary yet, so their coverage % stays blank rather than
     // guessed. Nobody shows synthetic/sample numbers anymore.
     const blitzReal = d.blitzReal || {};
+    const blitzRoles = d.blitzRoles || {};
     const blitzVisitDetailAll = d.blitzVisitDetail || {};
     const expandedBlitzRep = this.state.expandedBlitzRep;
     const blitzMembers = REP_NAMES.filter(n => !selectedSet || selectedSet.has(n)).map((name, i) => {
@@ -1073,8 +1074,12 @@ class Component extends DCLogic {
       const totalVisits = real ? real.totalVisits : null;
       const flags = real ? real.flags : null;
       const rate = hasCoverage && planned ? completed / planned : null;
+      const role = blitzRoles[name] || null;
       return {
         name, planned, completed,
+        role,
+        hasRole: !!role,
+        roleStyle: `font-size:9.5px; font-weight:800; letter-spacing:.03em; text-transform:uppercase; padding:2px 7px; border-radius:999px; background:#E9EEFB; color:#2F4C9B; margin-left:6px;`,
         isReal: !!real,
         hasCoverage,
         sourceTag: hasCoverage ? 'REAL — diary vs attendance' : (real ? 'REAL attendance — no diary yet' : 'NO DATA'),
