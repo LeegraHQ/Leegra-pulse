@@ -5,6 +5,13 @@
 // leaderboard have real history from day one instead of starting at zero.
 // Import in batches (a few hundred rows per call) rather than one giant
 // payload — Netlify Functions have a request size/time limit.
+//
+// DELETE /api/admin-visits-import?tenant_code=X&batch=batch_123  — removes
+// one bad import batch by the key returned from the POST above (e.g. wrong
+// rep emails, needs correcting) without touching any other batch.
+// DELETE /api/admin-visits-import?tenant_code=X&all=true — removes every
+// imported batch for the tenant (never touches live app check-ins — that's
+// admin-visit-clear.js's job, a separate data source).
 
 const jwt = require('./_lib/jwt');
 const { blobsStore } = require('./_lib/records');
@@ -14,10 +21,31 @@ const { tenantScopeOk } = require('./_lib/scope');
 exports.handler = async (event) => {
   const claims = jwt.fromAuthHeader(event);
   if (!claims) return { statusCode: 401, body: JSON.stringify({ error: 'Not authenticated' }) };
-  if (event.httpMethod !== 'POST') return { statusCode: 405, body: 'Method not allowed' };
   if (![...LEEGRA_WRITE_ROLES, 'client_admin'].includes(claims.role)) {
     return { statusCode: 403, body: JSON.stringify({ error: 'Not permitted' }) };
   }
+
+  if (event.httpMethod === 'DELETE') {
+    const tenantCode = claims.role === 'client_admin' ? claims.tenantCode : (event.queryStringParameters?.tenant_code || claims.scopedTenantCode);
+    const batch = event.queryStringParameters?.batch;
+    const all = event.queryStringParameters?.all === 'true';
+    if (!tenantCode || (!batch && !all)) {
+      return { statusCode: 400, body: JSON.stringify({ error: 'tenant_code and (batch or all=true) required' }) };
+    }
+    if (claims.role !== 'client_admin' && !tenantScopeOk(claims, tenantCode)) {
+      return { statusCode: 403, body: JSON.stringify({ error: 'Not permitted for that tenant' }) };
+    }
+    const store = blobsStore(`visits-history-${tenantCode}`);
+    if (batch) {
+      await store.delete(batch);
+      return { statusCode: 200, body: JSON.stringify({ ok: true, tenant_code: tenantCode, deleted_batch: batch }) };
+    }
+    const { blobs } = await store.list();
+    await Promise.all(blobs.map(b => store.delete(b.key)));
+    return { statusCode: 200, body: JSON.stringify({ ok: true, tenant_code: tenantCode, deleted_batches: blobs.length }) };
+  }
+
+  if (event.httpMethod !== 'POST') return { statusCode: 405, body: 'Method not allowed' };
 
   let body;
   try { body = JSON.parse(event.body || '{}'); } catch { return { statusCode: 400, body: 'Invalid JSON' }; }
