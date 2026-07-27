@@ -209,19 +209,29 @@ function statusFor(days) {
 // wire it up once that field exists on a visit task.
 function computeDashboard(stores, visits) {
   const lastVisitByStore = {};
+  const everCompletedStore = new Set();
   for (const v of visits) {
     if (!v.store_code) continue;
     const prev = lastVisitByStore[v.store_code];
     if (!prev || new Date(v.checkin_at) > new Date(prev)) lastVisitByStore[v.store_code] = v.checkin_at;
+    if (v.checkout_at) everCompletedStore.add(v.store_code);
   }
 
+  // A store that's had a completed visit stays "Done" — the recency decay
+  // below (On track -> Pending -> Overdue) is only meaningful for a
+  // recurring cadence, and would otherwise wrongly flag a one-time
+  // completed campaign visit as "Overdue" purely because time has passed
+  // since it happened. Only stores with no completed visit yet (or none at
+  // all) fall through to the days-since-last-checkin logic.
+  //
   // Sorted so the stores most overdue for a visit (or never visited) surface
   // first — the store list is a compliance/coverage view, not a directory,
   // so leading with what needs attention is more useful than store order.
   const annotatedStores = stores
     .map(s => {
       const days = daysAgo(lastVisitByStore[s.code]);
-      return { name: s.name, code: s.code, region: s.region, lastVisit: humanizeLastVisit(days), status: statusFor(days), _days: days === null ? Infinity : days };
+      const status = everCompletedStore.has(s.code) ? 'Done' : statusFor(days);
+      return { name: s.name, code: s.code, region: s.region, lastVisit: humanizeLastVisit(days), status, _days: status === 'Done' ? -1 : (days === null ? Infinity : days) };
     })
     .sort((a, b) => b._days - a._days)
     .map(({ _days, ...s }) => s);

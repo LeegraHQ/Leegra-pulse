@@ -37,6 +37,7 @@ export default function App() {
   const [error, setError] = useState('');
   const [sendingCode, setSendingCode] = useState(false);
   const [tenantChoices, setTenantChoices] = useState(null); // set only for the shared demo account (assigned to multiple tenants)
+  const [dashTab, setDashTab] = useState('overview'); // overview | stores | staff — client dashboard nav
 
   const [visit, setVisit] = useState(null); // { id, checkedInAt, questionnaire: { id, name, questions } }
   const [answers, setAnswers] = useState({}); // { [questionId]: answer }
@@ -608,9 +609,9 @@ export default function App() {
           {client.logo && <img src={client.logo} alt={client.name} height={20} />}
           <div className="lp-tag lp-tag-accent">Client: {client.name}</div>
           <nav style={{ display: 'flex', gap: 16, marginLeft: 8 }}>
-            <a href="#" aria-current="page">Overview</a>
-            <a href="#">Stores</a>
-            <a href="#">Staff</a>
+            <a href="#" aria-current={dashTab === 'overview' ? 'page' : undefined} style={dashTab === 'overview' ? undefined : { opacity: 0.6 }} onClick={(e) => { e.preventDefault(); setDashTab('overview'); }}>Overview</a>
+            <a href="#" aria-current={dashTab === 'stores' ? 'page' : undefined} style={dashTab === 'stores' ? undefined : { opacity: 0.6 }} onClick={(e) => { e.preventDefault(); setDashTab('stores'); }}>Stores</a>
+            <a href="#" aria-current={dashTab === 'staff' ? 'page' : undefined} style={dashTab === 'staff' ? undefined : { opacity: 0.6 }} onClick={(e) => { e.preventDefault(); setDashTab('staff'); }}>Staff</a>
           </nav>
           {CLIENT_REPORT_LINKS[client.code] && (
             <a className="lp-tag lp-tag-outline" href={CLIENT_REPORT_LINKS[client.code]} target="_blank" rel="noreferrer">
@@ -631,44 +632,48 @@ export default function App() {
           <div className="lp-inner-card"><div className="lp-kicker">Open OOS issues</div><div className="lp-title lg accent">{client.oosIssues}</div></div>
         </div>
 
-        <div className="lp-grid-2">
-          <div>
-            <div className="lp-label">Store coverage</div>
-            <table className="lp-table">
-              <thead><tr><th>Store</th><th>Region</th><th>Last visit</th><th>Status</th></tr></thead>
-              <tbody>
-                {client.stores.map(s => {
-                  const statusColor = s.status === 'Pending' ? '#e2a336' : s.status === 'Overdue' ? '#e2544a' : undefined;
-                  return (
-                    <tr key={s.code}>
-                      <td>{s.name}</td>
-                      <td>{s.region}</td>
-                      <td>{s.lastVisit}</td>
-                      <td>
-                        <span
-                          className="lp-tag lp-tag-outline"
-                          style={statusColor ? { color: statusColor, borderColor: statusColor } : undefined}
-                        >
-                          {s.status}
-                        </span>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
-          <div>
-            <div className="lp-label">Staff leaderboard — visit compliance</div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-              {client.leaderboard.map(row => (
-                <div key={row.rank} className="lp-row-card">
-                  <div style={{ flex: 1, fontSize: 13 }}>{row.rank} · {row.name}</div>
-                  <div className="lp-tag lp-tag-accent">{row.score} compliance</div>
-                </div>
-              ))}
+        <div className={dashTab === 'overview' ? 'lp-grid-2' : undefined}>
+          {(dashTab === 'overview' || dashTab === 'stores') && (
+            <div>
+              <div className="lp-label">Store coverage</div>
+              <table className="lp-table">
+                <thead><tr><th>Store</th><th>Region</th><th>Last visit</th><th>Status</th></tr></thead>
+                <tbody>
+                  {client.stores.map(s => {
+                    const statusColor = s.status === 'Pending' ? '#e2a336' : s.status === 'Overdue' ? '#e2544a' : undefined;
+                    return (
+                      <tr key={s.code}>
+                        <td>{s.name}</td>
+                        <td>{s.region}</td>
+                        <td>{s.lastVisit}</td>
+                        <td>
+                          <span
+                            className="lp-tag lp-tag-outline"
+                            style={statusColor ? { color: statusColor, borderColor: statusColor } : undefined}
+                          >
+                            {s.status}
+                          </span>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
             </div>
-          </div>
+          )}
+          {(dashTab === 'overview' || dashTab === 'staff') && (
+            <div>
+              <div className="lp-label">Staff leaderboard — visit compliance</div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                {client.leaderboard.map(row => (
+                  <div key={row.rank} className="lp-row-card">
+                    <div style={{ flex: 1, fontSize: 13 }}>{row.rank} · {row.name}</div>
+                    <div className="lp-tag lp-tag-accent">{row.score} compliance</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
 
         {client.learningEnabled !== false && (
