@@ -54,13 +54,15 @@
     </div>
 
     <div style="padding: 14px 14px 18px 14px; border-top: 1px solid rgba(255,255,255,0.08); display:flex; flex-direction:column; gap:8px;">
-      <button onClick="{{ exportExcel }}" style="display:flex; align-items:center; gap:8px; background:#132A57; color:#fff; border:1px solid rgba(255,255,255,0.12); border-radius:8px; padding:9px 12px; font-size:12.5px; font-weight:600; cursor:pointer;" style-hover="background:#1B3A72;">
-        <span>⬇</span> Export to Excel
-      </button>
-      <label style="display:flex; align-items:center; gap:8px; background:#132A57; color:#fff; border:1px solid rgba(255,255,255,0.12); border-radius:8px; padding:9px 12px; font-size:12.5px; font-weight:600; cursor:pointer;" style-hover="background:#1B3A72;">
-        <span>⬆</span> Import from Excel
-        <input type="file" accept=".csv" onChange="{{ importExcel }}" style="display:none;" />
-      </label>
+      <sc-if value="{{ isAdminUnlocked }}" hint-placeholder-val="{{ false }}">
+        <button onClick="{{ exportExcel }}" style="display:flex; align-items:center; gap:8px; background:#132A57; color:#fff; border:1px solid rgba(255,255,255,0.12); border-radius:8px; padding:9px 12px; font-size:12.5px; font-weight:600; cursor:pointer;" style-hover="background:#1B3A72;">
+          <span>⬇</span> Export to Excel
+        </button>
+        <label style="display:flex; align-items:center; gap:8px; background:#132A57; color:#fff; border:1px solid rgba(255,255,255,0.12); border-radius:8px; padding:9px 12px; font-size:12.5px; font-weight:600; cursor:pointer;" style-hover="background:#1B3A72;">
+          <span>⬆</span> Import from Excel
+          <input type="file" accept=".csv" onChange="{{ importExcel }}" style="display:none;" />
+        </label>
+      </sc-if>
       <button onClick="{{ resetFilters }}" style="display:flex; align-items:center; justify-content:center; gap:8px; background:transparent; color:#8EA3C7; border:1px solid rgba(255,255,255,0.14); border-radius:8px; padding:8px 12px; font-size:12px; font-weight:600; cursor:pointer;" style-hover="color:#fff; border-color:#C6F135;">
         Reset Filters
       </button>
@@ -654,6 +656,7 @@ class Component extends DCLogic {
     photoUploads: [],
     repRoundRobin: {},
     expandedBlitzRep: null,
+    adminUnlocked: false,
   };
 
   toggleBlitzExpand(repName) {
@@ -661,6 +664,19 @@ class Component extends DCLogic {
   }
 
   componentDidMount() {
+    // Export/Import is Chris-only. A one-time unlock link sets a local flag
+    // that persists on that browser/device — everyone else visiting the
+    // plain URL never sees the unlock param and the buttons stay hidden.
+    const ADMIN_UNLOCK_KEY = 'philipsAdminUnlocked';
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('unlock') === 'leegraph2026') {
+      localStorage.setItem(ADMIN_UNLOCK_KEY, 'true');
+      const url = new URL(window.location.href);
+      url.searchParams.delete('unlock');
+      window.history.replaceState({}, '', url.toString());
+    }
+    this.setState({ adminUnlocked: localStorage.getItem(ADMIN_UNLOCK_KEY) === 'true' });
+
     fetch('phillips_data.json').then(r => r.json()).then(data => {
       this.setState({ data, loaded: true });
     }).catch(() => {
@@ -1185,10 +1201,12 @@ class Component extends DCLogic {
 
     // ---- Per-visit detail table for whichever rep is expanded ----
     const blitzDetailChannelOptions = ['All', ...new Set(Object.values(blitzVisitDetailAll).flat().map(v => v.channel))].filter(Boolean);
+    const blitzDetailMonthOptions = ['All', ...[...new Set(Object.values(blitzVisitDetailAll).flat().map(v => (v.date || '').slice(0, 7)))].filter(Boolean).sort()];
     let blitzDetailRows = [];
     if (expandedBlitzRep && blitzVisitDetailAll[expandedBlitzRep]) {
       blitzDetailRows = blitzVisitDetailAll[expandedBlitzRep];
       if (cf.blitzDetailChannel && cf.blitzDetailChannel !== 'All') blitzDetailRows = blitzDetailRows.filter(v => v.channel === cf.blitzDetailChannel);
+      if (cf.blitzMonth && cf.blitzMonth !== 'All') blitzDetailRows = blitzDetailRows.filter(v => (v.date || '').slice(0, 7) === cf.blitzMonth);
       if (cf.blitzLateCheckin === 'Yes') blitzDetailRows = blitzDetailRows.filter(v => v.lateCheckin);
       if (cf.blitzLateCheckout === 'Yes') blitzDetailRows = blitzDetailRows.filter(v => v.lateCheckout);
       if (cf.blitzLocationDrift === 'Yes') blitzDetailRows = blitzDetailRows.filter(v => v.locationDrift);
@@ -1494,6 +1512,7 @@ class Component extends DCLogic {
     } else if (active === 'blitz') {
       crossFilters = [
         { label: 'Visit Channel (in detail below)', value: cf.blitzDetailChannel || 'All', options: blitzDetailChannelOptions, onChange: (e) => this.setCrossFilter('blitz', 'blitzDetailChannel', e.target.value) },
+        { label: 'Month (in detail below)', value: cf.blitzMonth || 'All', options: blitzDetailMonthOptions, onChange: (e) => this.setCrossFilter('blitz', 'blitzMonth', e.target.value) },
         { label: 'Late Check-in (>8am)', value: cf.blitzLateCheckin || 'All', options: ['All', 'Yes'], onChange: (e) => this.setCrossFilter('blitz', 'blitzLateCheckin', e.target.value) },
         { label: 'Late Check-out (>17:00)', value: cf.blitzLateCheckout || 'All', options: ['All', 'Yes'], onChange: (e) => this.setCrossFilter('blitz', 'blitzLateCheckout', e.target.value) },
         { label: 'Far From Store (>1km)', value: cf.blitzLocationDrift || 'All', options: ['All', 'Yes'], onChange: (e) => this.setCrossFilter('blitz', 'blitzLocationDrift', e.target.value) },
@@ -1659,6 +1678,7 @@ class Component extends DCLogic {
       isAttendance: active === 'attendance',
       isBlitz: active === 'blitz',
       isBlitzPerformance: active === 'blitzPerformance',
+      isAdminUnlocked: !!s.adminUnlocked,
       isStockPricing: active === 'stockPricing',
       isCompetitorFeedback: active === 'competitorFeedback',
       isExecutionReport: active === 'executionReport',
