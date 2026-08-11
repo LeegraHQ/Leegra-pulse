@@ -355,22 +355,32 @@ async function submitGate() {
     const res = await fetch('/api/auth-login', {
       method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body),
     });
+    const raw = await res.text();
+    let data = {};
+    try { data = JSON.parse(raw); } catch (e) { /* not JSON */ }
     const isJson = (res.headers.get('content-type') || '').includes('application/json');
     // A 404/405 or a non-JSON body means the sign-in function isn't deployed —
     // that's a missing backend, not a bad code, so don't lock anyone out.
     if (res.status === 404 || res.status === 405 || !isJson) { openReadOnly(); return; }
     if (!res.ok) {
-      const data = await res.json().catch(() => ({}));
-      err.textContent = data.error || (gateMode === 'code' ? 'That code is not valid this month.' : 'Invalid or expired code.');
+      err.textContent = (data.error || 'Sign-in failed') + ' [' + res.status + ']';
       return;
     }
-    const data = await res.json();
+    if (data.needsTenantChoice) {
+      err.textContent = 'That account is attached to several clients — use the main app to sign in.';
+      return;
+    }
+    if (!data.token) {
+      err.textContent = 'Signed in but no session came back [' + res.status + ']. ' + raw.slice(0, 120);
+      return;
+    }
     session.token = data.token; session.role = data.role;
     sessionStorage.setItem('lp_token', data.token);
     sessionStorage.setItem('lp_role', data.role);
     err.textContent = '';
     enterDashboard();
   } catch (e) {
+    err.textContent = 'Could not reach the sign-in service: ' + (e && e.message ? e.message : e);
     openReadOnly();
   }
 }
