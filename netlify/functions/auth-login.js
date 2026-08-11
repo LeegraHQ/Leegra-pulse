@@ -47,7 +47,7 @@ exports.handler = async (event) => {
       ? CODE_HOLDERS.find(h => h.role.startsWith('leegra_'))
       : CODE_HOLDERS.find(h => !h.role.startsWith('leegra_') && accessCode.verify(h.tenantCode, suppliedAccessCode));
     if (!holder) {
-      return { statusCode: 401, body: JSON.stringify({ error: 'That code is not valid this month.' }) };
+      return { statusCode: 401, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ error: 'That code is not valid this month.' }) };
     }
     const tenant = findTenantByCode(holder.tenantCode);
     const isLeegraStaff = holder.role.startsWith('leegra_');
@@ -59,6 +59,7 @@ exports.handler = async (event) => {
     const token = jwt.sign(claims);
     return {
       statusCode: 200,
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         token, role: holder.role, viewerName: holder.name, readOnly: !isLeegraStaff,
         client: { code: tenant.code, name: tenant.name, logo: tenant.logoUrl },
@@ -70,7 +71,7 @@ exports.handler = async (event) => {
   const submittedCode = (body.code || '').trim();
   const tenantCodeChoice = (body.tenant_code || '').trim().toUpperCase();
   if (!normalizedEmail || !submittedCode) {
-    return { statusCode: 401, body: JSON.stringify({ error: 'Invalid or expired code' }) };
+    return { statusCode: 401, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ error: 'Invalid or expired code' }) };
   }
 
   // One test/demo account (set via env, not hardcoded) can use a fixed code
@@ -103,7 +104,7 @@ exports.handler = async (event) => {
   }
 
   if (!identity) {
-    return { statusCode: 401, body: JSON.stringify({ error: 'Invalid or expired code' }) };
+    return { statusCode: 401, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ error: 'Invalid or expired code' }) };
   }
 
   // A tenant user's fixedCode (if set) is checked here, before falling back
@@ -114,26 +115,26 @@ exports.handler = async (event) => {
   if (!isTestRepLogin && !isFixedCodeLogin && !isHolderCodeLogin) {
     const otp = await getOtp(normalizedEmail);
     if (!otp || otp.code !== submittedCode || Date.now() > otp.expiresAt) {
-      return { statusCode: 401, body: JSON.stringify({ error: 'Invalid or expired code' }) };
+      return { statusCode: 401, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ error: 'Invalid or expired code' }) };
     }
     await clearOtp(normalizedEmail); // one-time use
   }
 
   if (isHolderCodeLogin && holder.role.startsWith('leegra_')) {
     const token = jwt.sign({ role: holder.role, email: normalizedEmail });
-    return { statusCode: 200, body: JSON.stringify({ token, role: holder.role, email: normalizedEmail }) };
+    return { statusCode: 200, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ token, role: holder.role, email: normalizedEmail }) };
   }
 
   if (identity.kind === 'super_admin') {
     const token = jwt.sign({ role: 'leegra_super_admin', email: normalizedEmail });
-    return { statusCode: 200, body: JSON.stringify({ token, role: 'leegra_super_admin', email: normalizedEmail }) };
+    return { statusCode: 200, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ token, role: 'leegra_super_admin', email: normalizedEmail }) };
   }
 
   if (identity.kind === 'staff') {
     const role = TIER_TO_ROLE[identity.staffRecord.tier] || 'leegra_report_only';
     const scopedTenantCode = identity.staffRecord.scopedTenantCode || null;
     const token = jwt.sign({ role, email: normalizedEmail, scopedTenantCode });
-    return { statusCode: 200, body: JSON.stringify({ token, role, email: normalizedEmail, scopedTenantCode }) };
+    return { statusCode: 200, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ token, role, email: normalizedEmail, scopedTenantCode }) };
   }
 
   if (identity.kind === 'multi_tenant_user') {
@@ -148,7 +149,7 @@ exports.handler = async (event) => {
     }
     const chosen = identity.matches.find(m => m.tenant.code === tenantCodeChoice);
     if (!chosen) {
-      return { statusCode: 400, body: JSON.stringify({ error: 'Not assigned to that client' }) };
+      return { statusCode: 400, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ error: 'Not assigned to that client' }) };
     }
     identity.tenant = chosen.tenant;
     identity.userRecord = chosen.userRecord;

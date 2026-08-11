@@ -461,16 +461,18 @@ async function upgradeSession(code) {
         body: JSON.stringify({ access_code: code }), signal: controller.signal,
       });
     } finally { clearTimeout(timer); }
-    const ctype = (res.headers.get('content-type') || 'none').split(';')[0];
-    authProbe = res.status + ' ' + ctype;
-    if (!(res.headers.get('content-type') || '').includes('application/json')) {
-      const body = (await res.text().catch(() => '')).slice(0, 60).replace(/\s+/g, ' ');
-      authProbe += ' — not JSON: "' + body + '"';
+    const raw = await res.text();
+    let data = null;
+    try { data = JSON.parse(raw); } catch (e) { /* not JSON at all */ }
+    if (!data) {
+      // An HTML body here means the redirect fell through to the SPA, i.e. the
+      // function isn't deployed.
+      authProbe = res.status + ' — no JSON in response: "' + raw.slice(0, 60).replace(/\s+/g, ' ') + '"';
       diag();
       return;
     }
     if (!res.ok) {
-      const detail = await res.json().catch(() => ({}));
+      const detail = data;
       authProbe = res.status + ' ' + (detail.error || 'no reason given');
       diag();
       adminNotice(
@@ -478,7 +480,6 @@ async function upgradeSession(code) {
         'Photos are not available right now.');
       return;
     }
-    const data = await res.json();
     authProbe = 'ok — token received';
     session.token = data.token; session.role = data.role;
     sessionStorage.setItem('lp_token', data.token);
