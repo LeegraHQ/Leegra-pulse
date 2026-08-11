@@ -39,7 +39,13 @@ exports.handler = async (event) => {
   // Checked before anything else so it never touches the OTP path.
   const suppliedAccessCode = (body.access_code || '').trim();
   if (suppliedAccessCode && !body.email) {
-    const holder = CODE_HOLDERS.find(h => accessCode.verify(h.tenantCode, suppliedAccessCode));
+    // verify() is identity-blind (one shared code), so the holder is chosen by
+    // WHICH code was typed: the admin code -> the Leegra staff entry, the
+    // shared code -> the read-only client viewer.
+    const wantsAdmin = accessCode.isAdminCode(suppliedAccessCode);
+    const holder = wantsAdmin
+      ? CODE_HOLDERS.find(h => h.role.startsWith('leegra_'))
+      : CODE_HOLDERS.find(h => !h.role.startsWith('leegra_') && accessCode.verify(h.tenantCode, suppliedAccessCode));
     if (!holder) {
       return { statusCode: 401, body: JSON.stringify({ error: 'That code is not valid this month.' }) };
     }
@@ -74,7 +80,10 @@ exports.handler = async (event) => {
   // email plus the current access code, no OTP. Same code as the Civvio
   // report page, so Alys has one code for both.
   const holder = CODE_HOLDERS.find(h => h.email.toLowerCase() === normalizedEmail);
-  const isHolderCodeLogin = !!holder && accessCode.verify(holder.tenantCode, submittedCode);
+  // Staff need the admin code; a client viewer needs the shared one.
+  const isHolderCodeLogin = !!holder && (holder.role.startsWith('leegra_')
+    ? accessCode.isAdminCode(submittedCode)
+    : accessCode.verify(holder.tenantCode, submittedCode));
 
   const isTestRepLogin = process.env.TEST_REP_EMAIL
     && process.env.TEST_REP_PERMANENT_CODE

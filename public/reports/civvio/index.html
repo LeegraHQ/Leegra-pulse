@@ -86,6 +86,9 @@
   .aug-item-label { font-size:10px; text-transform:uppercase; letter-spacing:0.06em; color:#7C8896; font-weight:600; }
   .aug-item-value { font-family:'Poppins',sans-serif; font-size:16px; font-weight:700; color:var(--primary-dark); margin-top:2px; }
   .gate { position:fixed; inset:0; background:#1B1D22; display:flex; align-items:center; justify-content:center; z-index:50; padding:24px; }
+  /* display:flex above outranks the browser's [hidden] rule, so say it here —
+     without this the overlay stays on top of the dashboard after sign-in. */
+  .gate[hidden] { display:none; }
   .gate-box { background:#fff; border-radius:14px; padding:28px; width:100%; max-width:380px; }
   .gate-title { font-family:'Poppins',sans-serif; font-size:19px; font-weight:700; color:var(--primary-dark); }
   .gate-sub { font-size:12px; color:#7C8896; margin-top:6px; line-height:1.5; }
@@ -110,7 +113,7 @@
     <div class="gate-title">Civvio — Activation Dashboard</div>
     <div class="gate-sub">Enter this month's access code. A new code is issued on the 1st of each month.</div>
     <div class="gate-label" id="gate-label">Access code</div>
-    <input class="gate-input" id="gate-input" placeholder="XXXX-XXXX" autocomplete="off" spellcheck="false">
+    <input class="gate-input" id="gate-input" placeholder="Enter your code" autocomplete="off" spellcheck="false">
     <input class="gate-input" id="gate-otp" placeholder="6-digit code" autocomplete="off" spellcheck="false" style="margin-top:10px;" hidden>
     <button class="gate-btn" id="gate-btn">View dashboard</button>
     <div class="gate-error" id="gate-error"></div>
@@ -315,7 +318,7 @@ document.getElementById('gate-switch').addEventListener('click', () => {
   const otp = document.getElementById('gate-otp');
   otp.hidden = true; otp.value = '';
   document.getElementById('gate-label').textContent = gateMode === 'code' ? 'Access code' : 'Leegra email address';
-  input.placeholder = gateMode === 'code' ? 'XXXX-XXXX' : 'name@leegra.co.za';
+  input.placeholder = gateMode === 'code' ? 'Enter your code' : 'name@leegra.co.za';
   input.style.textTransform = gateMode === 'code' ? 'uppercase' : 'none';
   input.value = '';
   document.getElementById('gate-btn').textContent = gateMode === 'code' ? 'View dashboard' : 'Email me a code';
@@ -342,26 +345,62 @@ async function requestOtp(email) {
   } catch (e) { openReadOnly(); }
 }
 
+// The current access code, also checked here in the page. The server is still
+// the real gate for anything that writes (photos, edits) — it re-checks every
+// request. This local copy only decides whether the report is *shown*, so a
+// dead or slow backend can't lock anyone out of a read-only report.
+// Keep it in step with ACCESS_CODE_CURRENT in the Netlify env vars.
+const LOCAL_ACCESS_CODE = '1105';
+// Chris's admin code. Kept separate because one shared code cannot tell two
+// people with different rights apart. Must match ADMIN_ACCESS_CODE in Netlify.
+const LOCAL_ADMIN_CODE = '1105-LEEGRA';
+
 async function submitGate() {
   const value = document.getElementById('gate-input').value.trim();
   const err = document.getElementById('gate-error');
   if (!value) { err.textContent = 'Enter your ' + (gateMode === 'code' ? 'access code' : 'email address') + '.'; return; }
   if (gateMode === 'email' && !otpSent) { requestOtp(value); return; }
+
+  // Right code → in you go, immediately. The backend is then asked in the
+  // background to upgrade the session (real role, stored photos).
+  const typed = value.toUpperCase();
+  if (gateMode === 'code' && (typed === LOCAL_ACCESS_CODE.toUpperCase() || typed === LOCAL_ADMIN_CODE.toUpperCase())) {
+    // Read-only unless the admin code was used — a fallback should never hand
+    // out more rights than the server would.
+    session.role = typed === LOCAL_ADMIN_CODE.toUpperCase() ? 'leegra_super_admin' : 'client_viewer';
+    err.textContent = '';
+    enterDashboard();
+    upgradeSession(value);
+    return;
+  }
+
   err.textContent = 'Checking…';
   const body = gateMode === 'code'
     ? { access_code: value }
     : { email: value, code: document.getElementById('gate-otp').value.trim() };
   try {
-    const res = await fetch('/api/auth-login', {
-      method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body),
-    });
+    // Netlify functions can hang; without a deadline the box would just sit on
+    // "Checking…" forever.
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 15000);
+    let res;
+    try {
+      res = await fetch('/api/auth-login', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body), signal: controller.signal,
+      });
+    } finally { clearTimeout(timer); }
     const raw = await res.text();
     let data = {};
     try { data = JSON.parse(raw); } catch (e) { /* not JSON */ }
     const isJson = (res.headers.get('content-type') || '').includes('application/json');
-    // A 404/405 or a non-JSON body means the sign-in function isn't deployed —
-    // that's a missing backend, not a bad code, so don't lock anyone out.
-    if (res.status === 404 || res.status === 405 || !isJson) { openReadOnly(); return; }
+    // No backend. Staff can still fall through to the read-only report; a wrong
+    // code cannot — the local code check above is what keeps holders unlocked
+    // when the server is down, so opening here would just be a bypass.
+    if (res.status === 404 || res.status === 405 || !isJson) {
+      if (gateMode === 'code') { err.textContent = 'That code is not valid.'; return; }
+      openReadOnly(); return;
+    }
     if (!res.ok) {
       err.textContent = (data.error || 'Sign-in failed') + ' [' + res.status + ']';
       return;
@@ -380,7 +419,16 @@ async function submitGate() {
     err.textContent = '';
     enterDashboard();
   } catch (e) {
-    err.textContent = 'Could not reach the sign-in service: ' + (e && e.message ? e.message : e);
+    const aborted = e && e.name === 'AbortError';
+    if (gateMode === 'code') {
+      err.textContent = aborted
+        ? 'That code could not be checked — the sign-in service did not answer.'
+        : 'That code is not valid.';
+      return;
+    }
+    err.textContent = aborted
+      ? 'The sign-in service did not answer within 15 seconds.'
+      : 'Could not reach the sign-in service: ' + (e && e.message ? e.message : e);
     openReadOnly();
   }
 }
@@ -396,6 +444,30 @@ function openReadOnly() {
 document.getElementById('gate-btn').addEventListener('click', submitGate);
 document.getElementById('gate-input').addEventListener('keydown', e => { if (e.key === 'Enter') submitGate(); });
 document.getElementById('gate-otp').addEventListener('keydown', e => { if (e.key === 'Enter') submitGate(); });
+
+// Ask the backend for a real token once we're already inside. If it answers,
+// photos and edits start saving properly; if it doesn't, the dashboard stays
+// usable with local storage.
+async function upgradeSession(code) {
+  try {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 12000);
+    let res;
+    try {
+      res = await fetch('/api/auth-login', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ access_code: code }), signal: controller.signal,
+      });
+    } finally { clearTimeout(timer); }
+    if (!res.ok) return;
+    if (!(res.headers.get('content-type') || '').includes('application/json')) return;
+    const data = await res.json();
+    session.token = data.token; session.role = data.role;
+    sessionStorage.setItem('lp_token', data.token);
+    sessionStorage.setItem('lp_role', data.role);
+    boot();
+  } catch (e) { /* stay in local mode */ }
+}
 
 function notice(text) {
   const el = document.getElementById('notice');

@@ -35,9 +35,18 @@ function codeFor(tenantCode, date) {
   return manual || derivedCode(tenantCode, date);
 }
 
+// Is this the admin code? One shared code can't tell two people apart, so
+// admin rights hang off their own value (ADMIN_ACCESS_CODE) rather than the
+// code everyone shares.
+function isAdminCode(supplied) {
+  const admin = clean(process.env.ADMIN_ACCESS_CODE);
+  return !!admin && clean(supplied) === admin;
+}
+
 function verify(tenantCode, supplied) {
   const given = clean(supplied);
   if (!given) return false;
+  if (isAdminCode(given)) return true;
 
   const manual = clean(process.env.ACCESS_CODE_CURRENT);
   if (manual) {
@@ -59,4 +68,4 @@ function verify(tenantCode, supplied) {
   return false;
 }
 
-module.exports = { codeFor, verify, monthKey, derivedCode };
+module.exports = { codeFor, verify, isAdminCode, monthKey, derivedCode };
