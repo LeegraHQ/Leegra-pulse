@@ -15,7 +15,16 @@ const crypto = require('crypto');
 const ALPHABET = '23456789ABCDEFGHJKLMNPQRSTUVWXYZ'; // no 0/O/1/I — read aloud over the phone
 const SECRET = process.env.ACCESS_CODE_SECRET || 'dev-only-insecure-secret';
 
-const clean = v => String(v || '').trim().toUpperCase().replace(/\s/g, '');
+// Normalise before comparing: strip whitespace, upper-case, and fold every
+// Unicode dash (en dash, em dash, minus sign — what autocorrect produces when
+// a code is typed into a form or a phone) down to a plain hyphen. Without this,
+// "1105–LEEGRA" and "1105-LEEGRA" are different strings and the code is
+// silently refused.
+const clean = v => String(v || '')
+  .trim()
+  .toUpperCase()
+  .replace(/\s/g, '')
+  .replace(/[\u2010-\u2015\u2043\u2212\uFE58\uFE63\uFF0D]/g, '-');
 
 function monthKey(date) {
   const d = date || new Date();

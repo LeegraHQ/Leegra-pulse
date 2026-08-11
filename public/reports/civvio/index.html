@@ -355,7 +355,7 @@ async function requestOtp(email) {
 const LOCAL_ACCESS_CODE = '1105';
 // Chris's admin code. Kept separate because one shared code cannot tell two
 // people with different rights apart. Must match ADMIN_ACCESS_CODE in Netlify.
-const LOCAL_ADMIN_CODE = '1105-LEEGRA';
+const LOCAL_ADMIN_CODE = '1105LEEGRA';
 
 async function submitGate() {
   const value = document.getElementById('gate-input').value.trim();
@@ -461,15 +461,25 @@ async function upgradeSession(code) {
         body: JSON.stringify({ access_code: code }), signal: controller.signal,
       });
     } finally { clearTimeout(timer); }
+    const ctype = (res.headers.get('content-type') || 'none').split(';')[0];
+    authProbe = res.status + ' ' + ctype;
+    if (!(res.headers.get('content-type') || '').includes('application/json')) {
+      const body = (await res.text().catch(() => '')).slice(0, 60).replace(/\s+/g, ' ');
+      authProbe += ' — not JSON: "' + body + '"';
+      diag();
+      return;
+    }
     if (!res.ok) {
       const detail = await res.json().catch(() => ({}));
+      authProbe = res.status + ' ' + (detail.error || 'no reason given');
+      diag();
       adminNotice(
         'Signed in locally, but the server did not accept this code (' + res.status + ': ' + (detail.error || 'no reason given') + '), so photos and edits cannot be saved. Check ACCESS_CODE_CURRENT and ADMIN_ACCESS_CODE in Netlify.',
         'Photos are not available right now.');
       return;
     }
-    if (!(res.headers.get('content-type') || '').includes('application/json')) return;
     const data = await res.json();
+    authProbe = 'ok — token received';
     session.token = data.token; session.role = data.role;
     sessionStorage.setItem('lp_token', data.token);
     sessionStorage.setItem('lp_role', data.role);
@@ -478,6 +488,7 @@ async function upgradeSession(code) {
 }
 
 let lastUploadError = '';
+let authProbe = 'not attempted';
 
 function diag() {
   const el = document.getElementById('diag');
@@ -490,6 +501,7 @@ function diag() {
     'photo storage: ' + (photosRemote ? 'Supabase (shared)' : 'this browser only'),
     'photos loaded: ' + Object.keys(photos).length,
     'last upload error: ' + (lastUploadError || 'none'),
+    'auth-login: ' + authProbe,
   ].join('   ·   ');
 }
 
@@ -567,7 +579,7 @@ async function uploadPhoto(storeKey, file, row) {
   if (!session.token) {
     saveLocalPhotos();
     lastUploadError = 'no server token — sign-in was not confirmed';
-    adminNotice('Photo saved in this browser only — this session was not confirmed by the server, so it cannot upload. Sign out and sign in again with 1105-LEEGRA, and check ADMIN_ACCESS_CODE is set in Netlify.');
+    adminNotice('Photo saved in this browser only — this session was not confirmed by the server, so it cannot upload. Sign out and sign in again with 1105LEEGRA, and check ADMIN_ACCESS_CODE is set in Netlify.');
     diag();
     return;
   }
@@ -871,7 +883,9 @@ async function checkStorage() {
   } catch (e) {
     chip.textContent = 'Photos: this browser only';
     chip.style.background = '#FDF1E4'; chip.style.color = '#B5651D'; chip.style.borderColor = '#F2DFC6';
-    chip.title = 'Storage backend not deployed yet — photos stay on this machine.';
+    chip.title = session.isAdmin
+      ? 'Storage backend not deployed yet — photos stay on this machine.'
+      : 'Photos are not available right now.';
   }
 }
 
