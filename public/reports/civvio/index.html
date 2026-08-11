@@ -487,6 +487,7 @@ function loadLocalPhotos() {
   } catch (e) { /* storage unavailable */ }
 }
 function saveLocalPhotos() {
+  if (photosRemote) return;
   const localOnly = {};
   Object.entries(photos).forEach(([k, v]) => { if (v.local) localOnly[k] = v; });
   try { localStorage.setItem(LOCAL_KEY, JSON.stringify(localOnly)); }
@@ -807,6 +808,10 @@ async function checkStorage() {
       chip.textContent = 'Photos: saved for everyone';
       chip.style.background = '#E8F7EE'; chip.style.color = '#1E8A4C'; chip.style.borderColor = '#CDEBD9';
       photosRemote = true;
+      // Drop the pre-Supabase browser cache: it can't be seen by anyone else,
+      // and it's what triggers the "ran out of local storage" warning.
+      try { localStorage.removeItem(LOCAL_KEY); } catch (e) { /* nothing to clear */ }
+      document.getElementById('notice').hidden = true;
     } else {
       chip.textContent = 'Photos: this browser only';
       chip.style.background = '#FDF1E4'; chip.style.color = '#B5651D'; chip.style.borderColor = '#F2DFC6';
