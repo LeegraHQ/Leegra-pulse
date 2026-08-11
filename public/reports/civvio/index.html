@@ -10,13 +10,19 @@
   :root { --primary-dark: #1B1D22; --accent: #D62828; }
   * { box-sizing: border-box; }
   body { margin: 0; background: #F4F6F8; color: #2C3138; font-family: 'Inter', system-ui, sans-serif; }
+  a { color: var(--accent); }
+  a:hover { color: #A81F1F; }
   .wrap { min-height: 100vh; padding: 20px 28px 32px; }
   .header { display:flex; align-items:center; gap:12px; justify-content:space-between; margin-bottom:14px; }
   .header-left { display:flex; align-items:center; gap:10px; }
   .header-left img { height:32px; width:auto; }
   .title { font-family:'Poppins',sans-serif; font-weight:700; font-size:22px; color:var(--primary-dark); letter-spacing:-0.02em; }
   .subtitle { font-size:12px; color:#7C8896; margin-top:2px; }
+  .header-right { display:flex; align-items:center; gap:8px; }
   .date-chip { font-size:11px; color:#7C8896; background:#fff; border:1px solid #E1E6EB; border-radius:8px; padding:6px 10px; }
+  .role-chip { font-size:11px; font-weight:600; border-radius:8px; padding:6px 10px; }
+  .role-admin { background:#1B1D22; color:#fff; }
+  .role-viewer { background:#EEF1F4; color:#5A6470; border:1px solid #E1E6EB; }
   .kpi-row { display:grid; grid-template-columns:repeat(4,1fr); gap:10px; margin-bottom:14px; }
   .kpi-card { background:#fff; border:1px solid #E1E6EB; border-radius:10px; padding:10px 14px; }
   .kpi-label { font-size:10px; text-transform:uppercase; letter-spacing:0.06em; color:#7C8896; font-weight:600; }
@@ -24,10 +30,10 @@
   .kpi-value.primary { color:var(--primary-dark); }
   .kpi-value.accent { color:var(--accent); }
   .section-full { margin-bottom:12px; }
-  .section-row { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:12px; }
   .section-row-3 { display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px; margin-bottom:12px; }
   .card { background:#fff; border:1px solid #E1E6EB; border-radius:10px; overflow:hidden; }
-  .card-header { background:var(--primary-dark); color:#fff; font-family:'Poppins',sans-serif; font-weight:600; font-size:12px; padding:8px 14px; }
+  .card-header { background:var(--primary-dark); color:#fff; font-family:'Poppins',sans-serif; font-weight:600; font-size:12px; padding:8px 14px; display:flex; align-items:center; gap:10px; }
+  .card-header .hint { margin-left:auto; font-weight:400; font-size:10.5px; color:#B9BFC7; }
   .card-body { padding:14px; }
   .card-sub { font-size:10.5px; color:#7C8896; margin-bottom:10px; }
   table { width:100%; border-collapse:collapse; font-size:12px; }
@@ -40,18 +46,27 @@
   .name-cell { font-weight:500; }
   .muted { color:#5A6470; }
   .badge { padding:2px 8px; border-radius:6px; font-size:10px; font-weight:600; display:inline-block; }
+  .badge.editable { cursor:pointer; }
+  .badge.editable:hover { box-shadow:0 0 0 2px rgba(27,29,34,0.12); }
   .empty-row td { padding:14px; text-align:center; color:#B0B8C0; font-size:12px; }
   .slicers { background:#fff; border:1px solid #E1E6EB; border-radius:10px; padding:12px 14px; display:flex; gap:24px; flex-wrap:wrap; }
   .slicer-label { font-size:10px; text-transform:uppercase; letter-spacing:0.06em; color:#7C8896; font-weight:600; margin-bottom:6px; }
   .pill-row { display:flex; gap:6px; flex-wrap:wrap; }
   .pill { cursor:pointer; padding:5px 12px; border-radius:999px; font-size:12px; font-weight:600; background:#EEF1F4; color:#5A6470; border:1px solid #E1E6EB; user-select:none; }
+  .pill:focus-visible { outline:2px solid var(--accent); outline-offset:2px; }
   .pill.region-active { background:var(--primary-dark); color:#fff; border-color:var(--primary-dark); }
   .pill.channel-active { background:var(--accent); color:#fff; border-color:var(--accent); }
-  .pill.manager-active { background:#3A6EA5; color:#fff; border-color:#3A6EA5; }
   .pill.status-active { background:#1E8A4C; color:#fff; border-color:#1E8A4C; }
-  .photo-grid { padding:12px 14px; display:grid; grid-template-columns:repeat(auto-fill, minmax(150px, 1fr)); gap:10px; max-height:520px; overflow-y:auto; }
-  .photo-slot { width:100%; aspect-ratio:4/3; border-radius:8px; border:2px dashed #D8DEE4; background:#FAFBFC; display:flex; align-items:center; justify-content:center; text-align:center; color:#9AA5B1; font-size:10.5px; padding:8px; cursor:pointer; }
-  .photo-caption { font-size:10px; color:#7C8896; margin-top:4px; text-align:center; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .photo-grid { padding:12px 14px; display:grid; grid-template-columns:repeat(auto-fill, minmax(150px, 1fr)); gap:12px; max-height:560px; overflow-y:auto; }
+  .photo-slot { width:100%; aspect-ratio:4/3; border-radius:8px; border:2px dashed #D8DEE4; background:#FAFBFC; display:flex; align-items:center; justify-content:center; text-align:center; color:#9AA5B1; font-size:10.5px; padding:8px; cursor:pointer; position:relative; overflow:hidden; }
+  .photo-slot.filled { border:1px solid #E1E6EB; cursor:zoom-in; }
+  .photo-slot img { width:100%; height:100%; object-fit:cover; display:block; }
+  .photo-store { font-size:10px; color:#9AA5B1; margin-top:5px; text-transform:uppercase; letter-spacing:0.04em; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .photo-caption { font-size:11px; color:#2C3138; margin-top:2px; line-height:1.35; }
+  .photo-caption[contenteditable="true"]:focus { outline:2px solid var(--accent); outline-offset:2px; border-radius:4px; }
+  .photo-caption.placeholder { color:#B0B8C0; font-style:italic; }
+  .photo-remove { position:absolute; top:5px; right:5px; background:rgba(27,29,34,0.78); color:#fff; border:none; border-radius:6px; font-size:10px; padding:3px 6px; cursor:pointer; display:none; }
+  .photo-slot.filled:hover .photo-remove { display:block; }
   .progress-track { height:8px; background:#EEF1F4; border-radius:5px; overflow:hidden; }
   .progress-fill { height:100%; border-radius:5px; }
   .bar-row { margin-bottom:10px; }
@@ -66,10 +81,43 @@
   .donut-hole-label { font-size:8.5px; color:#7C8896; text-transform:uppercase; letter-spacing:0.3px; }
   .legend-row { display:flex; align-items:center; gap:6px; font-size:11.5px; color:#3A4658; margin-bottom:6px; }
   .legend-dot { width:9px; height:9px; border-radius:2px; flex-shrink:0; }
+  .notice { font-size:11px; color:#B5651D; background:#FDF1E4; border:1px solid #F2DFC6; border-radius:8px; padding:8px 12px; margin-bottom:12px; }
+  .aug-card { display:flex; align-items:center; gap:28px; padding:14px; flex-wrap:wrap; }
+  .aug-item-label { font-size:10px; text-transform:uppercase; letter-spacing:0.06em; color:#7C8896; font-weight:600; }
+  .aug-item-value { font-family:'Poppins',sans-serif; font-size:16px; font-weight:700; color:var(--primary-dark); margin-top:2px; }
+  .gate { position:fixed; inset:0; background:#1B1D22; display:flex; align-items:center; justify-content:center; z-index:50; padding:24px; }
+  .gate-box { background:#fff; border-radius:14px; padding:28px; width:100%; max-width:380px; }
+  .gate-title { font-family:'Poppins',sans-serif; font-size:19px; font-weight:700; color:var(--primary-dark); }
+  .gate-sub { font-size:12px; color:#7C8896; margin-top:6px; line-height:1.5; }
+  .gate-label { font-size:10px; text-transform:uppercase; letter-spacing:0.06em; color:#7C8896; font-weight:600; margin:18px 0 6px; }
+  .gate-input { width:100%; padding:11px 13px; border:1px solid #E1E6EB; border-radius:9px; font-size:15px; font-family:'Inter',sans-serif; letter-spacing:0.06em; text-transform:uppercase; }
+  .gate-input:focus-visible { outline:2px solid var(--accent); outline-offset:2px; }
+  .gate-btn { width:100%; margin-top:14px; padding:11px; border:none; border-radius:9px; background:var(--accent); color:#fff; font-size:14px; font-weight:600; font-family:'Inter',sans-serif; cursor:pointer; }
+  .gate-btn:hover { background:#B92222; }
+  .gate-btn:active { background:#A81F1F; }
+  .gate-alt { margin-top:14px; font-size:11.5px; color:#7C8896; text-align:center; }
+  .gate-alt span { color:var(--accent); cursor:pointer; font-weight:600; }
+  .gate-error { font-size:12px; color:var(--accent); margin-top:10px; min-height:16px; }
+  .lightbox { position:fixed; inset:0; background:rgba(27,29,34,0.9); display:flex; align-items:center; justify-content:center; z-index:60; padding:32px; }
+  .lightbox img { max-width:100%; max-height:80vh; border-radius:10px; }
+  .lightbox-cap { color:#fff; font-size:13px; margin-top:12px; text-align:center; }
 </style>
 </head>
 <body>
-<div class="wrap">
+
+<div class="gate" id="gate" hidden>
+  <div class="gate-box">
+    <div class="gate-title">Civvio — Activation Dashboard</div>
+    <div class="gate-sub">Enter this month's access code. A new code is issued on the 1st of each month.</div>
+    <div class="gate-label" id="gate-label">Access code</div>
+    <input class="gate-input" id="gate-input" placeholder="XXXX-XXXX" autocomplete="off" spellcheck="false">
+    <button class="gate-btn" id="gate-btn">View dashboard</button>
+    <div class="gate-error" id="gate-error"></div>
+    <div class="gate-alt" id="gate-alt">Leegra staff? <span id="gate-switch">Sign in with your email</span></div>
+  </div>
+</div>
+
+<div class="wrap" id="wrap" hidden>
   <div class="header">
     <div class="header-left">
       <img src="assets/civvio-logo.png" alt="Civvio">
@@ -78,8 +126,14 @@
         <div class="subtitle">Real DMQ data · Totalsports &amp; Mr Price Sport store call tracker</div>
       </div>
     </div>
-    <div class="date-chip">Data as of Jul 27, 2026</div>
+    <div class="header-right">
+      <div class="role-chip role-viewer" id="storage-chip" title="Where uploaded photos are stored">Checking photo storage…</div>
+      <div class="role-chip role-viewer" id="role-chip">View only</div>
+      <div class="date-chip">July 2026 · data as of Aug 11, 2026</div>
+    </div>
   </div>
+
+  <div class="notice" id="notice" hidden></div>
 
   <div class="slicers" style="margin-bottom:14px;">
     <div><div class="slicer-label">Region</div><div class="pill-row" id="pills-region"></div></div>
@@ -92,6 +146,18 @@
     <div class="kpi-card"><div class="kpi-label">Store Coverage</div><div class="kpi-value accent" id="kpi-coverage">0%</div></div>
     <div class="kpi-card"><div class="kpi-label">Manager Store Progress</div><div class="kpi-value primary" id="kpi-manager-progress">0 / 0</div></div>
     <div class="kpi-card"><div class="kpi-label">Avg. Store Rating</div><div class="kpi-value accent" id="kpi-rating">–</div></div>
+  </div>
+
+  <div class="section-full">
+    <div class="card">
+      <div class="card-header">August 2026 — Planned Call Window</div>
+      <div class="aug-card">
+        <div><div class="aug-item-label">Window</div><div class="aug-item-value">1 – 30 August 2026</div></div>
+        <div><div class="aug-item-label">Stores scheduled</div><div class="aug-item-value">44</div></div>
+        <div><div class="aug-item-label">Status</div><div class="aug-item-value">Pending completion</div></div>
+        <div style="margin-left:auto; font-size:11px; color:#7C8896; max-width:340px;">Exact call dates appear here as managers complete August visits and the month is imported.</div>
+      </div>
+    </div>
   </div>
 
   <div class="section-row-3">
@@ -127,7 +193,7 @@
 
   <div class="section-full">
     <div class="card">
-      <div class="card-header">Store Calls &amp; Feedback</div>
+      <div class="card-header">Store Calls &amp; Feedback <span class="hint" id="calls-hint"></span></div>
       <table>
         <thead><tr><th>Store</th><th>Region</th><th>Channel</th><th>Manager</th><th>Status</th><th>Date(s) Completed</th><th class="num">Rating</th></tr></thead>
         <tbody id="tbl-calls"></tbody>
@@ -136,44 +202,352 @@
   </div>
 
   <div class="card" style="margin-bottom:12px;">
-    <div class="card-header">Store Visit Photos</div>
+    <div class="card-header">Store Visit Photos <span class="hint" id="photo-hint"></span></div>
     <div class="photo-grid" id="photo-grid"></div>
   </div>
 </div>
 
 <script>
-// Real DMQ/Civvio data (Totalsports + Mr Price Sport, 44 stores across
-// GP/CPT/KZN/FS/NW), imported from Civvio_DMQ_Dashboard_Update_Template.xlsx
-// — replaces the prior illustrative demo data. Re-import the same template
-// (Managers + Store Calls & Feedback tabs) to refresh.
+/* ---------------------------------------------------------------------------
+   Civvio activation dashboard.
+
+   Data: July 2026 import (civvio-activation-dashboard-import-template July 2026).
+   44 stores across Totalsports + Mr Price Sport, all calls completed.
+
+   Three things beyond a static report:
+   1. Photos persist. Uploads go to /api/photos (Supabase Storage) so they stay
+      in the dashboard for everyone. Until that backend is live they fall back
+      to this browser's local storage, so they at least survive a reload here.
+   2. Calls completed is editable by a Leegra admin — click a status badge.
+      Changes save to /api/store-calls and layer over the imported baseline.
+   3. Access is by monthly code (or Leegra staff email) — see the gate above.
+--------------------------------------------------------------------------- */
+
+const TENANT = 'CIV-088';
+const MONTH = '2026-07';
+
 const REGIONS = ['All', 'GP', 'CPT', 'KZN', 'FS', 'NW'];
 const CHANNELS = ['All', 'Totalsports', 'Mr Price Sport'];
-
-const MANAGERS = [{"name": "Alex Walker", "region": "GP", "channel": "Totalsports", "storesToCover": 6, "storesCompleted": 3, "checkStatus": "Pending Completion"}, {"name": "Enver de Bryun", "region": "CPT", "channel": "Totalsports", "storesToCover": 7, "storesCompleted": 4, "checkStatus": "Pending Completion"}, {"name": "Kgothatso Matlou", "region": "KZN", "channel": "Totalsports", "storesToCover": 3, "storesCompleted": 3, "checkStatus": "Completed"}, {"name": "Elijah Sekgate", "region": "GP", "channel": "Totalsports", "storesToCover": 1, "storesCompleted": 0, "checkStatus": "Pending Completion"}, {"name": "Mackenzie Gouws", "region": "GP", "channel": "Totalsports", "storesToCover": 3, "storesCompleted": 2, "checkStatus": "Pending Completion"}, {"name": "Chris Pienaar", "region": "NW", "channel": "Totalsports", "storesToCover": 1, "storesCompleted": 0, "checkStatus": "Pending Completion"}, {"name": "Chris Pienaar", "region": "FS", "channel": "Totalsports", "storesToCover": 1, "storesCompleted": 0, "checkStatus": "Pending Completion"}, {"name": "Alex Walker", "region": "GP", "channel": "Mr Price Sport", "storesToCover": 6, "storesCompleted": 4, "checkStatus": "Pending Completion"}, {"name": "Enver de Bryun", "region": "CPT", "channel": "Mr Price Sport", "storesToCover": 7, "storesCompleted": 0, "checkStatus": "Pending Completion"}, {"name": "Kgothatso Matlou", "region": "KZN", "channel": "Mr Price Sport", "storesToCover": 3, "storesCompleted": 0, "checkStatus": "Pending Completion"}, {"name": "Elijah Sekgate", "region": "GP", "channel": "Mr Price Sport", "storesToCover": 1, "storesCompleted": 0, "checkStatus": "Pending Completion"}, {"name": "Mackenzie Gouws", "region": "GP", "channel": "Mr Price Sport", "storesToCover": 3, "storesCompleted": 2, "checkStatus": "Completed"}, {"name": "Chris Pienaar", "region": "NW", "channel": "Mr Price Sport", "storesToCover": 1, "storesCompleted": 0, "checkStatus": "Pending Completion"}, {"name": "Chris Pienaar", "region": "FS", "channel": "Mr Price Sport", "storesToCover": 1, "storesCompleted": 0, "checkStatus": "Pending Completion"}];
-
-const STORE_CALLS = [{"store": "TOTALSPORTS WESTVILLE PAVILLION DURBAN 060650", "region": "KZN", "channel": "Totalsports", "callsPlanned": 1, "callsAchieved": 1, "dateCompleted1": "2026-07-24", "dateCompleted2": null, "manager": "Kgothatso Matlou", "status": "Completed", "rating": 4.0, "comment": null}, {"store": "TOTALSPORTS GATEWAY DURBAN 060656", "region": "KZN", "channel": "Totalsports", "callsPlanned": 1, "callsAchieved": 1, "dateCompleted1": "2026-07-17", "dateCompleted2": null, "manager": "Kgothatso Matlou", "status": "Completed", "rating": 4.0, "comment": null}, {"store": "TOTALSPORTS CANAL WALK CAPE TOWN 060672", "region": "CPT", "channel": "Totalsports", "callsPlanned": 1, "callsAchieved": 2, "dateCompleted1": "2026-07-02", "dateCompleted2": "2026-07-13", "manager": "Enver de Bruyn", "status": "Completed", "rating": 4.0, "comment": null}, {"store": "TOTALSPORTS MALL OF AFRICA JOHANNESBURG 060502", "region": "GP", "channel": "Totalsports", "callsPlanned": 1, "callsAchieved": 0, "dateCompleted1": null, "dateCompleted2": null, "manager": "Alex Walker", "status": "Pending Completion", "rating": null, "comment": null}, {"store": "TOTALSPORTS EAST RAND MALL BOKSBURG 060772", "region": "GP", "channel": "Totalsports", "callsPlanned": 1, "callsAchieved": 1, "dateCompleted1": "2026-07-17", "dateCompleted2": null, "manager": "Alex Walker", "status": "Completed", "rating": null, "comment": null}, {"store": "TOTALSPORTS CLEARWATERS ROODEPOORT 060778", "region": "GP", "channel": "Totalsports", "callsPlanned": 1, "callsAchieved": 0, "dateCompleted1": null, "dateCompleted2": null, "manager": "Alex Walker", "status": "Pending Completion", "rating": null, "comment": null}, {"store": "TOTALSPORTS TYGERVALLEY BELLVILLE 060670", "region": "CPT", "channel": "Totalsports", "callsPlanned": 1, "callsAchieved": 0, "dateCompleted1": null, "dateCompleted2": null, "manager": "Enver de Bruyn", "status": "Pending Completion", "rating": null, "comment": null}, {"store": "TOTALSPORTS MENLYN PARK PRETORIA 060757", "region": "GP", "channel": "Totalsports", "callsPlanned": 1, "callsAchieved": 1, "dateCompleted1": "2026-07-15", "dateCompleted2": null, "manager": "Mackenzie Gouws", "status": "Completed", "rating": null, "comment": null}, {"store": "TOTALSPORTS SOMERSET MALL SOMERSET WEST 060668", "region": "CPT", "channel": "Totalsports", "callsPlanned": 1, "callsAchieved": 0, "dateCompleted1": null, "dateCompleted2": null, "manager": "Enver de Bruyn", "status": "Pending Completion", "rating": null, "comment": null}, {"store": "TOTALSPOSRTS FOURWAYS MALL JOHANNESBURG 060756", "region": "GP", "channel": "Totalsports", "callsPlanned": 1, "callsAchieved": 0, "dateCompleted1": null, "dateCompleted2": null, "manager": "Alex Walker", "status": "Pending Completion", "rating": null, "comment": null}, {"store": "TOTALSPORTS EASTGATE JOHANNESBURG 060762", "region": "GP", "channel": "Totalsports", "callsPlanned": 1, "callsAchieved": 1, "dateCompleted1": "2026-07-17", "dateCompleted2": null, "manager": "Alex Walker", "status": "Completed", "rating": null, "comment": null}, {"store": "TOTALSPORTS WATERFALL MALL RUSTENBURG 060742", "region": "NW", "channel": "Totalsports", "callsPlanned": 1, "callsAchieved": 0, "dateCompleted1": null, "dateCompleted2": null, "manager": "Chris Pienaar", "status": "Pending Completion", "rating": null, "comment": null}, {"store": "TOTALSPORTS CAVENDISH CAPE TOWN 060661", "region": "CPT", "channel": "Totalsports", "callsPlanned": 1, "callsAchieved": 0, "dateCompleted1": null, "dateCompleted2": null, "manager": "Enver de Bruyn", "status": "Pending Completion", "rating": null, "comment": null}, {"store": "TOTALSPORTS AMANZIMTOTI GALLERIA AMANZIMTOTI 060697", "region": "KZN", "channel": "Totalsports", "callsPlanned": 1, "callsAchieved": 1, "dateCompleted1": "2026-07-17", "dateCompleted2": null, "manager": "Kgothatso Matlou", "status": "Completed", "rating": 3.0, "comment": null}, {"store": "TOTALSPORTS CRESTA JOHANNESBURG 060739", "region": "GP", "channel": "Totalsports", "callsPlanned": 1, "callsAchieved": 0, "dateCompleted1": null, "dateCompleted2": null, "manager": "Alex Walker", "status": "Pending Completion", "rating": null, "comment": null}, {"store": "TOTALSPORTS VAAL MALL VANDERBIJLPARK 060775", "region": "GP", "channel": "Totalsports", "callsPlanned": 1, "callsAchieved": 0, "dateCompleted1": null, "dateCompleted2": null, "manager": "Elijah Sekgate", "status": "Pending Completion", "rating": null, "comment": null}, {"store": "TOTALSPORTS CENTURION PRETORIA 060752", "region": "GP", "channel": "Totalsports", "callsPlanned": 1, "callsAchieved": 0, "dateCompleted1": null, "dateCompleted2": null, "manager": "Mackenzie Gouws", "status": "Pending Completion", "rating": null, "comment": null}, {"store": "TOTALSPORTS BLUE ROUTE CAPE TOWN 060662", "region": "CPT", "channel": "Totalsports", "callsPlanned": 1, "callsAchieved": 1, "dateCompleted1": "2026-07-07", "dateCompleted2": null, "manager": "Enver de Bruyn", "status": "Completed", "rating": 3.0, "comment": null}, {"store": "TOTALSPORTS MONTANA PRETORIA 060759", "region": "GP", "channel": "Totalsports", "callsPlanned": 1, "callsAchieved": 1, "dateCompleted1": "2026-07-15", "dateCompleted2": null, "manager": "Mackenzie Gouws", "status": "Completed", "rating": null, "comment": null}, {"store": "TOTALSPORTS LOCH LOGAN BLOEMFONTEIN 060780", "region": "FS", "channel": "Totalsports", "callsPlanned": 1, "callsAchieved": 0, "dateCompleted1": null, "dateCompleted2": null, "manager": "Chris Pienaar", "status": "Pending Completion", "rating": null, "comment": null}, {"store": "TOTALSPORTS PAARL MALL PAARL 060679", "region": "CPT", "channel": "Totalsports", "callsPlanned": 1, "callsAchieved": 1, "dateCompleted1": "2026-07-23", "dateCompleted2": null, "manager": "Enver de Bruyn", "status": "Completed", "rating": 3.0, "comment": null}, {"store": "TOTALSPORTS STELLENBOSCH EIKESTAD STELLENBOSCH 060677", "region": "CPT", "channel": "Totalsports", "callsPlanned": 1, "callsAchieved": 1, "dateCompleted1": "2026-07-17", "dateCompleted2": null, "manager": "Enver de Bruyn", "status": "Completed", "rating": 3.0, "comment": null}, {"store": "MR Price Sport WESTVILLE PAVILLION DURBAN 060650", "region": "KZN", "channel": "Mr Price Sport", "callsPlanned": 1, "callsAchieved": 1, "dateCompleted1": "2026-07-24", "dateCompleted2": null, "manager": "Kgothatso Matlou", "status": "Completed", "rating": 3.0, "comment": null}, {"store": "MR Price Sport GATEWAY DURBAN 060656", "region": "KZN", "channel": "Mr Price Sport", "callsPlanned": 1, "callsAchieved": 1, "dateCompleted1": "2026-07-17", "dateCompleted2": null, "manager": "Kgothatso Matlou", "status": "Completed", "rating": 3.0, "comment": null}, {"store": "Mr Price Sport  CANAL WALK CAPE TOWN 060672", "region": "CPT", "channel": "Mr Price Sport", "callsPlanned": 1, "callsAchieved": 1, "dateCompleted1": "2026-07-08", "dateCompleted2": null, "manager": "Enver de Bruyn", "status": "Completed", "rating": 3.0, "comment": null}, {"store": "Mr Price Sport MALL OF AFRICA JOHANNESBURG 060502", "region": "GP", "channel": "Mr Price Sport", "callsPlanned": 1, "callsAchieved": 0, "dateCompleted1": null, "dateCompleted2": null, "manager": "Alex Walker", "status": "Pending Completion", "rating": null, "comment": null}, {"store": "MR Price SPort EAST RAND MALL BOKSBURG 060772", "region": "GP", "channel": "Mr Price Sport", "callsPlanned": 1, "callsAchieved": 0, "dateCompleted1": null, "dateCompleted2": null, "manager": "Alex Walker", "status": "Pending Completion", "rating": null, "comment": null}, {"store": "Mr Price Sport CLEARWATERS ROODEPOORT 060778", "region": "GP", "channel": "Mr Price Sport", "callsPlanned": 1, "callsAchieved": 0, "dateCompleted1": null, "dateCompleted2": null, "manager": "Alex Walker", "status": "Pending Completion", "rating": null, "comment": null}, {"store": "Mr Price Sport TYGERVALLEY BELLVILLE 060670", "region": "CPT", "channel": "Mr Price Sport", "callsPlanned": 1, "callsAchieved": 1, "dateCompleted1": "2026-07-02", "dateCompleted2": null, "manager": "Enver de Bruyn", "status": "Completed", "rating": 3.0, "comment": null}, {"store": "Mr Price Sport MENLYN PARK PRETORIA 060757", "region": "GP", "channel": "Mr Price Sport", "callsPlanned": 1, "callsAchieved": 1, "dateCompleted1": "2026-07-15", "dateCompleted2": null, "manager": "Mackenzie Gouws", "status": "Completed", "rating": 3.0, "comment": null}, {"store": "Mr Price Sport  SOMERSET MALL SOMERSET WEST 060668", "region": "CPT", "channel": "Mr Price Sport", "callsPlanned": 1, "callsAchieved": 1, "dateCompleted1": null, "dateCompleted2": null, "manager": "Enver de Bruyn", "status": "Completed", "rating": 3.0, "comment": null}, {"store": "Mr Price Sport  FOURWAYS MALL JOHANNESBURG 060756", "region": "GP", "channel": "Mr Price Sport", "callsPlanned": 1, "callsAchieved": 0, "dateCompleted1": null, "dateCompleted2": null, "manager": "Alex Walker", "status": "Pending Completion", "rating": null, "comment": null}, {"store": "Mr Price Sport Sandton City JOHANNESBURG 060762", "region": "GP", "channel": "Mr Price Sport", "callsPlanned": 1, "callsAchieved": 1, "dateCompleted1": null, "dateCompleted2": null, "manager": "Alex Walker", "status": "Completed", "rating": 3.0, "comment": null}, {"store": "Mr Price Sport WATERFALL MALL RUSTENBURG 060742", "region": "NW", "channel": "Mr Price Sport", "callsPlanned": 1, "callsAchieved": 0, "dateCompleted1": null, "dateCompleted2": null, "manager": "Chris Pienaar", "status": "Pending Completion", "rating": null, "comment": null}, {"store": "Mr Price Sport CAVENDISH CAPE TOWN 060661", "region": "CPT", "channel": "Mr Price Sport", "callsPlanned": 1, "callsAchieved": 0, "dateCompleted1": null, "dateCompleted2": null, "manager": "Enver de Bruyn", "status": "Pending Completion", "rating": null, "comment": null}, {"store": "Mr Prioce Sport  AMANZIMTOTI GALLERIA AMANZIMTOTI 060697", "region": "KZN", "channel": "Mr Price Sport", "callsPlanned": 1, "callsAchieved": 1, "dateCompleted1": "2026-07-24", "dateCompleted2": null, "manager": "Kgothatso Matlou", "status": "Completed", "rating": 3.0, "comment": null}, {"store": "Mr Price Sport CRESTA JOHANNESBURG 060739", "region": "GP", "channel": "Mr Price Sport", "callsPlanned": 1, "callsAchieved": 0, "dateCompleted1": null, "dateCompleted2": null, "manager": "Alex Walker", "status": "Pending Completion", "rating": null, "comment": null}, {"store": "Mr Price Sport VAAL MALL VANDERBIJLPARK 060775", "region": "GP", "channel": "Mr Price Sport", "callsPlanned": 1, "callsAchieved": 0, "dateCompleted1": null, "dateCompleted2": null, "manager": "Elijah Sekgate", "status": "Pending Completion", "rating": null, "comment": null}, {"store": "Mr Price Sport CENTURION PRETORIA 060752", "region": "GP", "channel": "Mr Price Sport", "callsPlanned": 1, "callsAchieved": 0, "dateCompleted1": null, "dateCompleted2": null, "manager": "Mackenzie Gouws", "status": "Pending Completion", "rating": null, "comment": null}, {"store": "Mr Price Sport BLUE ROUTE CAPE TOWN 060662", "region": "CPT", "channel": "Mr Price Sport", "callsPlanned": 1, "callsAchieved": 0, "dateCompleted1": null, "dateCompleted2": null, "manager": "Enver de Bruyn", "status": "Pending Completion", "rating": null, "comment": null}, {"store": "Mr Price Sport  The Grove  PRETORIA 060759", "region": "GP", "channel": "Mr Price Sport", "callsPlanned": 1, "callsAchieved": 1, "dateCompleted1": "2026-07-15", "dateCompleted2": null, "manager": "Mackenzie Gouws", "status": "Completed", "rating": null, "comment": null}, {"store": "Mr Price Sport  LOCH LOGAN BLOEMFONTEIN 060780", "region": "FS", "channel": "Mr Price Sport", "callsPlanned": 1, "callsAchieved": 0, "dateCompleted1": null, "dateCompleted2": null, "manager": "Chris Pienaar", "status": "Pending Completion", "rating": null, "comment": null}, {"store": "Mr Price Sport PAARL MALL PAARL 060679", "region": "CPT", "channel": "Mr Price Sport", "callsPlanned": 1, "callsAchieved": 1, "dateCompleted1": "2026-07-23", "dateCompleted2": null, "manager": "Enver de Bruyn", "status": "Completed", "rating": null, "comment": null}, {"store": "Mr Price Sport STELLENBOSCH EIKESTAD STELLENBOSCH 060677", "region": "CPT", "channel": "Mr Price Sport", "callsPlanned": 1, "callsAchieved": 1, "dateCompleted1": "2026-07-17", "dateCompleted2": null, "manager": "Enver de Bruyn", "status": "Completed", "rating": null, "comment": null}];
-
 const STATUSES = ['All', 'Completed', 'Pending Completion'];
-const photoStore = {}; // key: store name -> object URL, kept in memory for this session
+
+const MANAGERS_BASE = [{"name":"Kgothatso Matlou","region":"KZN","channel":"Totalsports","storesToCover":3},{"name":"Enver de Bruyn","region":"CPT","channel":"Totalsports","storesToCover":7},{"name":"Alex Walker","region":"GP","channel":"Totalsports","storesToCover":6},{"name":"Mackenzie Gouws","region":"GP","channel":"Totalsports","storesToCover":3},{"name":"Alex Walker","region":"NW","channel":"Totalsports","storesToCover":1},{"name":"Elijah Sekgate","region":"GP","channel":"Totalsports","storesToCover":1},{"name":"Mackenzie Gouws","region":"FS","channel":"Totalsports","storesToCover":1},{"name":"Kgothatso Matlou","region":"KZN","channel":"Mr Price Sport","storesToCover":3},{"name":"Enver de Bruyn","region":"CPT","channel":"Mr Price Sport","storesToCover":7},{"name":"Alex Walker","region":"GP","channel":"Mr Price Sport","storesToCover":6},{"name":"Mackenzie Gouws","region":"GP","channel":"Mr Price Sport","storesToCover":3},{"name":"Alex Walker","region":"NW","channel":"Mr Price Sport","storesToCover":1},{"name":"Elijah Sekgate","region":"GP","channel":"Mr Price Sport","storesToCover":1},{"name":"Mackenzie Gouws","region":"FS","channel":"Mr Price Sport","storesToCover":1}];
+
+const STORE_CALLS = [
+{"store":"TOTALSPORTS WESTVILLE PAVILLION DURBAN 060650","region":"KZN","channel":"Totalsports","manager":"Kgothatso Matlou","callsPlanned":1,"callsAchieved":1,"dateCompleted1":"2026-07-24","dateCompleted2":null,"status":"Completed","rating":4},
+{"store":"TOTALSPORTS GATEWAY DURBAN 060656","region":"KZN","channel":"Totalsports","manager":"Kgothatso Matlou","callsPlanned":1,"callsAchieved":1,"dateCompleted1":"2026-07-17","dateCompleted2":null,"status":"Completed","rating":4},
+{"store":"TOTALSPORTS CANAL WALK CAPE TOWN 060672","region":"CPT","channel":"Totalsports","manager":"Enver de Bruyn","callsPlanned":1,"callsAchieved":2,"dateCompleted1":"2026-07-02","dateCompleted2":"2026-07-13","status":"Completed","rating":4},
+{"store":"TOTALSPORTS MALL OF AFRICA JOHANNESBURG 060502","region":"GP","channel":"Totalsports","manager":"Alex Walker","callsPlanned":1,"callsAchieved":1,"dateCompleted1":"2026-07-27","dateCompleted2":null,"status":"Completed","rating":3},
+{"store":"TOTALSPORTS EAST RAND MALL BOKSBURG 060772","region":"GP","channel":"Totalsports","manager":"Alex Walker","callsPlanned":1,"callsAchieved":1,"dateCompleted1":"2026-07-17","dateCompleted2":null,"status":"Completed","rating":3},
+{"store":"TOTALSPORTS CLEARWATERS ROODEPOORT 060778","region":"GP","channel":"Totalsports","manager":"Alex Walker","callsPlanned":1,"callsAchieved":1,"dateCompleted1":"2026-07-13","dateCompleted2":null,"status":"Completed","rating":3},
+{"store":"TOTALSPORTS TYGERVALLEY BELLVILLE 060670","region":"CPT","channel":"Totalsports","manager":"Enver de Bruyn","callsPlanned":1,"callsAchieved":1,"dateCompleted1":"2026-07-27","dateCompleted2":null,"status":"Completed","rating":4},
+{"store":"TOTALSPORTS MENLYN PARK PRETORIA 060757","region":"GP","channel":"Totalsports","manager":"Mackenzie Gouws","callsPlanned":1,"callsAchieved":1,"dateCompleted1":"2026-07-15","dateCompleted2":null,"status":"Completed","rating":4},
+{"store":"TOTALSPORTS SOMERSET MALL SOMERSET WEST 060668","region":"CPT","channel":"Totalsports","manager":"Enver de Bruyn","callsPlanned":1,"callsAchieved":1,"dateCompleted1":"2026-07-27","dateCompleted2":null,"status":"Completed","rating":4},
+{"store":"TOTALSPOSRTS FOURWAYS MALL JOHANNESBURG 060756","region":"GP","channel":"Totalsports","manager":"Alex Walker","callsPlanned":1,"callsAchieved":1,"dateCompleted1":"2026-07-13","dateCompleted2":null,"status":"Completed","rating":4},
+{"store":"TOTALSPORTS EASTGATE JOHANNESBURG 060762","region":"GP","channel":"Totalsports","manager":"Alex Walker","callsPlanned":1,"callsAchieved":1,"dateCompleted1":"2026-07-17","dateCompleted2":null,"status":"Completed","rating":3},
+{"store":"TOTALSPORTS WATERFALL MALL RUSTENBURG 060742","region":"NW","channel":"Totalsports","manager":"Alex Walker","callsPlanned":1,"callsAchieved":1,"dateCompleted1":"2026-07-03","dateCompleted2":null,"status":"Completed","rating":3},
+{"store":"TOTALSPORTS CAVENDISH CAPE TOWN 060661","region":"CPT","channel":"Totalsports","manager":"Enver de Bruyn","callsPlanned":1,"callsAchieved":1,"dateCompleted1":"2026-07-27","dateCompleted2":null,"status":"Completed","rating":4},
+{"store":"TOTALSPORTS AMANZIMTOTI GALLERIA AMANZIMTOTI 060697","region":"KZN","channel":"Totalsports","manager":"Kgothatso Matlou","callsPlanned":1,"callsAchieved":1,"dateCompleted1":"2026-07-17","dateCompleted2":null,"status":"Completed","rating":3},
+{"store":"TOTALSPORTS CRESTA JOHANNESBURG 060739","region":"GP","channel":"Totalsports","manager":"Alex Walker","callsPlanned":1,"callsAchieved":1,"dateCompleted1":"2026-07-13","dateCompleted2":null,"status":"Completed","rating":4},
+{"store":"TOTALSPORTS VAAL MALL VANDERBIJLPARK 060775","region":"GP","channel":"Totalsports","manager":"Elijah Sekgate","callsPlanned":1,"callsAchieved":1,"dateCompleted1":"2026-07-27","dateCompleted2":null,"status":"Completed","rating":4},
+{"store":"TOTALSPORTS CENTURION PRETORIA 060752","region":"GP","channel":"Totalsports","manager":"Mackenzie Gouws","callsPlanned":1,"callsAchieved":1,"dateCompleted1":"2026-07-27","dateCompleted2":null,"status":"Completed","rating":4},
+{"store":"TOTALSPORTS BLUE ROUTE CAPE TOWN 060662","region":"CPT","channel":"Totalsports","manager":"Enver de Bruyn","callsPlanned":1,"callsAchieved":1,"dateCompleted1":"2026-07-07","dateCompleted2":null,"status":"Completed","rating":3},
+{"store":"TOTALSPORTS MONTANA PRETORIA 060759","region":"GP","channel":"Totalsports","manager":"Mackenzie Gouws","callsPlanned":1,"callsAchieved":1,"dateCompleted1":"2026-07-15","dateCompleted2":null,"status":"Completed","rating":4},
+{"store":"TOTALSPORTS LOCH LOGAN BLOEMFONTEIN 060780","region":"FS","channel":"Totalsports","manager":"Mackenzie Gouws","callsPlanned":1,"callsAchieved":1,"dateCompleted1":"2026-07-04","dateCompleted2":null,"status":"Completed","rating":4},
+{"store":"TOTALSPORTS PAARL MALL PAARL 060679","region":"CPT","channel":"Totalsports","manager":"Enver de Bruyn","callsPlanned":1,"callsAchieved":1,"dateCompleted1":"2026-07-23","dateCompleted2":null,"status":"Completed","rating":3},
+{"store":"TOTALSPORTS STELLENBOSCH EIKESTAD STELLENBOSCH 060677","region":"CPT","channel":"Totalsports","manager":"Enver de Bruyn","callsPlanned":1,"callsAchieved":1,"dateCompleted1":"2026-07-17","dateCompleted2":null,"status":"Completed","rating":3},
+{"store":"MR Price Sport WESTVILLE PAVILLION DURBAN 060650","region":"KZN","channel":"Mr Price Sport","manager":"Kgothatso Matlou","callsPlanned":1,"callsAchieved":1,"dateCompleted1":"2026-07-24","dateCompleted2":null,"status":"Completed","rating":3},
+{"store":"MR Price Sport GATEWAY DURBAN 060656","region":"KZN","channel":"Mr Price Sport","manager":"Kgothatso Matlou","callsPlanned":1,"callsAchieved":1,"dateCompleted1":"2026-07-17","dateCompleted2":null,"status":"Completed","rating":3},
+{"store":"Mr Price Sport CANAL WALK CAPE TOWN 060672","region":"CPT","channel":"Mr Price Sport","manager":"Enver de Bruyn","callsPlanned":1,"callsAchieved":1,"dateCompleted1":"2026-07-08","dateCompleted2":null,"status":"Completed","rating":3},
+{"store":"Mr Price Sport MALL OF AFRICA JOHANNESBURG 060502","region":"GP","channel":"Mr Price Sport","manager":"Alex Walker","callsPlanned":1,"callsAchieved":1,"dateCompleted1":"2026-07-13","dateCompleted2":null,"status":"Completed","rating":4},
+{"store":"Mr Price Sport EAST RAND MALL BOKSBURG 060772","region":"GP","channel":"Mr Price Sport","manager":"Alex Walker","callsPlanned":1,"callsAchieved":1,"dateCompleted1":"2026-07-13","dateCompleted2":null,"status":"Completed","rating":4},
+{"store":"Mr Price Sport CLEARWATERS ROODEPOORT 060778","region":"GP","channel":"Mr Price Sport","manager":"Alex Walker","callsPlanned":1,"callsAchieved":1,"dateCompleted1":"2026-07-13","dateCompleted2":null,"status":"Completed","rating":4},
+{"store":"Mr Price Sport TYGERVALLEY BELLVILLE 060670","region":"CPT","channel":"Mr Price Sport","manager":"Enver de Bruyn","callsPlanned":1,"callsAchieved":1,"dateCompleted1":"2026-07-02","dateCompleted2":null,"status":"Completed","rating":3},
+{"store":"Mr Price Sport MENLYN PARK PRETORIA 060757","region":"GP","channel":"Mr Price Sport","manager":"Mackenzie Gouws","callsPlanned":1,"callsAchieved":1,"dateCompleted1":"2026-07-15","dateCompleted2":null,"status":"Completed","rating":3},
+{"store":"Mr Price Sport SOMERSET MALL SOMERSET WEST 060668","region":"CPT","channel":"Mr Price Sport","manager":"Enver de Bruyn","callsPlanned":1,"callsAchieved":1,"dateCompleted1":"2026-07-27","dateCompleted2":null,"status":"Completed","rating":3},
+{"store":"Mr Price Sport FOURWAYS MALL JOHANNESBURG 060756","region":"GP","channel":"Mr Price Sport","manager":"Alex Walker","callsPlanned":1,"callsAchieved":1,"dateCompleted1":"2026-07-13","dateCompleted2":null,"status":"Completed","rating":4},
+{"store":"Mr Price Sport SANDTON CITY JOHANNESBURG 060762","region":"GP","channel":"Mr Price Sport","manager":"Alex Walker","callsPlanned":1,"callsAchieved":1,"dateCompleted1":"2026-07-08","dateCompleted2":null,"status":"Completed","rating":4},
+{"store":"Mr Price Sport WATERFALL MALL RUSTENBURG 060742","region":"NW","channel":"Mr Price Sport","manager":"Alex Walker","callsPlanned":1,"callsAchieved":1,"dateCompleted1":"2026-07-03","dateCompleted2":null,"status":"Completed","rating":4},
+{"store":"Mr Price Sport CAVENDISH CAPE TOWN 060661","region":"CPT","channel":"Mr Price Sport","manager":"Enver de Bruyn","callsPlanned":1,"callsAchieved":1,"dateCompleted1":"2026-07-27","dateCompleted2":null,"status":"Completed","rating":4},
+{"store":"Mr Price Sport AMANZIMTOTI GALLERIA AMANZIMTOTI 060697","region":"KZN","channel":"Mr Price Sport","manager":"Kgothatso Matlou","callsPlanned":1,"callsAchieved":1,"dateCompleted1":"2026-07-24","dateCompleted2":null,"status":"Completed","rating":3},
+{"store":"Mr Price Sport CRESTA JOHANNESBURG 060739","region":"GP","channel":"Mr Price Sport","manager":"Alex Walker","callsPlanned":1,"callsAchieved":1,"dateCompleted1":"2026-07-13","dateCompleted2":null,"status":"Completed","rating":4},
+{"store":"Mr Price Sport VAAL MALL VANDERBIJLPARK 060775","region":"GP","channel":"Mr Price Sport","manager":"Elijah Sekgate","callsPlanned":1,"callsAchieved":1,"dateCompleted1":"2026-07-27","dateCompleted2":null,"status":"Completed","rating":4},
+{"store":"Mr Price Sport CENTURION PRETORIA 060752","region":"GP","channel":"Mr Price Sport","manager":"Mackenzie Gouws","callsPlanned":1,"callsAchieved":1,"dateCompleted1":"2026-07-13","dateCompleted2":null,"status":"Completed","rating":4},
+{"store":"Mr Price Sport BLUE ROUTE CAPE TOWN 060662","region":"CPT","channel":"Mr Price Sport","manager":"Enver de Bruyn","callsPlanned":1,"callsAchieved":1,"dateCompleted1":"2026-07-27","dateCompleted2":null,"status":"Completed","rating":4},
+{"store":"Mr Price Sport THE GROVE PRETORIA 060759","region":"GP","channel":"Mr Price Sport","manager":"Mackenzie Gouws","callsPlanned":1,"callsAchieved":1,"dateCompleted1":"2026-07-23","dateCompleted2":null,"status":"Completed","rating":3},
+{"store":"Mr Price Sport LOCH LOGAN BLOEMFONTEIN 060780","region":"FS","channel":"Mr Price Sport","manager":"Mackenzie Gouws","callsPlanned":1,"callsAchieved":1,"dateCompleted1":"2026-07-04","dateCompleted2":null,"status":"Completed","rating":3},
+{"store":"Mr Price Sport PAARL MALL PAARL 060679","region":"CPT","channel":"Mr Price Sport","manager":"Enver de Bruyn","callsPlanned":1,"callsAchieved":1,"dateCompleted1":"2026-07-23","dateCompleted2":null,"status":"Completed","rating":3},
+{"store":"Mr Price Sport STELLENBOSCH EIKESTAD STELLENBOSCH 060677","region":"CPT","channel":"Mr Price Sport","manager":"Enver de Bruyn","callsPlanned":1,"callsAchieved":1,"dateCompleted1":"2026-07-17","dateCompleted2":null,"status":"Completed","rating":4}];
+
+/* --------------------------------- session -------------------------------- */
+
+const session = {
+  token: sessionStorage.getItem('lp_token') || '',
+  role: sessionStorage.getItem('lp_role') || '',
+  get isAdmin() { return this.role === 'leegra_super_admin'; },
+};
+
+const gate = document.getElementById('gate');
+const wrap = document.getElementById('wrap');
+let gateMode = 'code';
+
+function showGate() {
+  gate.hidden = false;
+  wrap.hidden = true;
+  document.getElementById('gate-input').focus();
+}
+function enterDashboard() {
+  gate.hidden = true;
+  wrap.hidden = false;
+  const chip = document.getElementById('role-chip');
+  chip.textContent = session.isAdmin ? 'Leegra admin — editing on' : 'View only';
+  chip.className = 'role-chip ' + (session.isAdmin ? 'role-admin' : 'role-viewer');
+  document.getElementById('calls-hint').textContent = session.isAdmin ? 'Click a status badge to change it' : '';
+  document.getElementById('photo-hint').textContent = session.isAdmin ? 'Click a tile to upload · click a caption to edit' : '';
+  boot();
+}
+
+document.getElementById('gate-switch').addEventListener('click', () => {
+  gateMode = gateMode === 'code' ? 'email' : 'code';
+  const input = document.getElementById('gate-input');
+  document.getElementById('gate-label').textContent = gateMode === 'code' ? 'Access code' : 'Leegra email address';
+  input.placeholder = gateMode === 'code' ? 'XXXX-XXXX' : 'name@leegra.co.za';
+  input.style.textTransform = gateMode === 'code' ? 'uppercase' : 'none';
+  input.value = '';
+  document.getElementById('gate-switch').textContent = gateMode === 'code' ? 'Sign in with your email' : 'Use an access code instead';
+  document.getElementById('gate-error').textContent = '';
+  input.focus();
+});
+
+async function submitGate() {
+  const value = document.getElementById('gate-input').value.trim();
+  const err = document.getElementById('gate-error');
+  if (!value) { err.textContent = 'Enter your ' + (gateMode === 'code' ? 'access code' : 'email address') + '.'; return; }
+  err.textContent = 'Checking…';
+  const body = gateMode === 'code' ? { access_code: value } : { email: value };
+  try {
+    const res = await fetch('/api/auth-login', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body),
+    });
+    const isJson = (res.headers.get('content-type') || '').includes('application/json');
+    // A 404/405 or a non-JSON body means the sign-in function isn't deployed —
+    // that's a missing backend, not a bad code, so don't lock anyone out.
+    if (res.status === 404 || res.status === 405 || !isJson) { openReadOnly(); return; }
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({}));
+      err.textContent = data.error || 'That code is not valid this month.';
+      return;
+    }
+    const data = await res.json();
+    session.token = data.token; session.role = data.role;
+    sessionStorage.setItem('lp_token', data.token);
+    sessionStorage.setItem('lp_role', data.role);
+    err.textContent = '';
+    enterDashboard();
+  } catch (e) {
+    openReadOnly();
+  }
+}
+
+// Backend not deployed yet — let the report through read-only rather than
+// locking everyone out of a static page.
+function openReadOnly() {
+  document.getElementById('gate-error').textContent = '';
+  session.role = 'client_viewer';
+  enterDashboard();
+  notice('Sign-in service is not deployed yet, so the dashboard opened in view-only mode. Deploy the Netlify Functions to turn the monthly code on.');
+}
+document.getElementById('gate-btn').addEventListener('click', submitGate);
+document.getElementById('gate-input').addEventListener('keydown', e => { if (e.key === 'Enter') submitGate(); });
+
+function notice(text) {
+  const el = document.getElementById('notice');
+  el.textContent = text; el.hidden = false;
+}
+
+/* ---------------------------------- photos -------------------------------- */
+// photos[storeKey] = { url, caption, id, local }
+const photos = {};
+const LOCAL_KEY = 'civvio_photos_' + MONTH;
+let photosRemote = false;
+
+function loadLocalPhotos() {
+  try {
+    const raw = localStorage.getItem(LOCAL_KEY);
+    if (raw) Object.assign(photos, JSON.parse(raw));
+  } catch (e) { /* storage unavailable */ }
+}
+function saveLocalPhotos() {
+  const localOnly = {};
+  Object.entries(photos).forEach(([k, v]) => { if (v.local) localOnly[k] = v; });
+  try { localStorage.setItem(LOCAL_KEY, JSON.stringify(localOnly)); }
+  catch (e) { notice('This browser ran out of local storage for photos. Connect Supabase so photos are stored properly.'); }
+}
+
+async function loadRemotePhotos() {
+  if (!session.token) return;
+  try {
+    const res = await fetch('/api/photos?tenant=' + TENANT + '&month=' + MONTH, { headers: { Authorization: 'Bearer ' + session.token } });
+    if (!res.ok) return;
+    const rows = await res.json();
+    if (!Array.isArray(rows)) return;
+    photosRemote = true;
+    rows.forEach(r => { if (r.store_code) photos[r.store_code] = { url: r.url, caption: r.caption || '', id: r.id }; });
+  } catch (e) { /* offline or backend absent — local fallback stands */ }
+}
+
+function fileToDataUrl(file) {
+  return new Promise((resolve, reject) => {
+    const r = new FileReader();
+    r.onload = () => resolve(r.result);
+    r.onerror = reject;
+    r.readAsDataURL(file);
+  });
+}
+
+// Downscale before storing so a phone photo doesn't blow past storage limits.
+async function shrink(file, maxEdge) {
+  const dataUrl = await fileToDataUrl(file);
+  const img = new Image();
+  await new Promise((res, rej) => { img.onload = res; img.onerror = rej; img.src = dataUrl; });
+  const scale = Math.min(1, maxEdge / Math.max(img.width, img.height));
+  const c = document.createElement('canvas');
+  c.width = Math.round(img.width * scale); c.height = Math.round(img.height * scale);
+  c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+  return c.toDataURL('image/jpeg', 0.82);
+}
+
+async function uploadPhoto(storeKey, file, row) {
+  const dataUrl = await shrink(file, 1400);
+  photos[storeKey] = { url: dataUrl, caption: photos[storeKey] ? photos[storeKey].caption : '', local: true };
+  render();
+  if (!session.token) { saveLocalPhotos(); return; }
+  try {
+    const res = await fetch('/api/photos', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + session.token },
+      body: JSON.stringify({
+        tenant: TENANT, store_code: storeKey, visit_date: row.dateCompleted1 || null,
+        caption: photos[storeKey].caption, scope: 'visit',
+        filename: file.name, content_type: 'image/jpeg', data_base64: dataUrl,
+      }),
+    });
+    if (res.ok) {
+      const saved = await res.json();
+      photos[storeKey] = { url: saved.url, caption: saved.caption || '', id: saved.id };
+      photosRemote = true;
+      render();
+      return;
+    }
+  } catch (e) { /* fall through to local */ }
+  saveLocalPhotos();
+  if (!photosRemote) notice('Photo saved in this browser only. Connect Supabase (see SUPABASE_SETUP.md) so photos stay in the dashboard for everyone.');
+}
+
+async function saveCaption(storeKey, caption) {
+  if (!photos[storeKey]) return;
+  photos[storeKey].caption = caption;
+  if (photos[storeKey].local || !session.token) { saveLocalPhotos(); return; }
+  try {
+    await fetch('/api/photos', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + session.token },
+      body: JSON.stringify({ id: photos[storeKey].id, caption }),
+    });
+  } catch (e) { /* keep the local value */ }
+}
+
+function openLightbox(url, caption) {
+  const box = document.createElement('div');
+  box.className = 'lightbox';
+  const img = document.createElement('img');
+  img.src = url;
+  const cap = document.createElement('div');
+  cap.className = 'lightbox-cap';
+  cap.textContent = caption || '';
+  const inner = document.createElement('div');
+  inner.appendChild(img); inner.appendChild(cap);
+  box.appendChild(inner);
+  box.addEventListener('click', () => box.remove());
+  document.body.appendChild(box);
+}
+
+/* ------------------------------ call overrides ---------------------------- */
+
+const overrides = {};
+
+async function loadOverrides() {
+  if (!session.token) return;
+  try {
+    const res = await fetch('/api/store-calls?tenant=' + TENANT + '&month=' + MONTH, { headers: { Authorization: 'Bearer ' + session.token } });
+    if (!res.ok) return;
+    const rows = await res.json();
+    if (Array.isArray(rows)) rows.forEach(r => { overrides[r.store] = r; });
+  } catch (e) { /* baseline stands */ }
+}
+
+async function toggleStatus(row) {
+  if (!session.isAdmin) return;
+  const nextStatus = row.status === 'Completed' ? 'Pending Completion' : 'Completed';
+  const patch = {
+    tenant: TENANT, month: MONTH, store: row.store,
+    status: nextStatus,
+    calls_achieved: nextStatus === 'Completed' ? Math.max(1, row.callsAchieved) : 0,
+    date_completed_1: nextStatus === 'Completed' ? (row.dateCompleted1 || new Date().toISOString().slice(0, 10)) : null,
+  };
+  overrides[row.store] = {
+    store: row.store, status: patch.status,
+    calls_achieved: patch.calls_achieved, date_completed_1: patch.date_completed_1,
+    rating: row.rating,
+  };
+  render();
+  try {
+    await fetch('/api/store-calls', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + session.token },
+      body: JSON.stringify(patch),
+    });
+  } catch (e) {
+    notice('That change could not be saved to the database — it is showing here but will reset on reload.');
+  }
+}
+
+function resolvedCalls() {
+  return STORE_CALLS.map(r => {
+    const o = overrides[r.store];
+    if (!o) return r;
+    return Object.assign({}, r, {
+      status: o.status ?? r.status,
+      callsAchieved: o.calls_achieved ?? r.callsAchieved,
+      dateCompleted1: o.date_completed_1 ?? r.dateCompleted1,
+      rating: o.rating ?? r.rating,
+    });
+  });
+}
+
+function resolvedManagers(calls) {
+  return MANAGERS_BASE.map(m => {
+    const mine = calls.filter(c => c.manager === m.name && c.region === m.region && c.channel === m.channel);
+    const done = mine.filter(c => c.status === 'Completed').length;
+    return Object.assign({}, m, {
+      storesCompleted: done,
+      checkStatus: done >= m.storesToCover ? 'Completed' : 'Pending Completion',
+    });
+  });
+}
+
+/* ---------------------------------- render -------------------------------- */
 
 let state = { region: 'All', channel: 'All', status: 'All' };
-function matchesM(row) {
-  return (state.region === 'All' || row.region === state.region) &&
-         (state.channel === 'All' || row.channel === state.channel);
-}
-function matchesC(row) {
-  return (state.region === 'All' || row.region === state.region) &&
-         (state.channel === 'All' || row.channel === state.channel) &&
-         (state.status === 'All' || row.status === state.status);
-}
-function esc(s) { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
-const statusStyle = { Completed: ['#E8F7EE', '#1E8A4C'], 'Pending Completion': ['#FDF1E4', '#B5651D'] };
+const matchesM = row => (state.region === 'All' || row.region === state.region) && (state.channel === 'All' || row.channel === state.channel);
+const matchesC = row => matchesM(row) && (state.status === 'All' || row.status === state.status);
+function esc(s) { const d = document.createElement('div'); d.textContent = s == null ? '' : s; return d.innerHTML; }
+const statusStyle = { 'Completed': ['#E8F7EE', '#1E8A4C'], 'Pending Completion': ['#FDF1E4', '#B5651D'] };
 
 function render() {
-  const managers = MANAGERS.filter(matchesM);
-  const calls = STORE_CALLS.filter(matchesC);
+  const all = resolvedCalls();
+  const calls = all.filter(matchesC);
+  const managers = resolvedManagers(all).filter(matchesM);
 
-  // ---- KPIs ----
   const plannedTotal = calls.reduce((s, r) => s + r.callsPlanned, 0);
   const achievedTotal = calls.reduce((s, r) => s + r.callsAchieved, 0);
   document.getElementById('kpi-calls').textContent = achievedTotal + ' / ' + plannedTotal;
@@ -187,107 +561,162 @@ function render() {
   document.getElementById('kpi-manager-progress').textContent = completedTotal + ' / ' + toCoverTotal;
 
   const rated = calls.filter(r => r.rating != null);
-  const avgRating = rated.length ? (rated.reduce((s, r) => s + r.rating, 0) / rated.length) : null;
+  const avgRating = rated.length ? rated.reduce((s, r) => s + r.rating, 0) / rated.length : null;
   document.getElementById('kpi-rating').textContent = avgRating != null ? avgRating.toFixed(1) + ' / 5' : '–';
 
-  // ---- Chart: Manager Coverage (aggregated by manager name) ----
   const byManager = {};
   managers.forEach(m => {
     if (!byManager[m.name]) byManager[m.name] = { toCover: 0, completed: 0 };
     byManager[m.name].toCover += m.storesToCover;
     byManager[m.name].completed += m.storesCompleted;
   });
-  const managerChartHtml = Object.entries(byManager).length ? Object.entries(byManager).map(([name, v]) => {
-    const pct = v.toCover ? Math.round((v.completed / v.toCover) * 100) : 0;
-    const color = pct >= 80 ? '#1E8A4C' : pct >= 40 ? '#B5651D' : '#C0432F';
-    return `<div class="bar-row"><div class="bar-row-top"><span>${esc(name)}</span><span style="font-weight:600;">${v.completed} / ${v.toCover} · ${pct}%</span></div><div class="bar-track"><div class="bar-fill" style="width:${pct}%;background:${color}"></div></div></div>`;
-  }).join('') : '<div class="empty-row" style="padding:14px;text-align:center;color:#B0B8C0;">No managers match the selected filters.</div>';
-  document.getElementById('chart-managers').innerHTML = managerChartHtml;
+  document.getElementById('chart-managers').innerHTML = Object.entries(byManager).length
+    ? Object.entries(byManager).map(([name, v]) => {
+        const pct = v.toCover ? Math.round((v.completed / v.toCover) * 100) : 0;
+        const color = pct >= 80 ? '#1E8A4C' : pct >= 40 ? '#B5651D' : '#C0432F';
+        return '<div class="bar-row"><div class="bar-row-top"><span>' + esc(name) + '</span><span style="font-weight:600;">' + v.completed + ' / ' + v.toCover + ' · ' + pct + '%</span></div><div class="bar-track"><div class="bar-fill" style="width:' + pct + '%;background:' + color + '"></div></div></div>';
+      }).join('')
+    : '<div style="padding:14px;text-align:center;color:#B0B8C0;">No managers match the selected filters.</div>';
 
-  // ---- Chart: Store Call Status (donut) ----
   const pendingCalls = calls.length - completedCalls;
   const completedPct = calls.length ? (completedCalls / calls.length) * 100 : 0;
-  const donutStyle = `background: conic-gradient(#1E8A4C 0% ${completedPct.toFixed(1)}%, #EEF1F4 ${completedPct.toFixed(1)}% 100%);`;
-  document.getElementById('chart-status').innerHTML = `
-    <div class="donut-wrap">
-      <div class="donut" style="${donutStyle}"><div class="donut-hole"><div class="donut-hole-value">${calls.length}</div><div class="donut-hole-label">Store Calls</div></div></div>
-      <div>
-        <div class="legend-row"><span class="legend-dot" style="background:#1E8A4C"></span>Completed (${completedCalls})</div>
-        <div class="legend-row"><span class="legend-dot" style="background:#EEF1F4;border:1px solid #D8DEE4"></span>Pending (${pendingCalls})</div>
-      </div>
-    </div>`;
+  document.getElementById('chart-status').innerHTML =
+    '<div class="donut-wrap"><div class="donut" style="background: conic-gradient(#1E8A4C 0% ' + completedPct.toFixed(1) + '%, #EEF1F4 ' + completedPct.toFixed(1) + '% 100%);"><div class="donut-hole"><div class="donut-hole-value">' + calls.length + '</div><div class="donut-hole-label">Store Calls</div></div></div><div>' +
+    '<div class="legend-row"><span class="legend-dot" style="background:#1E8A4C"></span>Completed (' + completedCalls + ')</div>' +
+    '<div class="legend-row"><span class="legend-dot" style="background:#EEF1F4;border:1px solid #D8DEE4"></span>Pending (' + pendingCalls + ')</div></div></div>';
 
-  // ---- Chart: Avg rating by channel ----
-  const channelsForChart = ['Totalsports', 'Mr Price Sport'];
-  const ratingChartHtml = channelsForChart.map(ch => {
+  document.getElementById('chart-rating').innerHTML = ['Totalsports', 'Mr Price Sport'].map(ch => {
     const chCalls = calls.filter(r => r.channel === ch && r.rating != null);
     const avg = chCalls.length ? chCalls.reduce((s, r) => s + r.rating, 0) / chCalls.length : 0;
-    const pct = (avg / 5) * 100;
     const color = ch === 'Totalsports' ? '#1B1D22' : '#D62828';
-    return `<div class="bar-row"><div class="bar-row-top"><span>${esc(ch)}</span><span style="font-weight:600;">${chCalls.length ? avg.toFixed(1) + ' / 5' : '—'}</span></div><div class="bar-track"><div class="bar-fill" style="width:${pct}%;background:${color}"></div></div></div>`;
+    return '<div class="bar-row"><div class="bar-row-top"><span>' + esc(ch) + '</span><span style="font-weight:600;">' + (chCalls.length ? avg.toFixed(1) + ' / 5' : '—') + '</span></div><div class="bar-track"><div class="bar-fill" style="width:' + ((avg / 5) * 100) + '%;background:' + color + '"></div></div></div>';
   }).join('');
-  document.getElementById('chart-rating').innerHTML = ratingChartHtml;
 
-  // ---- Manager table ----
   document.getElementById('tbl-managers').innerHTML = managers.length ? managers.map(r => {
     const pct = r.storesToCover ? Math.round((r.storesCompleted / r.storesToCover) * 100) : 0;
     const barColor = pct >= 80 ? '#1E8A4C' : pct >= 40 ? '#B5651D' : '#C0432F';
-    const [bg, color] = statusStyle[r.checkStatus] || statusStyle['Pending Completion'];
-    return `<tr><td class="name-cell">${esc(r.name)}</td><td class="muted">${esc(r.region)}</td><td class="muted">${esc(r.channel)}</td><td class="num">${r.storesCompleted} / ${r.storesToCover}</td><td style="min-width:120px;"><div class="progress-track"><div class="progress-fill" style="width:${pct}%;background:${barColor}"></div></div></td><td><span class="badge" style="background:${bg};color:${color}">${esc(r.checkStatus)}</span></td></tr>`;
+    const [bg, color] = statusStyle[r.checkStatus];
+    return '<tr><td class="name-cell">' + esc(r.name) + '</td><td class="muted">' + esc(r.region) + '</td><td class="muted">' + esc(r.channel) + '</td><td class="num">' + r.storesCompleted + ' / ' + r.storesToCover + '</td><td style="min-width:120px;"><div class="progress-track"><div class="progress-fill" style="width:' + pct + '%;background:' + barColor + '"></div></div></td><td><span class="badge" style="background:' + bg + ';color:' + color + '">' + esc(r.checkStatus) + '</span></td></tr>';
   }).join('') : '<tr class="empty-row"><td colspan="6">No managers match the selected filters.</td></tr>';
 
-  // ---- Store Calls & Feedback table ----
-  document.getElementById('tbl-calls').innerHTML = calls.length ? calls.map(r => {
-    const [bg, color] = statusStyle[r.status] || statusStyle['Pending Completion'];
+  const callsBody = document.getElementById('tbl-calls');
+  callsBody.innerHTML = calls.length ? calls.map((r, i) => {
+    const [bg, color] = statusStyle[r.status];
     const dates = [r.dateCompleted1, r.dateCompleted2].filter(Boolean).join(', ') || '—';
     const ratingColor = r.rating == null ? '#B0B8C0' : r.rating >= 4 ? '#1B1D22' : r.rating >= 3 ? '#B5651D' : '#C0432F';
     const ratingLabel = r.rating == null ? '—' : r.rating.toFixed(1) + ' ★';
-    return `<tr><td class="name-cell">${esc(r.store)}</td><td class="muted">${esc(r.region)}</td><td class="muted">${esc(r.channel)}</td><td class="muted">${esc(r.manager)}</td><td><span class="badge" style="background:${bg};color:${color}">${esc(r.status)}</span></td><td class="muted" style="white-space:nowrap">${esc(dates)}</td><td class="num" style="font-weight:600;color:${ratingColor}">${ratingLabel}</td></tr>`;
+    return '<tr><td class="name-cell">' + esc(r.store) + '</td><td class="muted">' + esc(r.region) + '</td><td class="muted">' + esc(r.channel) + '</td><td class="muted">' + esc(r.manager) + '</td><td><span class="badge' + (session.isAdmin ? ' editable' : '') + '" data-store="' + esc(r.store) + '" style="background:' + bg + ';color:' + color + '">' + esc(r.status) + '</span></td><td class="muted" style="white-space:nowrap">' + esc(dates) + '</td><td class="num" style="font-weight:600;color:' + ratingColor + '">' + ratingLabel + '</td></tr>';
   }).join('') : '<tr class="empty-row"><td colspan="7">No store calls match the selected filters.</td></tr>';
 
-  // ---- Store Visit Photos ----
-  const photoGrid = document.getElementById('photo-grid');
-  photoGrid.innerHTML = calls.length ? calls.map((r, i) => {
-    const key = r.store + '|' + r.channel;
-    const hasPhoto = !!photoStore[key];
-    const slotStyle = hasPhoto ? `background:url(${photoStore[key]}) center/cover no-repeat; border:none;` : '';
-    const slotText = hasPhoto ? '' : '📷<br>Drop photo';
-    return `<div><div class="photo-slot" data-key="${esc(key)}" style="${slotStyle}">${slotText}</div><div class="photo-caption" title="${esc(r.store)}">${esc(r.store)}</div></div>`;
-  }).join('') : '<div class="empty-row" style="padding:14px;text-align:center;color:#B0B8C0;">No stores match the selected filters.</div>';
-  photoGrid.querySelectorAll('.photo-slot').forEach(slot => {
-    slot.addEventListener('click', () => {
-      const input = document.createElement('input');
-      input.type = 'file'; input.accept = 'image/*';
-      input.onchange = () => {
-        const file = input.files[0];
-        if (!file) return;
-        const url = URL.createObjectURL(file);
-        photoStore[slot.dataset.key] = url;
-        slot.style.background = `url(${url}) center/cover no-repeat`;
-        slot.style.border = 'none';
-        slot.textContent = '';
-      };
-      input.click();
+  if (session.isAdmin) {
+    callsBody.querySelectorAll('.badge.editable').forEach(el => {
+      el.addEventListener('click', () => {
+        const row = all.find(r => r.store === el.dataset.store);
+        if (row) toggleStatus(row);
+      });
     });
-  });
+  }
 
+  renderPhotos(calls);
   renderPills();
 }
 
-function renderPills() {
-  const regionBody = document.getElementById('pills-region');
-  regionBody.innerHTML = REGIONS.map(r => `<div class="pill ${r === state.region ? 'region-active' : ''}" data-region="${esc(r)}">${esc(r)}</div>`).join('');
-  const channelBody = document.getElementById('pills-channel');
-  channelBody.innerHTML = CHANNELS.map(c => `<div class="pill ${c === state.channel ? 'channel-active' : ''}" data-channel="${esc(c)}">${esc(c)}</div>`).join('');
-  const statusBody = document.getElementById('pills-status');
-  statusBody.innerHTML = STATUSES.map(s => `<div class="pill ${s === state.status ? 'status-active' : ''}" data-status="${esc(s)}">${esc(s)}</div>`).join('');
+function renderPhotos(calls) {
+  const grid = document.getElementById('photo-grid');
+  if (!calls.length) {
+    grid.innerHTML = '<div style="padding:14px;text-align:center;color:#B0B8C0;">No stores match the selected filters.</div>';
+    return;
+  }
+  grid.innerHTML = calls.map(r => {
+    const p = photos[r.store];
+    const inner = p
+      ? '<img src="' + p.url + '" alt="' + esc(r.store) + '">' + (session.isAdmin ? '<button class="photo-remove" data-remove="' + esc(r.store) + '">Replace</button>' : '')
+      : '📷<br>' + (session.isAdmin ? 'Add photo' : 'No photo yet');
+    const capText = p && p.caption ? esc(p.caption) : (session.isAdmin && p ? 'Add a caption' : '');
+    const capClass = 'photo-caption' + (p && p.caption ? '' : ' placeholder');
+    return '<div><div class="photo-slot' + (p ? ' filled' : '') + '" data-store="' + esc(r.store) + '">' + inner + '</div>' +
+      '<div class="photo-store" title="' + esc(r.store) + '">' + esc(r.store) + '</div>' +
+      (p ? '<div class="' + capClass + '" data-caption="' + esc(r.store) + '"' + (session.isAdmin ? ' contenteditable="true"' : '') + '>' + capText + '</div>' : '') +
+      '</div>';
+  }).join('');
 
+  grid.querySelectorAll('.photo-slot').forEach(slot => {
+    const store = slot.dataset.store;
+    slot.addEventListener('click', e => {
+      if (e.target.dataset.remove) return;
+      const p = photos[store];
+      if (p && !session.isAdmin) { openLightbox(p.url, p.caption); return; }
+      if (p) { openLightbox(p.url, p.caption); return; }
+      if (!session.isAdmin) return;
+      pickFile(store);
+    });
+  });
+  grid.querySelectorAll('[data-remove]').forEach(btn => {
+    btn.addEventListener('click', e => { e.stopPropagation(); pickFile(btn.dataset.remove); });
+  });
+  grid.querySelectorAll('[data-caption]').forEach(el => {
+    el.addEventListener('focus', () => { if (el.classList.contains('placeholder')) { el.textContent = ''; el.classList.remove('placeholder'); } });
+    el.addEventListener('blur', () => saveCaption(el.dataset.caption, el.textContent.trim()));
+    el.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); el.blur(); } });
+  });
+}
+
+function pickFile(store) {
+  const input = document.createElement('input');
+  input.type = 'file'; input.accept = 'image/*';
+  input.onchange = () => {
+    const file = input.files[0];
+    if (!file) return;
+    const row = STORE_CALLS.find(r => r.store === store);
+    uploadPhoto(store, file, row || {});
+  };
+  input.click();
+}
+
+function renderPills() {
+  const mk = (list, active, attr, cls) => list.map(v =>
+    '<div class="pill ' + (v === active ? cls : '') + '" tabindex="0" data-' + attr + '="' + esc(v) + '">' + esc(v) + '</div>').join('');
+  const regionBody = document.getElementById('pills-region');
+  const channelBody = document.getElementById('pills-channel');
+  const statusBody = document.getElementById('pills-status');
+  regionBody.innerHTML = mk(REGIONS, state.region, 'region', 'region-active');
+  channelBody.innerHTML = mk(CHANNELS, state.channel, 'channel', 'channel-active');
+  statusBody.innerHTML = mk(STATUSES, state.status, 'status', 'status-active');
   regionBody.querySelectorAll('.pill').forEach(el => el.addEventListener('click', () => { state.region = el.dataset.region; render(); }));
   channelBody.querySelectorAll('.pill').forEach(el => el.addEventListener('click', () => { state.channel = el.dataset.channel; render(); }));
   statusBody.querySelectorAll('.pill').forEach(el => el.addEventListener('click', () => { state.status = el.dataset.status; render(); }));
 }
 
-render();
+async function checkStorage() {
+  const chip = document.getElementById('storage-chip');
+  try {
+    const res = await fetch('/api/health');
+    if (!res.ok || !(res.headers.get('content-type') || '').includes('application/json')) throw new Error('no backend');
+    const data = await res.json();
+    if (data.photos_persist) {
+      chip.textContent = 'Photos: saved for everyone';
+      chip.style.background = '#E8F7EE'; chip.style.color = '#1E8A4C'; chip.style.borderColor = '#CDEBD9';
+      photosRemote = true;
+    } else {
+      chip.textContent = 'Photos: this browser only';
+      chip.style.background = '#FDF1E4'; chip.style.color = '#B5651D'; chip.style.borderColor = '#F2DFC6';
+      chip.title = data.summary || '';
+    }
+  } catch (e) {
+    chip.textContent = 'Photos: this browser only';
+    chip.style.background = '#FDF1E4'; chip.style.color = '#B5651D'; chip.style.borderColor = '#F2DFC6';
+    chip.title = 'Storage backend not deployed yet — photos stay on this machine.';
+  }
+}
+
+async function boot() {
+  loadLocalPhotos();
+  render();
+  await Promise.all([checkStorage(), loadRemotePhotos(), loadOverrides()]);
+  render();
+}
+
+if (session.token) enterDashboard(); else showGate();
 </script>
 </body>
 </html>

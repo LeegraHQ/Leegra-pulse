@@ -3,6 +3,10 @@
   functions = "netlify/functions"
   command = "npm run build"
 
+# Emails each code holder the new month's access code at 06:00 UTC on the 1st.
+[functions."monthly-code-email"]
+  schedule = "0 6 1 * *"
+
 [[redirects]]
   from = "/api/*"
   to = "/.netlify/functions/:splat"
