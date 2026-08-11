@@ -205,6 +205,8 @@
     </div>
   </div>
 
+  <div id="diag" style="font-family:ui-monospace,Menlo,monospace; font-size:11px; color:#5A6470; background:#fff; border:1px solid #E1E6EB; border-radius:10px; padding:10px 14px; margin-bottom:12px; white-space:pre-wrap;" hidden></div>
+
   <div class="card" style="margin-bottom:12px;">
     <div class="card-header">Store Visit Photos <span class="hint" id="photo-hint"></span></div>
     <div class="photo-grid" id="photo-grid"></div>
@@ -459,7 +461,13 @@ async function upgradeSession(code) {
         body: JSON.stringify({ access_code: code }), signal: controller.signal,
       });
     } finally { clearTimeout(timer); }
-    if (!res.ok) return;
+    if (!res.ok) {
+      const detail = await res.json().catch(() => ({}));
+      adminNotice(
+        'Signed in locally, but the server did not accept this code (' + res.status + ': ' + (detail.error || 'no reason given') + '), so photos and edits cannot be saved. Check ACCESS_CODE_CURRENT and ADMIN_ACCESS_CODE in Netlify.',
+        'Photos are not available right now.');
+      return;
+    }
     if (!(res.headers.get('content-type') || '').includes('application/json')) return;
     const data = await res.json();
     session.token = data.token; session.role = data.role;
@@ -469,9 +477,32 @@ async function upgradeSession(code) {
   } catch (e) { /* stay in local mode */ }
 }
 
+let lastUploadError = '';
+
+function diag() {
+  const el = document.getElementById('diag');
+  if (!el) return;
+  if (!session.isAdmin) { el.hidden = true; el.textContent = ''; return; }
+  el.hidden = false;
+  el.textContent = [
+    'session role: ' + (session.role || 'none'),
+    'server token: ' + (session.token ? 'yes (' + session.token.slice(0, 12) + '…)' : 'NO — uploads cannot be saved'),
+    'photo storage: ' + (photosRemote ? 'Supabase (shared)' : 'this browser only'),
+    'photos loaded: ' + Object.keys(photos).length,
+    'last upload error: ' + (lastUploadError || 'none'),
+  ].join('   ·   ');
+}
+
 function notice(text) {
   const el = document.getElementById('notice');
   el.textContent = text; el.hidden = false;
+}
+
+// Configuration problems: spelled out for Leegra, softened for the client.
+function adminNotice(text, viewerText) {
+  if (session.isAdmin) { notice(text); return; }
+  if (viewerText) notice(viewerText);
+  else document.getElementById('notice').hidden = true;
 }
 
 /* ---------------------------------- photos -------------------------------- */
@@ -491,7 +522,7 @@ function saveLocalPhotos() {
   const localOnly = {};
   Object.entries(photos).forEach(([k, v]) => { if (v.local) localOnly[k] = v; });
   try { localStorage.setItem(LOCAL_KEY, JSON.stringify(localOnly)); }
-  catch (e) { notice('This browser ran out of local storage for photos. Connect Supabase so photos are stored properly.'); }
+  catch (e) { adminNotice('This browser ran out of local storage for photos. Connect Supabase so photos are stored properly.'); }
 }
 
 async function loadRemotePhotos() {
@@ -531,7 +562,15 @@ async function uploadPhoto(storeKey, file, row) {
   const dataUrl = await shrink(file, 1400);
   photos[storeKey] = { url: dataUrl, caption: photos[storeKey] ? photos[storeKey].caption : '', local: true };
   render();
-  if (!session.token) { saveLocalPhotos(); return; }
+  // No token means the sign-in never reached the server, so there is nothing
+  // to upload with — say so rather than quietly saving to this browser.
+  if (!session.token) {
+    saveLocalPhotos();
+    lastUploadError = 'no server token — sign-in was not confirmed';
+    adminNotice('Photo saved in this browser only — this session was not confirmed by the server, so it cannot upload. Sign out and sign in again with 1105-LEEGRA, and check ADMIN_ACCESS_CODE is set in Netlify.');
+    diag();
+    return;
+  }
   try {
     const res = await fetch('/api/photos', {
       method: 'POST',
@@ -546,12 +585,24 @@ async function uploadPhoto(storeKey, file, row) {
       const saved = await res.json();
       photos[storeKey] = { url: saved.url, caption: saved.caption || '', id: saved.id };
       photosRemote = true;
+      lastUploadError = '';
       render();
+      diag();
       return;
     }
-  } catch (e) { /* fall through to local */ }
-  saveLocalPhotos();
-  if (!photosRemote) notice('Photo saved in this browser only. Connect Supabase (see SUPABASE_SETUP.md) so photos stay in the dashboard for everyone.');
+    const detail = await res.json().catch(() => ({}));
+    saveLocalPhotos();
+    lastUploadError = res.status + ' ' + (detail.error || 'no reason given');
+    notice('Upload refused (' + res.status + '): ' + (detail.error || 'no reason given') + ' — the photo is saved in this browser only.');
+    diag();
+    return;
+  } catch (e) {
+    saveLocalPhotos();
+    lastUploadError = String(e && e.message ? e.message : e);
+    notice('Upload failed: ' + (e && e.message ? e.message : e) + ' — the photo is saved in this browser only.');
+    diag();
+    return;
+  }
 }
 
 async function saveCaption(storeKey, caption) {
@@ -815,7 +866,7 @@ async function checkStorage() {
     } else {
       chip.textContent = 'Photos: this browser only';
       chip.style.background = '#FDF1E4'; chip.style.color = '#B5651D'; chip.style.borderColor = '#F2DFC6';
-      chip.title = data.summary || '';
+      if (session.isAdmin) chip.title = data.summary || '';
     }
   } catch (e) {
     chip.textContent = 'Photos: this browser only';
@@ -829,6 +880,7 @@ async function boot() {
   render();
   await Promise.all([checkStorage(), loadRemotePhotos(), loadOverrides()]);
   render();
+  diag();
 }
 
 if (session.token) enterDashboard(); else showGate();
