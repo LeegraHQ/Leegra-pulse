@@ -70,12 +70,29 @@ exports.handler = async (event) => {
   // One test/demo account (set via env, not hardcoded) can use a fixed code
   // instead of an emailed one-time code, so it doesn't need email access
   // during live demos.
+  // A code holder can sign in through the app's normal email box too: their
+  // email plus the current access code, no OTP. Same code as the Civvio
+  // report page, so Alys has one code for both.
+  const holder = CODE_HOLDERS.find(h => h.email.toLowerCase() === normalizedEmail);
+  const isHolderCodeLogin = !!holder && accessCode.verify(holder.tenantCode, submittedCode);
+
   const isTestRepLogin = process.env.TEST_REP_EMAIL
     && process.env.TEST_REP_PERMANENT_CODE
     && normalizedEmail === process.env.TEST_REP_EMAIL.trim().toLowerCase()
     && submittedCode === process.env.TEST_REP_PERMANENT_CODE;
 
-  const identity = await resolveIdentityByEmail(normalizedEmail);
+  let identity = await resolveIdentityByEmail(normalizedEmail);
+
+  // A code holder doesn't need a user record on the tenant — the holder entry
+  // in _data.js is the record.
+  if (!identity && isHolderCodeLogin) {
+    identity = {
+      kind: 'tenant_user',
+      tenant: findTenantByCode(holder.tenantCode),
+      userRecord: { role: holder.role, storeCodes: [], fixedCode: null },
+    };
+  }
+
   if (!identity) {
     return { statusCode: 401, body: JSON.stringify({ error: 'Invalid or expired code' }) };
   }
@@ -85,12 +102,17 @@ exports.handler = async (event) => {
   const fixedCode = identity.kind === 'tenant_user' ? identity.userRecord.fixedCode : null;
   const isFixedCodeLogin = fixedCode && submittedCode === fixedCode;
 
-  if (!isTestRepLogin && !isFixedCodeLogin) {
+  if (!isTestRepLogin && !isFixedCodeLogin && !isHolderCodeLogin) {
     const otp = await getOtp(normalizedEmail);
     if (!otp || otp.code !== submittedCode || Date.now() > otp.expiresAt) {
       return { statusCode: 401, body: JSON.stringify({ error: 'Invalid or expired code' }) };
     }
     await clearOtp(normalizedEmail); // one-time use
+  }
+
+  if (isHolderCodeLogin && holder.role.startsWith('leegra_')) {
+    const token = jwt.sign({ role: holder.role, email: normalizedEmail });
+    return { statusCode: 200, body: JSON.stringify({ token, role: holder.role, email: normalizedEmail }) };
   }
 
   if (identity.kind === 'super_admin') {
