@@ -111,6 +111,7 @@
     <div class="gate-sub">Enter this month's access code. A new code is issued on the 1st of each month.</div>
     <div class="gate-label" id="gate-label">Access code</div>
     <input class="gate-input" id="gate-input" placeholder="XXXX-XXXX" autocomplete="off" spellcheck="false">
+    <input class="gate-input" id="gate-otp" placeholder="6-digit code" autocomplete="off" spellcheck="false" style="margin-top:10px;" hidden>
     <button class="gate-btn" id="gate-btn">View dashboard</button>
     <div class="gate-error" id="gate-error"></div>
     <div class="gate-alt" id="gate-alt">Leegra staff? <span id="gate-switch">Sign in with your email</span></div>
@@ -289,6 +290,7 @@ const session = {
 const gate = document.getElementById('gate');
 const wrap = document.getElementById('wrap');
 let gateMode = 'code';
+let otpSent = false;
 
 function showGate() {
   gate.hidden = false;
@@ -308,22 +310,47 @@ function enterDashboard() {
 
 document.getElementById('gate-switch').addEventListener('click', () => {
   gateMode = gateMode === 'code' ? 'email' : 'code';
+  otpSent = false;
   const input = document.getElementById('gate-input');
+  const otp = document.getElementById('gate-otp');
+  otp.hidden = true; otp.value = '';
   document.getElementById('gate-label').textContent = gateMode === 'code' ? 'Access code' : 'Leegra email address';
   input.placeholder = gateMode === 'code' ? 'XXXX-XXXX' : 'name@leegra.co.za';
   input.style.textTransform = gateMode === 'code' ? 'uppercase' : 'none';
   input.value = '';
+  document.getElementById('gate-btn').textContent = gateMode === 'code' ? 'View dashboard' : 'Email me a code';
   document.getElementById('gate-switch').textContent = gateMode === 'code' ? 'Sign in with your email' : 'Use an access code instead';
   document.getElementById('gate-error').textContent = '';
   input.focus();
 });
 
+// Leegra staff sign in the way the rest of the app does: email first, then the
+// 6-digit code that lands in their inbox.
+async function requestOtp(email) {
+  const err = document.getElementById('gate-error');
+  err.textContent = 'Sending…';
+  try {
+    const res = await fetch('/api/auth-request-code', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email }),
+    });
+    if (res.status === 404) { openReadOnly(); return; }
+    otpSent = true;
+    document.getElementById('gate-otp').hidden = false;
+    document.getElementById('gate-otp').focus();
+    document.getElementById('gate-btn').textContent = 'Sign in';
+    err.textContent = 'Code sent — check your email.';
+  } catch (e) { openReadOnly(); }
+}
+
 async function submitGate() {
   const value = document.getElementById('gate-input').value.trim();
   const err = document.getElementById('gate-error');
   if (!value) { err.textContent = 'Enter your ' + (gateMode === 'code' ? 'access code' : 'email address') + '.'; return; }
+  if (gateMode === 'email' && !otpSent) { requestOtp(value); return; }
   err.textContent = 'Checking…';
-  const body = gateMode === 'code' ? { access_code: value } : { email: value };
+  const body = gateMode === 'code'
+    ? { access_code: value }
+    : { email: value, code: document.getElementById('gate-otp').value.trim() };
   try {
     const res = await fetch('/api/auth-login', {
       method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body),
@@ -334,7 +361,7 @@ async function submitGate() {
     if (res.status === 404 || res.status === 405 || !isJson) { openReadOnly(); return; }
     if (!res.ok) {
       const data = await res.json().catch(() => ({}));
-      err.textContent = data.error || 'That code is not valid this month.';
+      err.textContent = data.error || (gateMode === 'code' ? 'That code is not valid this month.' : 'Invalid or expired code.');
       return;
     }
     const data = await res.json();
@@ -358,6 +385,7 @@ function openReadOnly() {
 }
 document.getElementById('gate-btn').addEventListener('click', submitGate);
 document.getElementById('gate-input').addEventListener('keydown', e => { if (e.key === 'Enter') submitGate(); });
+document.getElementById('gate-otp').addEventListener('keydown', e => { if (e.key === 'Enter') submitGate(); });
 
 function notice(text) {
   const el = document.getElementById('notice');
