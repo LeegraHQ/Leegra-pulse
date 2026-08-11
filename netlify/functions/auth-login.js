@@ -44,11 +44,17 @@ exports.handler = async (event) => {
       return { statusCode: 401, body: JSON.stringify({ error: 'That code is not valid this month.' }) };
     }
     const tenant = findTenantByCode(holder.tenantCode);
-    const token = jwt.sign({ role: holder.role, tenantId: tenant.id, tenantCode: tenant.code, email: holder.email });
+    const isLeegraStaff = holder.role.startsWith('leegra_');
+    // Staff get an unscoped token (every tenant); a client viewer is pinned
+    // to their one tenant and is read-only.
+    const claims = isLeegraStaff
+      ? { role: holder.role, email: holder.email }
+      : { role: holder.role, tenantId: tenant.id, tenantCode: tenant.code, email: holder.email };
+    const token = jwt.sign(claims);
     return {
       statusCode: 200,
       body: JSON.stringify({
-        token, role: holder.role, viewerName: holder.name, readOnly: true,
+        token, role: holder.role, viewerName: holder.name, readOnly: !isLeegraStaff,
         client: { code: tenant.code, name: tenant.name, logo: tenant.logoUrl },
       }),
     };

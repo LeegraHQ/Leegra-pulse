@@ -35,10 +35,14 @@ const LEEGRA_ROLES = Object.values(TIER_TO_ROLE);
 const LEEGRA_WRITE_ROLES = ['leegra_super_admin', 'leegra_admin'];
 
 // Monthly-code holders: they sign in with a code alone — no email, no OTP.
-// The code is derived from the month (see _lib/accesscode.js), so it rotates
-// on the 1st by itself. role 'client_viewer' is read-only, one tenant.
+// The code itself is ACCESS_CODE_CURRENT in the Netlify env vars; change it on
+// the 1st of each month (see _lib/accesscode.js).
+// Alys sees Civvio read-only. Chris signs in with the same code but lands as
+// super admin, so he can edit store calls and upload photos without going
+// through the email OTP.
 const CODE_HOLDERS = [
   { email: 'alys@dmq.co.za', name: 'Alys', tenantCode: 'CIV-088', role: 'client_viewer' },
+  { email: 'chris@leegra.co.za', name: 'Chris', tenantCode: 'CIV-088', role: 'leegra_super_admin' },
 ];
 
 function findTenantByCode(code) {
