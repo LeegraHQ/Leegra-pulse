@@ -1,14 +1,414 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-    <meta name="theme-color" content="#161826" />
-    <title>Leegra Pulse</title>
-    <link rel="manifest" href="/manifest.webmanifest" />
-  </head>
-  <body style="margin:0;">
-    <div id="root"></div>
-    <script type="module" src="/src/main.jsx"></script>
-  </body>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Execution calendar · Leegra Pulse</title>
+<style>
+  :root{
+    --bg:#0f1115; --card:#171a20; --card-2:#1d212a; --line:#282d38;
+    --text:#e9e9ed; --muted:#8b93a1; --accent:#cdf564; --accent-dim:#3d4a1f;
+    --bridgestone:#e2725b; --beurer:#6aa9e0; --dmq:#b48ce0;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--text);font:14px/1.45 -apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;height:100vh;display:flex;flex-direction:column;overflow:hidden}
+  a{color:var(--accent)} a:hover{color:#e2ff8c}
+  button{font:inherit;cursor:pointer}
+  header{display:flex;align-items:center;gap:14px;padding:14px 20px;border-bottom:1px solid var(--line);flex:0 0 auto}
+  .brand{font-weight:600;letter-spacing:.2px}
+  .chip{border:1px solid var(--line);background:var(--card);color:var(--muted);border-radius:999px;padding:5px 11px;font-size:12px}
+  .chip.on{border-color:var(--accent);color:var(--accent);background:var(--accent-dim)}
+  .chip:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+  .spacer{margin-left:auto}
+  .status{font-size:12px;color:var(--muted)}
+  .toolbar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:10px 20px;border-bottom:1px solid var(--line);flex:0 0 auto}
+  .toolbar .group{display:flex;gap:6px;align-items:center}
+  .toolbar label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em}
+  input[type=search],select,textarea{background:var(--card);border:1px solid var(--line);color:var(--text);border-radius:8px;padding:7px 10px;font:inherit}
+  main{flex:1 1 auto;display:flex;min-height:0}
+  .pool{width:290px;flex:0 0 auto;border-right:1px solid var(--line);display:flex;flex-direction:column;min-height:0}
+  .pool-head{padding:12px 14px 8px;font-size:12px;color:var(--muted);display:flex;align-items:baseline;gap:8px}
+  .pool-list{overflow-y:auto;padding:0 12px 16px;display:flex;flex-direction:column;gap:6px}
+  .days{flex:1 1 auto;overflow-x:auto;overflow-y:hidden;display:flex;gap:0}
+  .day{width:230px;flex:0 0 auto;border-right:1px solid var(--line);display:flex;flex-direction:column;min-height:0}
+  .day.weekend{background:#12141a}
+  .day.over{background:#1b2412}
+  .day-head{padding:10px 12px;border-bottom:1px solid var(--line);position:sticky;top:0;background:inherit}
+  .day-name{font-size:12px;color:var(--muted)}
+  .day-date{font-size:15px;font-weight:600}
+  .day-count{font-size:11px;color:var(--muted);margin-top:2px}
+  .day-body{flex:1 1 auto;overflow-y:auto;padding:8px;display:flex;flex-direction:column;gap:6px}
+  .store{background:var(--card);border:1px solid var(--line);border-left:3px solid var(--line);border-radius:8px;padding:8px 10px;cursor:grab;text-align:left;color:inherit;width:100%;display:block}
+  .store:hover{border-color:#3a4150;background:var(--card-2)}
+  .store.sel{border-color:var(--accent)}
+  .store-name{font-size:12.5px;line-height:1.3}
+  .store-meta{font-size:11px;color:var(--muted);margin-top:3px;display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+  .owner{color:var(--accent)}
+  .has-note{color:var(--muted)}
+  .panel{width:300px;flex:0 0 auto;border-left:1px solid var(--line);padding:16px;display:flex;flex-direction:column;gap:12px;overflow-y:auto}
+  .panel h3{margin:0;font-size:15px;font-weight:600;line-height:1.3}
+  .panel .k{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em}
+  textarea{min-height:110px;resize:vertical;width:100%}
+  .btn{background:transparent;border:1px solid var(--accent);color:var(--accent);border-radius:8px;padding:8px 12px}
+  .btn:hover{background:var(--accent-dim)}
+  .btn-quiet{border-color:var(--line);color:var(--muted)}
+  .btn-quiet:hover{background:var(--card-2);color:var(--text)}
+  .empty{color:#5a6270;font-size:12px;padding:10px 2px}
+  .gate{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:50}
+  .gate form{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:26px;width:320px;display:flex;flex-direction:column;gap:12px}
+  .gate input{background:var(--bg);border:1px solid var(--line);color:var(--text);border-radius:8px;padding:10px 12px;font:inherit;letter-spacing:.14em;text-align:center}
+  .err{color:#e2725b;font-size:12px;min-height:16px}
+</style>
+</head>
+<body>
+<div class="gate" id="gate">
+  <form id="gate-form">
+    <div style="font-weight:600">Leegra Pulse · Execution calendar</div>
+    <div style="font-size:12px;color:var(--muted)">Enter your access code.</div>
+    <input id="code" type="password" inputmode="text" autocomplete="off" placeholder="Access code" autofocus>
+    <div class="err" id="gate-err"></div>
+    <button class="btn" type="submit">Sign in</button>
+  </form>
+</div>
+
+<header>
+  <div class="brand">Store execution · <span id="month-label">August 2026</span></div>
+  <span class="status" id="scheduled-count"></span>
+  <div class="spacer"></div>
+  <span class="status" id="save-status"></span>
+  <a href="/" class="chip" style="text-decoration:none">Back to Pulse</a>
+</header>
+
+<div class="toolbar">
+  <div class="group"><label>Client</label><span id="f-client"></span></div>
+  <div class="group"><label>Who</label><span id="f-owner"></span></div>
+  <div class="group"><label>Province</label><select id="f-prov"></select></div>
+  <input type="search" id="f-search" placeholder="Find a store">
+  <button class="chip" id="f-clear">Clear</button>
+  <button class="btn" id="adhoc-open" style="margin-left:auto">+ Ad hoc event</button>
+</div>
+
+<div class="gate" id="adhoc" style="display:none;background:rgba(10,12,18,.72)">
+  <form id="adhoc-form" style="background:var(--card);border:1px solid var(--line);border-radius:12px;padding:18px;width:min(420px,92vw);display:flex;flex-direction:column;gap:10px">
+    <div style="font-weight:600">Ad hoc event</div>
+    <div style="font-size:12px;color:var(--muted)">Something not on the store list — a meeting, a training, an extra call.</div>
+    <label class="k">What</label><input id="a-name" placeholder="e.g. Beurer training — Sandton" required>
+    <label class="k">Client</label><input id="a-client" list="a-clients" placeholder="Client or team">
+    <datalist id="a-clients"></datalist>
+    <label class="k">Province</label><input id="a-prov" list="a-provs" placeholder="Province (optional)">
+    <datalist id="a-provs"></datalist>
+    <label class="k">Action by</label><input id="a-owner" list="a-owners" placeholder="Who is doing it">
+    <datalist id="a-owners"></datalist>
+    <label class="k">Date</label><input id="a-date" type="date" value="" required>
+    <label class="k">Comments</label><textarea id="a-note" style="min-height:70px" placeholder="Anything the team should know"></textarea>
+    <div class="err" id="adhoc-err"></div>
+    <div style="display:flex;gap:8px;justify-content:flex-end">
+      <button type="button" class="btn btn-quiet" id="adhoc-cancel">Cancel</button>
+      <button type="submit" class="btn">Add to calendar</button>
+    </div>
+  </form>
+</div>
+
+<main>
+  <section class="pool">
+    <div class="pool-head"><strong id="pool-count"></strong> <span>not yet scheduled</span></div>
+    <div class="pool-list" id="pool-list"></div>
+  </section>
+  <section class="days" id="days"></section>
+  <aside class="panel" id="panel"></aside>
+</main>
+
+<script>
+const SEED = {"days":["2026-07-30","2026-07-31","2026-08-03","2026-08-04","2026-08-05","2026-08-06","2026-08-07","2026-08-10","2026-08-11","2026-08-12","2026-08-13","2026-08-14","2026-08-15","2026-08-17","2026-08-18","2026-08-19","2026-08-20","2026-08-21","2026-08-24","2026-08-25","2026-08-26","2026-08-27","2026-08-28","2026-08-31"],"stores":[{"id":"s5","name":"Supa Quick East London","province":"Eastern Cape","client":"Bridgestone","owner":"3rd Party","note":"Will be completed this week"},{"id":"s6","name":"Supa Quick Greenacres","province":"Eastern Cape","client":"Bridgestone","owner":"3rd Party","note":"Will be completed this week"},{"id":"s7","name":"Supa Quick Humansdorp","province":"Eastern Cape","client":"Bridgestone","owner":"3rd Party","note":"Will be completed this week"},{"id":"s8","name":"Supa Quick Matatiele","province":"Eastern Cape","client":"Bridgestone","owner":"3rd Party","note":"Will be completed this week"},{"id":"s9","name":"Supa Quick William Moffet","province":"Eastern Cape","client":"Bridgestone","owner":"3rd Party","note":"Will be completed this week"},{"id":"s10","name":"MEDIRITE PLUS ST GEORGES SQUARE","province":"Eastern Cape","client":"Beurer","owner":"Chris","note":"Will be completed this week"},{"id":"s11","name":"MEDIRITE PLUS LANGVERWACHT","province":"Eastern Cape","client":"Beurer","owner":"Chris","note":"Will be completed this week"},{"id":"s12","name":"Supa Quick Bloemfontein CBD","province":"Free State","client":"Bridgestone","owner":"Chris","note":"Will be completed this week"},{"id":"s13","name":"Supa Quick Kroonstad","province":"Free State","client":"Bridgestone","owner":"Chris","note":"Will be completed this week"},{"id":"s14","name":"Supa Quick Welkom","province":"Free State","client":"Bridgestone","owner":"Chris","note":"Will be completed this week"},{"id":"s15","name":"Totalsports Loch Logan Bloemfontein","province":"Free State","client":"DMQ","owner":"Chris","note":"Will be completed this week"},{"id":"s16","name":"Mr Price Sport  Loch Logan Bloemfontein","province":"Free State","client":"DMQ","owner":"Chris","note":"Will be completed this week"},{"id":"s17","name":"Supa Quick Menlyn","province":"Gauteng","client":"Bridgestone","owner":"Chris","note":"Completed"},{"id":"s18","name":"Supa Quick Kyalami","province":"Gauteng","client":"Bridgestone","owner":"Chris","note":"Will be completed this week"},{"id":"s19","name":"Supa Quick Midrand","province":"Gauteng","client":"Bridgestone","owner":"Chris","note":"Completed"},{"id":"s20","name":"Supa Quick Boksburg","province":"Gauteng","client":"Bridgestone","owner":"Chris","note":"Completed"},{"id":"s21","name":"Supa Quick Montana","province":"Gauteng","client":"Bridgestone","owner":"Chris","note":"Will be completed this week"},{"id":"s22","name":"Supa Quick Edenvale","province":"Gauteng","client":"Bridgestone","owner":"Chris","note":"Will be completed this week"},{"id":"s23","name":"Supa Quick Fishers Hill","province":"Gauteng","client":"Bridgestone","owner":"Chris","note":"Will be completed this week"},{"id":"s24","name":"Supa Quick Greenstone","province":"Gauteng","client":"Bridgestone","owner":"Chris","note":"Completed"},{"id":"s25","name":"Supa Quick Lambton","province":"Gauteng","client":"Bridgestone","owner":"Chris","note":"Will be completed this week"},{"id":"s26","name":"Supa Quick Spartan","province":"Gauteng","client":"Bridgestone","owner":"Chris","note":"Will be completed this week"},{"id":"s27","name":"Totalsports Mall of Africa","province":"Gauteng","client":"DMQ","owner":"Alex","note":"To Be completed as per Time Table"},{"id":"s28","name":"Totalsports Eastrand Mall","province":"Gauteng","client":"DMQ","owner":"Alex","note":"To Be completed as per Time Table"},{"id":"s29","name":"Totalsports Clearwater","province":"Gauteng","client":"DMQ","owner":"Alex","note":"To Be completed as per Time Table"},{"id":"s30","name":"Totalsports Menlyn","province":"Gauteng","client":"DMQ","owner":"Mackenzie","note":"Completed"},{"id":"s31","name":"Totalsports Fourways","province":"Gauteng","client":"DMQ","owner":"Alex","note":"To Be completed as per Time Table"},{"id":"s32","name":"Totalsports Eastgate","province":"Gauteng","client":"DMQ","owner":"Alex","note":"To Be completed as per Time Table"},{"id":"s33","name":"Totalsports Cresta","province":"Gauteng","client":"DMQ","owner":"Alex","note":"To Be completed as per Time Table"},{"id":"s34","name":"Totalsports Vaal Mall","province":"Gauteng","client":"DMQ","owner":"Elijah","note":"To Be completed as per Time Table"},{"id":"s35","name":"Totalsports Centurion","province":"Gauteng","client":"DMQ","owner":"Mackenzie","note":"Completed"},{"id":"s36","name":"Totalsports Montana","province":"Gauteng","client":"DMQ","owner":"Mackenzie","note":"Completed"},{"id":"s37","name":"Mr Price Sport Mall of Africa","province":"Gauteng","client":"DMQ","owner":"Alex","note":"To Be completed as per Time Table"},{"id":"s38","name":"MR Price Sport East Rand Mall","province":"Gauteng","client":"DMQ","owner":"Alex","note":"To Be completed as per Time Table"},{"id":"s39","name":"Mr Price Sport Clearwater","province":"Gauteng","client":"DMQ","owner":"Alex","note":"To Be completed as per Time Table"},{"id":"s40","name":"Mr Price Sport Menlyn","province":"Gauteng","client":"DMQ","owner":"Mackenzie","note":"Completed"},{"id":"s41","name":"Mr Price Sport  Fourwys","province":"Gauteng","client":"DMQ","owner":"Alex","note":"To Be completed as per Time Table"},{"id":"s42","name":"Mr Price Sport Sandton City","province":"Gauteng","client":"DMQ","owner":"Alex","note":"To Be completed as per Time Table"},{"id":"s43","name":"Mr Price Sport Cresta","province":"Gauteng","client":"DMQ","owner":"Alex","note":"To Be completed as per Time Table"},{"id":"s44","name":"Mr Price Sport Vaal Mall","province":"Gauteng","client":"DMQ","owner":"Elijah","note":"To Be completed as per Time Table"},{"id":"s45","name":"Mr Price Sport Centurion","province":"Gauteng","client":"DMQ","owner":"Mackenzie","note":"Completed"},{"id":"s46","name":"Mr Price Sport Montana","province":"Gauteng","client":"DMQ","owner":"Mackenzie","note":"Completed"},{"id":"s47","name":"Medirite Plus Olivedale","province":"Gauteng","client":"Beurer","owner":"Alex","note":"To Be completed as per Time Table"},{"id":"s48","name":"Medirite Plus Monovani","province":"Gauteng","client":"Beurer","owner":"Mackenzie","note":"To Be completed as per Time Table"},{"id":"s49","name":"Medirite Plus Cresta Crossing","province":"Gauteng","client":"Beurer","owner":"Alex","note":"To Be completed as per Time Table"},{"id":"s50","name":"Medirite Plus Sandown Crossing","province":"Gauteng","client":"Beurer","owner":"Alex","note":"To Be completed as per Time Table"},{"id":"s51","name":"Medirite Plus Parklands","province":"Gauteng","client":"Beurer","owner":"Alex","note":"To Be completed as per Time Table"},{"id":"s52","name":"Medirite Plus Alliens Nek","province":"Gauteng","client":"Beurer","owner":"Alex","note":"To Be completed as per Time Table"},{"id":"s53","name":"Medirite Plus Moreleta Park","province":"Gauteng","client":"Beurer","owner":"Chris","note":"Completed"},{"id":"s54","name":"Medirite Plus Protea Hights","province":"Gauteng","client":"Beurer","owner":"Alex","note":"To Be completed as per Time Table"},{"id":"s55","name":"Medirite Plus Arcon","province":"Gauteng","client":"Beurer","owner":"Alex","note":"To Be completed as per Time Table"},{"id":"s56","name":"Medirite Plus Daspoort","province":"Gauteng","client":"Beurer","owner":"Chris","note":"Completed"},{"id":"s57","name":"Supa Quick Amanzimtoti","province":"KwaZulu- Natal","client":"Bridgestone","owner":"KG","note":"Completed"},{"id":"s58","name":"Supa Quick Durban CBD","province":"KwaZulu- Natal","client":"Bridgestone","owner":"KG","note":"To Be completed as per Time Table"},{"id":"s59","name":"Supa Quick Greytown","province":"KwaZulu- Natal","client":"Bridgestone","owner":"KG","note":"To Be completed as per Time Table"},{"id":"s60","name":"Supa Quick Isipingo","province":"KwaZulu- Natal","client":"Bridgestone","owner":"KG","note":"Completed"},{"id":"s61","name":"Supa Quick Kloof","province":"KwaZulu- Natal","client":"Bridgestone","owner":"KG","note":"To Be completed as per Time Table"},{"id":"s62","name":"Supa Quick Kokstad","province":"KwaZulu- Natal","client":"Bridgestone","owner":"KG","note":"To Be completed as per Time Table"},{"id":"s63","name":"Supa Quick Margate","province":"KwaZulu- Natal","client":"Bridgestone","owner":"KG","note":"To Be completed as per Time Table"},{"id":"s64","name":"Supa Quick Mooi River","province":"KwaZulu- Natal","client":"Bridgestone","owner":"KG","note":"To Be completed as per Time Table"},{"id":"s65","name":"Supa Quick Musgrave","province":"KwaZulu- Natal","client":"Bridgestone","owner":"KG","note":"To Be completed as per Time Table"},{"id":"s66","name":"Supa Quick Pietermaritzburg","province":"KwaZulu- Natal","client":"Bridgestone","owner":"KG","note":"To Be completed as per Time Table"},{"id":"s67","name":"Supa Quick Ulundi","province":"KwaZulu- Natal","client":"Bridgestone","owner":"KG","note":"To Be completed as per Time Table"},{"id":"s68","name":"Supa Quick Umgeni","province":"KwaZulu- Natal","client":"Bridgestone","owner":"KG","note":"To Be completed as per Time Table"},{"id":"s69","name":"Totalsports Westville Pavillion","province":"KwaZulu- Natal","client":"DMQ","owner":"KG","note":"To Be completed as per Time Table"},{"id":"s70","name":"Totalsports Gateway","province":"KwaZulu- Natal","client":"DMQ","owner":"KG","note":"To Be completed as per Time Table"},{"id":"s71","name":"Totalsports Amanzimtoti","province":"KwaZulu- Natal","client":"DMQ","owner":"KG","note":"To Be completed as per Time Table"},{"id":"s72","name":"MR Price Sport Westville Pavillion","province":"KwaZulu- Natal","client":"DMQ","owner":"KG","note":"To Be completed as per Time Table"},{"id":"s73","name":"MR Price Sport Gateway","province":"KwaZulu- Natal","client":"DMQ","owner":"KG","note":"To Be completed as per Time Table"},{"id":"s74","name":"Mr Prioce Sport Amanzimtoti","province":"KwaZulu- Natal","client":"DMQ","owner":"KG","note":"To Be completed as per Time Table"},{"id":"s75","name":"Medirite Plus Oceans Mall","province":"KwaZulu- Natal","client":"Beurer","owner":"KG","note":"To Be completed as per Time Table"},{"id":"s76","name":"Medirite Plus St Johns","province":"KwaZulu- Natal","client":"Beurer","owner":"KG","note":"To Be completed as per Time Table"},{"id":"s77","name":"Supa Quick Mokopane","province":"Limpopo","client":"Bridgestone","owner":"Elijah","note":"To Be completed as per Time Table"},{"id":"s78","name":"Supa Quick Polokwane","province":"Limpopo","client":"Bridgestone","owner":"Elijah","note":"To Be completed as per Time Table"},{"id":"s79","name":"Supa Quick Thohoyandou","province":"Limpopo","client":"Bridgestone","owner":"Elijah","note":"To Be completed as per Time Table"},{"id":"s80","name":"Supa Quick Tzaneen","province":"Limpopo","client":"Bridgestone","owner":"Elijah","note":"To Be completed as per Time Table"},{"id":"s81","name":"Medirite Plus THABAZIMBI","province":"Limpopo","client":"Beurer","owner":"Elijah","note":"To Be completed as per Time Table"},{"id":"s82","name":"Medirite PlusLYDENBURG","province":"Limpopo","client":"Beurer","owner":"Elijah","note":"To Be completed as per Time Table"},{"id":"s83","name":"Supa Quick Mbombela","province":"Mpumalanga","client":"Bridgestone","owner":"Elijah","note":"To Be completed as per Time Table"},{"id":"s84","name":"Supa Quick Middelburg","province":"Mpumalanga","client":"Bridgestone","owner":"Elijah","note":"To Be completed as per Time Table"},{"id":"s85","name":"Supa Quick Brits","province":"North West","client":"Bridgestone","owner":"Chris","note":"To Be completed as per Time Table"},{"id":"s86","name":"Supa Quick Potchefstroom","province":"North West","client":"Bridgestone","owner":"Chris","note":"To Be completed as per Time Table"},{"id":"s87","name":"Supa Quick Vryburg","province":"North West","client":"Bridgestone","owner":"Chris","note":"To Be completed as per Time Table"},{"id":"s88","name":"Supa Quick Waterfall","province":"North West","client":"Bridgestone","owner":"Chris","note":"Completed"},{"id":"s89","name":"Supa Quick Zeerust","province":"North West","client":"Bridgestone","owner":"Chris","note":"To Be completed as per Time Table"},{"id":"s90","name":"Totalsports Waterfall Mall Rustenburg","province":"North West","client":"DMQ","owner":"Chris","note":"Completed"},{"id":"s91","name":"Mr Price Sport Waterfall Mall Rustenburg","province":"North West","client":"DMQ","owner":"Chris","note":"Completed"},{"id":"s92","name":"Medirite Plus Rustenburg","province":"North West","client":"Beurer","owner":"Chris","note":"Completed"},{"id":"s93","name":"Supa Quick Kimberley","province":"Northern Cape","client":"Bridgestone","owner":"Chris","note":"To Be completed as per Time Table"},{"id":"s94","name":"Supa Quick Airport City","province":"Western Cape","client":"Bridgestone","owner":"Enver","note":"To Be completed as per Time Table"},{"id":"s95","name":"Supa Quick Brackenfell","province":"Western Cape","client":"Bridgestone","owner":"Enver","note":"To Be completed as per Time Table"},{"id":"s96","name":"Supa Quick Caledon","province":"Western Cape","client":"Bridgestone","owner":"Enver","note":"To Be completed as per Time Table"},{"id":"s97","name":"Supa Quick Cape Town","province":"Western Cape","client":"Bridgestone","owner":"Enver","note":"To Be completed as per Time Table"},{"id":"s98","name":"Supa Quick Hermanus","province":"Western Cape","client":"Bridgestone","owner":"Enver","note":"To Be completed as per Time Table"},{"id":"s99","name":"Supa Quick Observatory","province":"Western Cape","client":"Bridgestone","owner":"Enver","note":"To Be completed as per Time Table"},{"id":"s100","name":"Supa Quick Paarl","province":"Western Cape","client":"Bridgestone","owner":"Enver","note":"To Be completed as per Time Table"},{"id":"s101","name":"Supa Quick Sea Point","province":"Western Cape","client":"Bridgestone","owner":"Enver","note":"To Be completed as per Time Table"},{"id":"s102","name":"Supa Quick Vredenburg","province":"Western Cape","client":"Bridgestone","owner":"Enver","note":"To Be completed as per Time Table"},{"id":"s103","name":"Totalsports Canal Walk","province":"Western Cape","client":"DMQ","owner":"Enver","note":"To Be completed as per Time Table"},{"id":"s104","name":"Totalsports Tygervalley","province":"Western Cape","client":"DMQ","owner":"Enver","note":"To Be completed as per Time Table"},{"id":"s105","name":"Totalsports Somerset Mall","province":"Western Cape","client":"DMQ","owner":"Enver","note":"To Be completed as per Time Table"},{"id":"s106","name":"Totalsports Cavendish","province":"Western Cape","client":"DMQ","owner":"Enver","note":"To Be completed as per Time Table"},{"id":"s107","name":"Totalsports Blue Route","province":"Western Cape","client":"DMQ","owner":"Enver","note":"To Be completed as per Time Table"},{"id":"s108","name":"Totalsports Paarl Mall","province":"Western Cape","client":"DMQ","owner":"Enver","note":"To Be completed as per Time Table"},{"id":"s109","name":"Totalsports Stellenbosch","province":"Western Cape","client":"DMQ","owner":"Enver","note":"To Be completed as per Time Table"},{"id":"s110","name":"Mr Price Sport Canal Walk","province":"Western Cape","client":"DMQ","owner":"Enver","note":"To Be completed as per Time Table"},{"id":"s111","name":"Mr Price Sport Tygervalley","province":"Western Cape","client":"DMQ","owner":"Enver","note":"To Be completed as per Time Table"},{"id":"s112","name":"Mr Price Sport Somerset Mall","province":"Western Cape","client":"DMQ","owner":"Enver","note":"To Be completed as per Time Table"},{"id":"s113","name":"Mr Price Sport Cavendish","province":"Western Cape","client":"DMQ","owner":"Enver","note":"To Be completed as per Time Table"},{"id":"s114","name":"Mr Price Sport Blue Route","province":"Western Cape","client":"DMQ","owner":"Enver","note":"To Be completed as per Time Table"},{"id":"s115","name":"Mr Price Sport Paarl Mall","province":"Western Cape","client":"DMQ","owner":"Enver","note":"To Be completed as per Time Table"},{"id":"s116","name":"Mr Price Sport Stellenbosch","province":"Western Cape","client":"DMQ","owner":"Enver","note":"To Be completed as per Time Table"},{"id":"s117","name":"Medirite Plus Willowbridge","province":"Western Cape","client":"Beurer","owner":"Enver","note":"To Be completed as per Time Table"},{"id":"s118","name":"Medirite Plus Somerset West","province":"Western Cape","client":"Beurer","owner":"Enver","note":"To Be completed as per Time Table"},{"id":"s119","name":"Medirite Plus Stellenbosch","province":"Western Cape","client":"Beurer","owner":"Enver","note":"To Be completed as per Time Table"},{"id":"s120","name":"Medirite Plus Bothasig","province":"Western Cape","client":"Beurer","owner":"Enver","note":"To Be completed as per Time Table"},{"id":"s121","name":"Medirite Plus Paardelvlei","province":"Western Cape","client":"Beurer","owner":"Enver","note":"To Be completed as per Time Table"}]};
+const MONTH = '2026-08';
+let adhoc = [];                       // extra, manually added events
+let STORES = SEED.stores.slice();
+let DAYS = SEED.days.slice();
+let BY_ID = Object.fromEntries(STORES.map(s => [s.id, s]));
+const CLIENT_COLOR = { Bridgestone: 'var(--bridgestone)', Beurer: 'var(--beurer)', DMQ: 'var(--dmq)' };
+let OWNERS = [], CLIENTS = [], PROVINCES = [];
+const uniq = key => [...new Set(STORES.map(s => s[key]))].filter(Boolean).sort();
+function rebuild() {
+  STORES = SEED.stores.concat(adhoc);
+  BY_ID = Object.fromEntries(STORES.map(s => [s.id, s]));
+  OWNERS = uniq('owner'); CLIENTS = uniq('client'); PROVINCES = uniq('province');
+  DAYS = [...new Set(SEED.days.concat(adhoc.map(a => assignments[a.id]).filter(Boolean)))].sort();
+}
+
+let session = { token: null, role: null, canEdit: false };
+let assignments = {};   // storeId -> 'YYYY-MM-DD'
+let notes = {};         // storeId -> comment (overrides the sheet note)
+let owners = {};        // storeId -> owner (overrides the sheet owner)
+let selected = null;
+let filters = { client: null, owner: null, prov: '', q: '' };
+
+const esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const ownerOf = id => owners[id] !== undefined ? owners[id] : (BY_ID[id] ? BY_ID[id].owner : '');
+const noteOf = id => notes[id] !== undefined ? notes[id] : (BY_ID[id] ? BY_ID[id].note : '');
+const fmtDay = iso => {
+  const d = new Date(iso + 'T00:00:00Z');
+  return { wd: d.toLocaleDateString('en-ZA', { weekday: 'long', timeZone: 'UTC' }), num: d.getUTCDate(), mon: d.toLocaleDateString('en-ZA', { month: 'short', timeZone: 'UTC' }), weekend: [0, 6].includes(d.getUTCDay()) };
+};
+
+/* ------------------------------- sign in -------------------------------- */
+document.getElementById('gate-form').addEventListener('submit', async e => {
+  e.preventDefault();
+  const err = document.getElementById('gate-err');
+  err.textContent = '';
+  try {
+    const res = await fetch('/api/auth-login', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ access_code: document.getElementById('code').value.trim() }),
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok || !data.token) { err.textContent = data.error || 'That code was not accepted.'; return; }
+    if (!String(data.role || '').startsWith('leegra_')) { err.textContent = 'This calendar is for Leegra staff only.'; return; }
+    session = { token: data.token, role: data.role, canEdit: data.role !== 'leegra_report_only' };
+    document.getElementById('gate').remove();
+    await load();
+  } catch (e2) { err.textContent = 'Could not reach the server. Check your connection.'; }
+});
+
+/* -------------------------------- data ---------------------------------- */
+async function load() {
+  try {
+    const res = await fetch('/api/schedule?month=' + MONTH, { headers: { Authorization: 'Bearer ' + session.token } });
+    if (res.ok) {
+      const d = await res.json();
+      assignments = d.assignments || {}; notes = d.notes || {}; owners = d.owners || {};
+      adhoc = Array.isArray(d.adhoc) ? d.adhoc : [];
+      setStatus(d.updatedAt ? 'Last saved ' + new Date(d.updatedAt).toLocaleString('en-ZA', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) + (d.updatedBy ? ' by ' + d.updatedBy.split('@')[0] : '') : 'Nothing scheduled yet');
+    } else setStatus('Could not load the saved plan (' + res.status + ')');
+  } catch (e) { setStatus('Could not load the saved plan'); }
+  render();
+}
+
+let saveTimer = null;
+function save() {
+  if (!session.canEdit) return;
+  clearTimeout(saveTimer);
+  setStatus('Saving…');
+  saveTimer = setTimeout(async () => {
+    try {
+      const res = await fetch('/api/schedule', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + session.token },
+        body: JSON.stringify({ month: MONTH, assignments, notes, owners, adhoc }),
+      });
+      if (res.ok) { const d = await res.json(); setStatus('Saved ' + new Date(d.updatedAt).toLocaleTimeString('en-ZA', { hour: '2-digit', minute: '2-digit' })); }
+      else setStatus('Not saved (' + res.status + ') — your changes are still on screen');
+    } catch (e) { setStatus('Not saved — check your connection'); }
+  }, 700);
+}
+const setStatus = t => { document.getElementById('save-status').textContent = t; };
+
+/* ------------------------------- filters -------------------------------- */
+function renderFilters() {
+  const mk = (list, key, host) => {
+    host.innerHTML = '';
+    list.forEach(v => {
+      const b = document.createElement('button');
+      b.className = 'chip' + (filters[key] === v ? ' on' : '');
+      b.textContent = v;
+      b.addEventListener('click', () => { filters[key] = filters[key] === v ? null : v; render(); });
+      host.appendChild(b);
+    });
+  };
+  mk(CLIENTS, 'client', document.getElementById('f-client'));
+  mk(OWNERS, 'owner', document.getElementById('f-owner'));
+  const sel = document.getElementById('f-prov');
+  if (!sel.options.length) {
+    sel.innerHTML = '<option value="">All provinces</option>' + PROVINCES.map(p => '<option>' + esc(p) + '</option>').join('');
+    sel.addEventListener('change', () => { filters.prov = sel.value; render(); });
+  }
+  const q = document.getElementById('f-search');
+  if (!q.dataset.wired) { q.dataset.wired = '1'; q.addEventListener('input', () => { filters.q = q.value.toLowerCase(); render(); }); }
+  document.getElementById('f-clear').onclick = () => {
+    filters = { client: null, owner: null, prov: '', q: '' };
+    sel.value = ''; q.value = ''; render();
+  };
+}
+
+const matches = s => (!filters.client || s.client === filters.client)
+  && (!filters.owner || ownerOf(s.id) === filters.owner)
+  && (!filters.prov || s.province === filters.prov)
+  && (!filters.q || s.name.toLowerCase().includes(filters.q));
+
+/* -------------------------------- render -------------------------------- */
+function storeEl(s, inDay) {
+  const el = document.createElement('button');
+  el.type = 'button';
+  el.className = 'store' + (selected === s.id ? ' sel' : '');
+  el.style.borderLeftColor = CLIENT_COLOR[s.client] || 'var(--line)';
+  el.draggable = session.canEdit;
+  el.dataset.id = s.id;
+  const note = noteOf(s.id);
+  el.innerHTML = '<div class="store-name">' + esc(s.name) + '</div>'
+    + '<div class="store-meta"><span class="owner">' + esc(ownerOf(s.id) || 'Unassigned') + '</span>'
+    + '<span>' + esc(s.client) + '</span>'
+    + (inDay ? '' : '<span>' + esc(s.province) + '</span>')
+    + (s.adhoc ? '<span>Ad hoc</span>' : '')
+    + (note ? '<span class="has-note" title="' + esc(note) + '">💬</span>' : '')
+    + '</div>';
+  el.addEventListener('dragstart', e => { e.dataTransfer.setData('text/plain', s.id); e.dataTransfer.effectAllowed = 'move'; });
+  el.addEventListener('click', () => { selected = s.id; render(); });
+  return el;
+}
+
+function render() {
+  rebuild();
+  renderFilters();
+  const pool = STORES.filter(s => !assignments[s.id]);
+  const poolShown = pool.filter(matches);
+  document.getElementById('pool-count').textContent = poolShown.length + (poolShown.length !== pool.length ? ' of ' + pool.length : '');
+  document.getElementById('scheduled-count').textContent = (STORES.length - pool.length) + ' of ' + STORES.length + ' stores placed';
+  const list = document.getElementById('pool-list');
+  list.innerHTML = '';
+  if (!poolShown.length) list.innerHTML = '<div class="empty">Nothing here — every store matching these filters has a day.</div>';
+  poolShown.forEach(s => list.appendChild(storeEl(s, false)));
+
+  const days = document.getElementById('days');
+  days.innerHTML = '';
+  DAYS.forEach(iso => {
+    const f = fmtDay(iso);
+    const col = document.createElement('div');
+    col.className = 'day' + (f.weekend ? ' weekend' : '');
+    const mine = STORES.filter(s => assignments[s.id] === iso);
+    const shown = mine.filter(matches);
+    col.innerHTML = '<div class="day-head"><div class="day-name">' + f.wd + '</div>'
+      + '<div class="day-date">' + f.num + ' ' + f.mon + '</div>'
+      + '<div class="day-count">' + (mine.length ? mine.length + ' store' + (mine.length > 1 ? 's' : '') : 'Empty') + '</div></div>';
+    const body = document.createElement('div');
+    body.className = 'day-body';
+    shown.forEach(s => body.appendChild(storeEl(s, true)));
+    col.appendChild(body);
+    if (session.canEdit) {
+      col.addEventListener('dragover', e => { e.preventDefault(); col.classList.add('over'); });
+      col.addEventListener('dragleave', () => col.classList.remove('over'));
+      col.addEventListener('drop', e => {
+        e.preventDefault(); col.classList.remove('over');
+        const id = e.dataTransfer.getData('text/plain');
+        if (!id || !BY_ID[id]) return;
+        assignments[id] = iso; selected = id; save(); render();
+      });
+    }
+    days.appendChild(col);
+  });
+
+  renderPanel();
+}
+
+function renderPanel() {
+  const p = document.getElementById('panel');
+  if (!selected || !BY_ID[selected]) {
+    p.innerHTML = '<div class="k">Selected store</div><div class="empty">Pick a store to set its day, who is doing it, and a comment.'
+      + (session.canEdit ? ' You can also drag a store straight onto a day.' : ' You are signed in read-only.') + '</div>';
+    return;
+  }
+  const s = BY_ID[selected];
+  p.innerHTML = '';
+  const h = document.createElement('div');
+  h.innerHTML = '<div class="k">Store</div><h3>' + esc(s.name) + '</h3>'
+    + '<div class="store-meta" style="margin-top:6px"><span>' + esc(s.client) + '</span><span>' + esc(s.province) + '</span></div>';
+  p.appendChild(h);
+
+  const dayWrap = document.createElement('div');
+  dayWrap.innerHTML = '<div class="k">Day</div>';
+  const daySel = document.createElement('select');
+  daySel.style.width = '100%';
+  daySel.innerHTML = '<option value="">Not scheduled</option>' + DAYS.map(iso => {
+    const f = fmtDay(iso);
+    return '<option value="' + iso + '"' + (assignments[s.id] === iso ? ' selected' : '') + '>' + f.wd + ' ' + f.num + ' ' + f.mon + '</option>';
+  }).join('');
+  daySel.disabled = !session.canEdit;
+  daySel.addEventListener('change', () => {
+    if (daySel.value) assignments[s.id] = daySel.value; else delete assignments[s.id];
+    save(); render();
+  });
+  dayWrap.appendChild(daySel);
+  p.appendChild(dayWrap);
+
+  const ownWrap = document.createElement('div');
+  ownWrap.innerHTML = '<div class="k">Action by</div>';
+  const ownSel = document.createElement('select');
+  ownSel.style.width = '100%';
+  ownSel.innerHTML = OWNERS.map(o => '<option' + (ownerOf(s.id) === o ? ' selected' : '') + '>' + esc(o) + '</option>').join('');
+  ownSel.disabled = !session.canEdit;
+  ownSel.addEventListener('change', () => { owners[s.id] = ownSel.value; save(); render(); });
+  ownWrap.appendChild(ownSel);
+  p.appendChild(ownWrap);
+
+  const noteWrap = document.createElement('div');
+  noteWrap.innerHTML = '<div class="k">Comments</div>';
+  const ta = document.createElement('textarea');
+  ta.value = noteOf(s.id);
+  ta.placeholder = 'Anything the team should know about this store';
+  ta.disabled = !session.canEdit;
+  ta.addEventListener('input', () => { notes[s.id] = ta.value; save(); });
+  noteWrap.appendChild(ta);
+  p.appendChild(noteWrap);
+
+  if (session.canEdit && s.adhoc) {
+    const del = document.createElement('button');
+    del.className = 'btn btn-quiet';
+    del.textContent = 'Delete this event';
+    del.addEventListener('click', () => {
+      adhoc = adhoc.filter(a => a.id !== s.id);
+      delete assignments[s.id]; delete notes[s.id]; delete owners[s.id];
+      selected = null; save(); render();
+    });
+    p.appendChild(del);
+  }
+
+  if (session.canEdit && assignments[s.id]) {
+    const rm = document.createElement('button');
+    rm.className = 'btn btn-quiet';
+    rm.textContent = 'Take off the calendar';
+    rm.addEventListener('click', () => { delete assignments[s.id]; save(); render(); });
+    p.appendChild(rm);
+  }
+}
+
+/* ------------------------------ ad hoc ---------------------------------- */
+const adhocEl = document.getElementById('adhoc');
+const fill = (id, list) => { document.getElementById(id).innerHTML = list.map(v => '<option value="' + esc(v) + '">').join(''); };
+document.getElementById('adhoc-open').addEventListener('click', () => {
+  if (!session.canEdit) { setStatus('You are signed in read-only'); return; }
+  fill('a-clients', CLIENTS); fill('a-provs', PROVINCES); fill('a-owners', OWNERS);
+  document.getElementById('adhoc-err').textContent = '';
+  document.getElementById('a-date').value = DAYS.find(d => d >= new Date().toISOString().slice(0, 10)) || DAYS[0] || '';
+  adhocEl.style.display = 'flex';
+  document.getElementById('a-name').focus();
+});
+const closeAdhoc = () => { adhocEl.style.display = 'none'; document.getElementById('adhoc-form').reset(); };
+document.getElementById('adhoc-cancel').addEventListener('click', closeAdhoc);
+adhocEl.addEventListener('mousedown', e => { if (e.target === adhocEl) closeAdhoc(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape' && adhocEl.style.display === 'flex') closeAdhoc(); });
+document.getElementById('adhoc-form').addEventListener('submit', e => {
+  e.preventDefault();
+  const name = document.getElementById('a-name').value.trim();
+  const date = document.getElementById('a-date').value;
+  if (!name || !date) { document.getElementById('adhoc-err').textContent = 'Give it a name and a date.'; return; }
+  if (date.slice(0, 7) !== MONTH && !DAYS.includes(date)) {
+    document.getElementById('adhoc-err').textContent = 'Pick a date inside ' + MONTH + '.';
+    return;
+  }
+  const id = 'ad' + Date.now().toString(36);
+  adhoc.push({
+    id, adhoc: true, name,
+    client: document.getElementById('a-client').value.trim() || 'Ad hoc',
+    province: document.getElementById('a-prov').value.trim() || '',
+    owner: document.getElementById('a-owner').value.trim() || '',
+    note: document.getElementById('a-note').value.trim() || '',
+  });
+  assignments[id] = date;
+  selected = id;
+  closeAdhoc();
+  save(); render();
+});
+
+rebuild();
+renderFilters();
+</script>
+</body>
 </html>
