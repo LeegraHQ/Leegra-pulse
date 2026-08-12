@@ -43,6 +43,11 @@ const LEEGRA_WRITE_ROLES = ['leegra_super_admin', 'leegra_admin'];
 const CODE_HOLDERS = [
   { email: 'alys@dmq.co.za', name: 'Alys', tenantCode: 'CIV-088', role: 'client_viewer' },
   { email: 'chris@leegra.co.za', name: 'Chris', tenantCode: 'CIV-088', role: 'leegra_super_admin' },
+  // Full access across every client, same as Chris. They sign in with the admin
+  // code — on its own, or their email plus the code — so neither of them is ever
+  // sent a one-time code by email.
+  { email: 'nikki@leegra.co.za', name: 'Nikki', tenantCode: 'CIV-088', role: 'leegra_admin' },
+  { email: 'gordon@leegra.co.za', name: 'Gordon', tenantCode: 'CIV-088', role: 'leegra_admin' },
 ];
 
 function findTenantByCode(code) {
