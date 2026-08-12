@@ -4,9 +4,9 @@
 // relative /api/* calls work in both `netlify dev` and production with no
 // extra config, since netlify.toml redirects /api/* to the functions.
 
-import { CLIENTS, TRAINING_MATERIALS, SUPER_ADMIN_EMAIL } from './clients.js';
+import { CLIENTS, TRAINING_MATERIALS } from './clients.js';
 
-const USE_MOCK = false; // flip to true to run standalone against src/clients.js only
+const USE_MOCK = true; // flip to false once the Netlify Functions backend is live
 const API_BASE = '/api';
 
 function genericClient(code) {
@@ -24,74 +24,26 @@ function genericClient(code) {
   };
 }
 
-export async function requestLoginCode(email) {
-  if (USE_MOCK) return { ok: true };
-  const res = await fetch(`${API_BASE}/auth-request-code`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ email }),
-  });
-  if (!res.ok) throw new Error('Could not send login code — try again in a moment.');
-  return res.json();
-}
-
-export async function login({ email, code, tenantCode }) {
+export async function login({ companyCode, email, password, role }) {
   if (USE_MOCK) {
-    const normalized = email.trim().toLowerCase();
-    if (normalized === SUPER_ADMIN_EMAIL) {
-      return { token: 'mock-token', role: 'leegra_super_admin', email: normalized };
-    }
-    // Standalone mode has no real identity lookup — match by the mock
-    // client's own staff email, or fall back to a generic demo client.
-    const client = CLIENTS.find(c => c.staffEmail?.toLowerCase() === normalized) || genericClient('DEMO');
-    return { token: 'mock-token', role: 'field_rep', client };
+    const client = CLIENTS.find(c => c.code.toLowerCase() === companyCode.trim().toLowerCase()) || genericClient(companyCode);
+    return { token: 'mock-token', role, client };
   }
   const res = await fetch(`${API_BASE}/auth-login`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ email, code, tenant_code: tenantCode }),
+    body: JSON.stringify({ company_code: companyCode, email, password }),
   });
-  const data = await res.json();
-  if (!res.ok) throw new Error(data.error || 'Invalid or expired code');
-  return data; // { token, role, client } or { needsTenantChoice, tenants }
+  if (!res.ok) throw new Error('Invalid company code or credentials');
+  return res.json(); // { token, role, client }
 }
 
-export async function getDashboardSummary(token, tenantCode) {
-  if (USE_MOCK) {
-    if (tenantCode) return CLIENTS.find(c => c.code === tenantCode) || genericClient(tenantCode);
-    return {
-      tenants: CLIENTS.map(c => ({
-        code: c.code, name: c.name, logo: c.logo,
-        compliance: c.compliance, completedPlanned: c.completedPlanned, storesCovered: c.storesCovered, oosIssues: c.oosIssues,
-      })),
-    };
-  }
-  const qs = tenantCode ? `?tenant_code=${encodeURIComponent(tenantCode)}` : '';
-  const res = await fetch(`${API_BASE}/dashboard-summary${qs}`, { headers: { Authorization: `Bearer ${token}` } });
-  if (!res.ok) throw new Error('Could not load dashboard');
-  return res.json();
-}
-
-// Fallback questionnaire used only under USE_MOCK, so the rep screen still
-// has something to render standalone. Real questionnaires are tenant-defined
-// via POST /api/admin-questionnaire-import.
-const MOCK_QUESTIONNAIRE = {
-  id: 'mock-questionnaire',
-  name: 'Standard visit',
-  questions: [
-    { id: 'photo', label: 'Shelf photo capture', type: 'boolean', required: true },
-    { id: 'stock', label: 'Stock count / OOS report', type: 'boolean', required: true },
-    { id: 'checklist', label: 'Planogram checklist', type: 'boolean', required: false },
-    { id: 'survey', label: 'Manager survey', type: 'boolean', required: false },
-  ],
-};
-
-export async function checkIn(token, storeId, visitType) {
-  if (USE_MOCK) return { id: 'mock-visit', checkin_at: new Date().toISOString(), questionnaire: MOCK_QUESTIONNAIRE };
+export async function checkIn(token, storeId) {
+  if (USE_MOCK) return { id: 'mock-visit', checkin_at: new Date().toISOString() };
   const res = await fetch(`${API_BASE}/visits`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-    body: JSON.stringify({ store_id: storeId, visit_type: visitType }),
+    body: JSON.stringify({ store_id: storeId }),
   });
   return res.json();
 }
@@ -103,76 +55,17 @@ export async function checkOut(token, visitId) {
     headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
     body: JSON.stringify({ visit_id: visitId }),
   });
-  const data = await res.json();
-  if (!res.ok) throw new Error(data.missing ? `Answer required: ${data.missing.join(', ')}` : (data.error || 'Could not check out'));
-  return data;
+  return res.json();
 }
 
-export async function submitAnswer(token, visitId, questionId, answer) {
+export async function updateVisitTask(token, visitId, type, payload) {
   if (USE_MOCK) return { ok: true };
   const res = await fetch(`${API_BASE}/visits-task`, {
     method: 'PATCH',
     headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-    body: JSON.stringify({ visit_id: visitId, question_id: questionId, answer }),
+    body: JSON.stringify({ visit_id: visitId, type, payload }),
   });
   return res.json();
-}
-
-export async function getVisitLog(token) {
-  if (USE_MOCK) return { count: 0, visits: [] };
-  const res = await fetch(`${API_BASE}/admin-visit-log`, { headers: { Authorization: `Bearer ${token}` } });
-  if (!res.ok) throw new Error('Could not load visit log');
-  return res.json();
-}
-
-export async function getLoginStatus(token) {
-  if (USE_MOCK) return { count: 0, loggedInCount: 0, users: [] };
-  const res = await fetch(`${API_BASE}/admin-login-status`, { headers: { Authorization: `Bearer ${token}` } });
-  if (!res.ok) throw new Error('Could not load login status');
-  return res.json();
-}
-
-export async function clearVisitHistory(token, tenantCode) {
-  const res = await fetch(`${API_BASE}/admin-visit-clear`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-    body: JSON.stringify({ tenant_code: tenantCode, all: true }),
-  });
-  const data = await res.json();
-  if (!res.ok) throw new Error(data.error || 'Could not clear visit history');
-  return data;
-}
-
-export async function downloadVisitLogExport(token, format) {
-  const res = await fetch(`${API_BASE}/admin-visit-log?format=${format}`, { headers: { Authorization: `Bearer ${token}` } });
-  if (!res.ok) throw new Error(`Could not export ${format}`);
-  const blob = await res.blob();
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = `visit-log.${format}`;
-  document.body.appendChild(a);
-  a.click();
-  a.remove();
-  URL.revokeObjectURL(url);
-}
-
-export async function uploadPhotoAnswer(token, visitId, questionId, file) {
-  const base64 = await new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(reader.result.split(',')[1]);
-    reader.onerror = reject;
-    reader.readAsDataURL(file);
-  });
-  if (USE_MOCK) return { ok: true, photo_id: 'mock-photo', previewUrl: URL.createObjectURL(file) };
-  const res = await fetch(`${API_BASE}/visit-photo`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-    body: JSON.stringify({ visit_id: visitId, question_id: questionId, image_base64: base64, mime: file.type }),
-  });
-  const data = await res.json();
-  if (!res.ok) throw new Error(data.error || 'Could not upload photo');
-  return { ...data, previewUrl: URL.createObjectURL(file) };
 }
 
 export async function getLearningMaterials(token) {
@@ -190,5 +83,93 @@ export async function uploadLearningMaterial(token, file) {
     headers: { Authorization: `Bearer ${token}` },
     body: form,
   });
+  return res.json();
+}
+
+// ---------------------------------------------------------------------------
+// Photos, metrics and access-code sign-in. These require the Supabase-backed
+// Functions — see SUPABASE_SETUP.md. With USE_MOCK on they return local stubs
+// so the UI is still clickable.
+
+const MOCK_PHOTOS = [
+  { id: 'p1', tenant_code: 'CIV-088', store_code: 'TOT-4021', scope: 'visit', month: '2026-07', caption: 'Totalsports Sandton — main gondola after reset', url: '', taken_at: '2026-07-14T09:20:00Z' },
+  { id: 'p2', tenant_code: 'CIV-088', store_code: 'TOT-4021', scope: 'visit', month: '2026-07', caption: 'Same bay before the call', url: '', taken_at: '2026-07-14T08:05:00Z' },
+  { id: 'p3', tenant_code: 'CIV-088', store_code: 'MRP-2210', scope: 'month', month: '2026-07', caption: 'Mr Price Sport Menlyn — end-cap activation', url: '', taken_at: '2026-07-09T11:40:00Z' },
+];
+
+export async function loginWithAccessCode(code) {
+  if (USE_MOCK) {
+    const client = CLIENTS.find(c => c.code === 'CIV-088');
+    return { token: 'mock-token', role: 'client_viewer', readOnly: true, viewerName: 'Alys', client };
+  }
+  const res = await fetch(`${API_BASE}/auth-login`, {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ access_code: code }),
+  });
+  if (!res.ok) throw new Error('That code is not valid this month.');
+  return res.json();
+}
+
+export async function getPhotos(token, { tenant, month, store, scope } = {}) {
+  if (USE_MOCK) return MOCK_PHOTOS.filter(p => (!month || p.month === month) && (!store || p.store_code === store) && (!scope || p.scope === scope));
+  const params = new URLSearchParams(Object.entries({ tenant, month, store, scope }).filter(([, v]) => v));
+  const res = await fetch(`${API_BASE}/photos?${params}`, { headers: { Authorization: `Bearer ${token}` } });
+  if (!res.ok) throw new Error((await res.json()).error || 'Could not load photos');
+  return res.json();
+}
+
+// file: a File from an <input type="file">. Read as a data URL and posted as
+// base64 — simplest path that works on Netlify Functions without multipart.
+export async function uploadPhoto(token, { tenant, storeCode, visitDate, caption, scope, file }) {
+  if (USE_MOCK) return { id: 'mock', caption, url: URL.createObjectURL(file) };
+  const data_base64 = await new Promise((resolve, reject) => {
+    const r = new FileReader();
+    r.onload = () => resolve(r.result);
+    r.onerror = reject;
+    r.readAsDataURL(file);
+  });
+  const res = await fetch(`${API_BASE}/photos`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+    body: JSON.stringify({
+      tenant, store_code: storeCode, visit_date: visitDate, caption, scope: scope || 'visit',
+      filename: file.name, content_type: file.type, data_base64,
+    }),
+  });
+  if (!res.ok) throw new Error((await res.json()).error || 'Upload failed');
+  return res.json();
+}
+
+export async function deletePhoto(token, id) {
+  if (USE_MOCK) return { ok: true };
+  const res = await fetch(`${API_BASE}/photos?id=${encodeURIComponent(id)}`, {
+    method: 'DELETE', headers: { Authorization: `Bearer ${token}` },
+  });
+  return res.json();
+}
+
+export async function getMetrics(token, tenant, month) {
+  if (USE_MOCK) return [{ tenant_code: tenant, month: month || '2026-07', calls_completed: 44, calls_planned: 44, stores_covered: '44/44', avg_rating: 3.6 }];
+  const params = new URLSearchParams(Object.entries({ tenant, month }).filter(([, v]) => v));
+  const res = await fetch(`${API_BASE}/metrics?${params}`, { headers: { Authorization: `Bearer ${token}` } });
+  if (!res.ok) throw new Error((await res.json()).error || 'Could not load metrics');
+  return res.json();
+}
+
+export async function updateMetrics(token, payload) {
+  if (USE_MOCK) return { ...payload };
+  const res = await fetch(`${API_BASE}/metrics`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+    body: JSON.stringify(payload),
+  });
+  if (!res.ok) throw new Error((await res.json()).error || 'Could not save');
+  return res.json();
+}
+
+export async function getAccessCodes(token) {
+  if (USE_MOCK) return [{ email: 'alys@dmq.co.za', name: 'Alys', tenantCode: 'CIV-088', code: 'K7QP-3XMD', month: '2026-08' }];
+  const res = await fetch(`${API_BASE}/access-code`, { headers: { Authorization: `Bearer ${token}` } });
+  if (!res.ok) throw new Error('Admins only');
   return res.json();
 }
