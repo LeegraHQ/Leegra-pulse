@@ -136,7 +136,8 @@ export default function App() {
           <div className="lp-nav">
             <div className="lp-nav-brand">Leegra Pulse · Super admin</div>
             <div className="lp-tag lp-tag-accent">chris@leegra.co.za</div>
-            <button className="lp-tag lp-tag-outline" style={{ marginLeft: 'auto' }} onClick={handleLogout}>Log out</button>
+            <a className="lp-tag lp-tag-outline" style={{ marginLeft: 'auto', textDecoration: 'none' }} href="/reports/schedule/">Execution calendar</a>
+            <button className="lp-tag lp-tag-outline" onClick={handleLogout}>Log out</button>
           </div>
           <div className="lp-muted" style={{ fontSize: 12 }}>All 8 client accounts — select one to view its dashboard.</div>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12 }}>
