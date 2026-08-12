@@ -43,9 +43,13 @@ exports.handler = async (event) => {
     // WHICH code was typed: the admin code -> the Leegra staff entry, the
     // shared code -> the read-only client viewer.
     const wantsAdmin = accessCode.isAdminCode(suppliedAccessCode);
+    const wantsStaffView = !wantsAdmin && accessCode.isStaffCode(suppliedAccessCode);
     const holder = wantsAdmin
-      ? CODE_HOLDERS.find(h => h.role.startsWith('leegra_'))
-      : CODE_HOLDERS.find(h => !h.role.startsWith('leegra_') && accessCode.verify(h.tenantCode, suppliedAccessCode));
+      ? CODE_HOLDERS.find(h => h.role === 'leegra_super_admin')
+      : wantsStaffView
+        ? CODE_HOLDERS.find(h => h.role === 'leegra_report_only')
+        : CODE_HOLDERS.find(h => !h.role.startsWith('leegra_') && accessCode.verify(h.tenantCode, suppliedAccessCode));
+    // A staff-code sign-in reads every client, so it carries no tenant scope.
     if (!holder) {
       return { statusCode: 401, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ error: 'That code is not valid this month.' }) };
     }
@@ -61,7 +65,8 @@ exports.handler = async (event) => {
       statusCode: 200,
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        token, role: holder.role, viewerName: holder.name, readOnly: !isLeegraStaff,
+        token, role: holder.role, viewerName: holder.name,
+        readOnly: !isLeegraStaff || holder.role === 'leegra_report_only',
         client: { code: tenant.code, name: tenant.name, logo: tenant.logoUrl },
       }),
     };
@@ -83,7 +88,9 @@ exports.handler = async (event) => {
   const holder = CODE_HOLDERS.find(h => h.email.toLowerCase() === normalizedEmail);
   // Staff need the admin code; a client viewer needs the shared one.
   const isHolderCodeLogin = !!holder && (holder.role.startsWith('leegra_')
-    ? accessCode.isAdminCode(submittedCode)
+    ? (holder.role === 'leegra_report_only'
+        ? accessCode.isStaffCode(submittedCode)
+        : accessCode.isAdminCode(submittedCode))
     : accessCode.verify(holder.tenantCode, submittedCode));
 
   const isTestRepLogin = process.env.TEST_REP_EMAIL
