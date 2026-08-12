@@ -1,35 +1,71 @@
 // GET /api/dashboard-summary — tenant-scoped stats for the logged-in client.
-// The tenant comes ONLY from the verified token, never from a query param.
+// The tenant comes ONLY from the verified token, never from a query param —
+// except for Leegra's own staff (any tier), who may pass ?tenant_code= to
+// drill into one tenant's full dashboard (any other role's tenant_code
+// param is ignored). All three staff tiers can read every tenant's
+// dashboard — the tiers only differ on write access (see the admin-*
+// endpoints), not on this read-only summary. A staff member can also be
+// scoped to a single tenant (claims.scopedTenantCode, see _lib/scope.js) —
+// for them, ?tenant_code= must match that tenant (or defaults to it), and
+// the no-param "every tenant" list collapses to just their one tenant.
 
 const jwt = require('./_lib/jwt');
-const { TENANTS, SUPER_ADMIN_EMAIL } = require('./_data');
+const { TENANTS, findTenantByCode, LEEGRA_ROLES, SUPER_ADMIN_EMAIL } = require('./_data');
 
-// Hatfield and Tower are Chris's alone — filtered out of the all-clients list
-// for every other account, whatever their role.
+// Hatfield and Tower are visible to Chris alone — filtered out of the
+// all-clients list, and refused on a direct drill-in, for everyone else.
 const RESTRICTED_TENANT_CODES = ['HAT-009', 'TWR-260'];
+const isSuperAdminEmail = claims => String(claims.email || '').trim().toLowerCase() === SUPER_ADMIN_EMAIL;
+const { tenantScopeOk } = require('./_lib/scope');
+const { getStores, getAllVisits, computeDashboard, getTenantSettings } = require('./_lib/records');
 
-// Demo metrics keyed by tenant code — swap for real aggregation queries
-// against your visits/stores tables once a DB is wired up.
-const METRICS = {
-  'PH-201': { compliance: '88%', completedPlanned: '132/150', storesCovered: '34/38', oosIssues: '5' },
-  'SIR-014': { compliance: '92%', completedPlanned: '184/200', storesCovered: '42/45', oosIssues: '7' },
-  'CIV-088': { compliance: '81%', completedPlanned: '97/120', storesCovered: '26/30', oosIssues: '11' },
-  'BEU-305': { compliance: '90%', completedPlanned: '108/120', storesCovered: '22/24', oosIssues: '3' },
-  'BRG-118': { compliance: '85%', completedPlanned: '119/140', storesCovered: '31/35', oosIssues: '6' },
-  'SUP-042': { compliance: '94%', completedPlanned: '141/150', storesCovered: '29/30', oosIssues: '2' },
-  'HAT-009': { compliance: '79%', completedPlanned: '62/80', storesCovered: '14/16', oosIssues: '4' },
-  'TWR-260': { compliance: '87%', completedPlanned: '104/120', storesCovered: '25/28', oosIssues: '6' },
-};
+async function tenantDashboard(tenant) {
+  const [stores, visits] = await Promise.all([getStores(tenant.code), getAllVisits(tenant.code)]);
+  return computeDashboard(stores, visits);
+}
 
 exports.handler = async (event) => {
   const claims = jwt.fromAuthHeader(event);
   if (!claims) return { statusCode: 401, body: JSON.stringify({ error: 'Not authenticated' }) };
-  if (claims.role === 'leegra_super_admin') {
-    const isChris = String(claims.email || '').trim().toLowerCase() === SUPER_ADMIN_EMAIL;
-    const visible = isChris ? TENANTS : TENANTS.filter(t => !RESTRICTED_TENANT_CODES.includes(t.code));
-    return { statusCode: 200, body: JSON.stringify({ tenants: visible.map(t => ({ ...t, ...METRICS[t.code] })) }) };
+
+  if (LEEGRA_ROLES.includes(claims.role)) {
+    const tenantCode = event.queryStringParameters?.tenant_code || claims.scopedTenantCode;
+    if (tenantCode) {
+      if (!tenantScopeOk(claims, tenantCode)) {
+        return { statusCode: 403, body: JSON.stringify({ error: 'Not permitted for that tenant' }) };
+      }
+      const tenant = findTenantByCode(tenantCode);
+      if (!tenant) return { statusCode: 404, body: JSON.stringify({ error: 'Unknown tenant' }) };
+      if (RESTRICTED_TENANT_CODES.includes(tenant.code) && !isSuperAdminEmail(claims)) {
+        return { statusCode: 403, body: JSON.stringify({ error: 'Not permitted for that tenant' }) };
+      }
+      const [dashboard, settings] = await Promise.all([tenantDashboard(tenant), getTenantSettings(tenant.code)]);
+      return {
+        statusCode: 200,
+        body: JSON.stringify({
+          code: tenant.code, name: tenant.name, logo: tenant.logoUrl,
+          learningEnabled: settings.learningEnabled !== false,
+          ...dashboard,
+        }),
+      };
+    }
+
+    const visibleTenants = isSuperAdminEmail(claims)
+      ? TENANTS
+      : TENANTS.filter(t => !RESTRICTED_TENANT_CODES.includes(t.code));
+    const tenants = await Promise.all(visibleTenants.map(async t => {
+      const { stores, leaderboard, ...metrics } = await tenantDashboard(t);
+      return { ...t, ...metrics };
+    }));
+    return { statusCode: 200, body: JSON.stringify({ tenants }) };
   }
-  const metrics = METRICS[claims.tenantCode];
-  if (!metrics) return { statusCode: 404, body: JSON.stringify({ error: 'Unknown tenant' }) };
-  return { statusCode: 200, body: JSON.stringify(metrics) };
+
+  const tenant = findTenantByCode(claims.tenantCode);
+  if (!tenant) return { statusCode: 404, body: JSON.stringify({ error: 'Unknown tenant' }) };
+  const dashboard = await tenantDashboard(tenant);
+  const stores = claims.role === 'field_rep'
+    ? dashboard.stores.filter(s => (claims.storeCodes || []).includes(s.code))
+    : dashboard.stores;
+
+  return { statusCode: 200, body: JSON.stringify({ ...dashboard, stores }) };
 };
