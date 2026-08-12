@@ -6,15 +6,6 @@
 // both in sync (frontend can't import from netlify/functions/).
 export const SUPER_ADMIN_EMAIL = 'chris@leegra.co.za';
 
-// Clients only Chris can see. Everyone else — including other Leegra admins —
-// gets a list with these removed, on the picker and in the login dropdown.
-export const RESTRICTED_CLIENT_CODES = ['HAT-009', 'TWR-260'];
-
-export function visibleClients(email) {
-  const isSuperAdmin = String(email || '').trim().toLowerCase() === SUPER_ADMIN_EMAIL;
-  return isSuperAdmin ? CLIENTS : CLIENTS.filter(c => !RESTRICTED_CLIENT_CODES.includes(c.code));
-}
-
 export const CLIENTS = [
   { code: 'PH-201', name: 'Philips', logo: '/logos/philips-logo.png',
     staffName: 'Lerato N.', staffEmail: 'lerato.n@philips-retail.co.za', repStoreCount: 2,
@@ -151,10 +142,6 @@ export const CLIENTS = [
 // derived from CLIENTS so there's one list to keep in sync with the tenant
 // codes in netlify/functions/_data.js, not a second hardcoded copy.
 export const TENANT_DIRECTORY = CLIENTS.map(c => ({ code: c.code, name: c.name, logo: c.logo }));
-
-export function visibleTenantDirectory(email) {
-  return visibleClients(email).map(c => ({ code: c.code, name: c.name, logo: c.logo }));
-}
 
 export const TRAINING_MATERIALS = [
   { id: 'm1', title: 'Shelf Standards 101', type: 'Video', meta: '8 min' },
