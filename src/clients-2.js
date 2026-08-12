@@ -1,0 +1,163 @@
+// Mock tenant data — matches the design prototype and the real client logos
+// supplied. Used as the seed/fallback dataset; api.js swaps to real Netlify
+// Function calls once USE_MOCK is false.
+
+// Shared with netlify/functions/_data.js's own copy of this constant — keep
+// both in sync (frontend can't import from netlify/functions/).
+export const SUPER_ADMIN_EMAIL = 'chris@leegra.co.za';
+
+// Clients only Chris can see. Everyone else — including other Leegra admins —
+// gets a list with these removed, on the picker and in the login dropdown.
+export const RESTRICTED_CLIENT_CODES = ['HAT-009', 'TWR-260'];
+
+export function visibleClients(email) {
+  const isSuperAdmin = String(email || '').trim().toLowerCase() === SUPER_ADMIN_EMAIL;
+  return isSuperAdmin ? CLIENTS : CLIENTS.filter(c => !RESTRICTED_CLIENT_CODES.includes(c.code));
+}
+
+export const CLIENTS = [
+  { code: 'PH-201', name: 'Philips', logo: '/logos/philips-logo.png',
+    staffName: 'Lerato N.', staffEmail: 'lerato.n@philips-retail.co.za', repStoreCount: 2,
+    compliance: '88%', completedPlanned: '132/150', storesCovered: '34/38', oosIssues: '5',
+    stores: [
+      { name: 'Game Cresta', code: 'GAM-118', region: 'Randburg', lastVisit: 'Today', status: 'On track' },
+      { name: 'Makro Woodmead', code: 'MAK-204', region: 'Jhb North', lastVisit: 'Yesterday', status: 'On track' },
+      { name: 'Incredible Connection Sandton', code: 'ICN-055', region: 'Jhb Central', lastVisit: '3 days ago', status: 'Due' },
+      { name: 'Dis-Chem Menlyn', code: 'DCM-311', region: 'Pretoria', lastVisit: '6 days ago', status: 'Overdue' },
+    ],
+    leaderboard: [ { rank: 1, name: 'Lerato N.', score: '94%' }, { rank: 2, name: 'Sipho K.', score: '89%' }, { rank: 3, name: 'Ayanda P.', score: '85%' } ],
+  },
+  { code: 'SIR-014', name: 'Sir Fruit', logo: '/logos/sirfruit-logo.png',
+    staffName: 'Thabo M.', staffEmail: 'thabo.m@sirfruit.co.za', repStoreCount: 2,
+    compliance: '92%', completedPlanned: '184/200', storesCovered: '42/45', oosIssues: '7',
+    stores: [
+      { name: 'Shoprite Maponya Mall', code: 'SHP-1142', region: 'Soweto', lastVisit: 'Today', status: 'On track' },
+      { name: 'Pick n Pay Rosebank', code: 'PNP-076', region: 'Jhb Central', lastVisit: 'Yesterday', status: 'On track' },
+      { name: 'Spar Fourways', code: 'SPR-231', region: 'North', lastVisit: '3 days ago', status: 'Due' },
+      { name: 'Checkers Sandton', code: 'CHK-089', region: 'Jhb Central', lastVisit: '6 days ago', status: 'Overdue' },
+    ],
+    leaderboard: [ { rank: 1, name: 'Thabo M.', score: '96%' }, { rank: 2, name: 'Naledi K.', score: '91%' }, { rank: 3, name: 'Sipho D.', score: '88%' } ],
+  },
+  { code: 'CIV-088', name: 'Civvio', logo: '/logos/civvio-logo.png',
+    staffName: 'Zanele M.', staffEmail: 'zanele.m@civvio.co.za', repStoreCount: 2,
+    compliance: '100%', completedPlanned: '44/44', storesCovered: '44/44', oosIssues: 'n/a — no OOS data supplied',
+    julyAvgRating: '3.6/5', augustWindow: '1–30 Aug 2026', augustPending: '44',
+    stores: [
+      { manager: 'Kgothatso Matlou', name: 'Totalsports Westville Pavillion', region: 'KZN', channel: 'Totalsports', lastVisit: '24 Jul', rating: '4/5' },
+      { manager: 'Kgothatso Matlou', name: 'Totalsports Gateway Durban', region: 'KZN', channel: 'Totalsports', lastVisit: '17 Jul', rating: '4/5' },
+      { manager: 'Enver de Bruyn', name: 'Totalsports Canal Walk Cape Town', region: 'CPT', channel: 'Totalsports', lastVisit: '2 Jul', rating: '4/5' },
+      { manager: 'Alex Walker', name: 'Totalsports Mall of Africa Johannesburg', region: 'GP', channel: 'Totalsports', lastVisit: '27 Jul', rating: '3/5' },
+      { manager: 'Alex Walker', name: 'Totalsports East Rand Mall Boksburg', region: 'GP', channel: 'Totalsports', lastVisit: '17 Jul', rating: '3/5' },
+      { manager: 'Alex Walker', name: 'Totalsports Clearwaters Roodepoort', region: 'GP', channel: 'Totalsports', lastVisit: '13 Jul', rating: '3/5' },
+      { manager: 'Enver de Bruyn', name: 'Totalsports Tygervalley Bellville', region: 'CPT', channel: 'Totalsports', lastVisit: '27 Jul', rating: '4/5' },
+      { manager: 'Mackenzie Gouws', name: 'Totalsports Menlyn Park Pretoria', region: 'GP', channel: 'Totalsports', lastVisit: '15 Jul', rating: '4/5' },
+      { manager: 'Enver de Bruyn', name: 'Totalsports Somerset Mall Somerset West', region: 'CPT', channel: 'Totalsports', lastVisit: '27 Jul', rating: '4/5' },
+      { manager: 'Alex Walker', name: 'Totalsports Fourways Mall Johannesburg', region: 'GP', channel: 'Totalsports', lastVisit: '13 Jul', rating: '4/5' },
+      { manager: 'Alex Walker', name: 'Totalsports Eastgate Johannesburg', region: 'GP', channel: 'Totalsports', lastVisit: '17 Jul', rating: '3/5' },
+      { manager: 'Alex Walker', name: 'Totalsports Waterfall Mall Rustenburg', region: 'NW', channel: 'Totalsports', lastVisit: '3 Jul', rating: '3/5' },
+      { manager: 'Enver de Bruyn', name: 'Totalsports Cavendish Cape Town', region: 'CPT', channel: 'Totalsports', lastVisit: '27 Jul', rating: '4/5' },
+      { manager: 'Kgothatso Matlou', name: 'Totalsports Amanzimtoti Galleria', region: 'KZN', channel: 'Totalsports', lastVisit: '17 Jul', rating: '3/5' },
+      { manager: 'Alex Walker', name: 'Totalsports Cresta Johannesburg', region: 'GP', channel: 'Totalsports', lastVisit: '13 Jul', rating: '4/5' },
+      { manager: 'Elijah Sekgate', name: 'Totalsports Vaal Mall Vanderbijlpark', region: 'GP', channel: 'Totalsports', lastVisit: '27 Jul', rating: '4/5' },
+      { manager: 'Mackenzie Gouws', name: 'Totalsports Centurion Pretoria', region: 'GP', channel: 'Totalsports', lastVisit: '27 Jul', rating: '4/5' },
+      { manager: 'Enver de Bruyn', name: 'Totalsports Blue Route Cape Town', region: 'CPT', channel: 'Totalsports', lastVisit: '7 Jul', rating: '3/5' },
+      { manager: 'Mackenzie Gouws', name: 'Totalsports Montana Pretoria', region: 'GP', channel: 'Totalsports', lastVisit: '15 Jul', rating: '4/5' },
+      { manager: 'Mackenzie Gouws', name: 'Totalsports Loch Logan Bloemfontein', region: 'FS', channel: 'Totalsports', lastVisit: '4 Jul', rating: '4/5' },
+      { manager: 'Enver de Bruyn', name: 'Totalsports Paarl Mall Paarl', region: 'CPT', channel: 'Totalsports', lastVisit: '23 Jul', rating: '3/5' },
+      { manager: 'Enver de Bruyn', name: 'Totalsports Stellenbosch Eikestad', region: 'CPT', channel: 'Totalsports', lastVisit: '17 Jul', rating: '3/5' },
+      { manager: 'Kgothatso Matlou', name: 'Mr Price Sport Westville Pavillion', region: 'KZN', channel: 'Mr Price Sport', lastVisit: '24 Jul', rating: '3/5' },
+      { manager: 'Kgothatso Matlou', name: 'Mr Price Sport Gateway Durban', region: 'KZN', channel: 'Mr Price Sport', lastVisit: '17 Jul', rating: '3/5' },
+      { manager: 'Enver de Bruyn', name: 'Mr Price Sport Canal Walk Cape Town', region: 'CPT', channel: 'Mr Price Sport', lastVisit: '8 Jul', rating: '3/5' },
+      { manager: 'Alex Walker', name: 'Mr Price Sport Mall of Africa Johannesburg', region: 'GP', channel: 'Mr Price Sport', lastVisit: '13 Jul', rating: '4/5' },
+      { manager: 'Alex Walker', name: 'Mr Price Sport East Rand Mall Boksburg', region: 'GP', channel: 'Mr Price Sport', lastVisit: '13 Jul', rating: '4/5' },
+      { manager: 'Alex Walker', name: 'Mr Price Sport Clearwaters Roodepoort', region: 'GP', channel: 'Mr Price Sport', lastVisit: '13 Jul', rating: '4/5' },
+      { manager: 'Enver de Bruyn', name: 'Mr Price Sport Tygervalley Bellville', region: 'CPT', channel: 'Mr Price Sport', lastVisit: '2 Jul', rating: '3/5' },
+      { manager: 'Mackenzie Gouws', name: 'Mr Price Sport Menlyn Park Pretoria', region: 'GP', channel: 'Mr Price Sport', lastVisit: '15 Jul', rating: '3/5' },
+      { manager: 'Enver de Bruyn', name: 'Mr Price Sport Somerset Mall Somerset West', region: 'CPT', channel: 'Mr Price Sport', lastVisit: '27 Jul', rating: '3/5' },
+      { manager: 'Alex Walker', name: 'Mr Price Sport Fourways Mall Johannesburg', region: 'GP', channel: 'Mr Price Sport', lastVisit: '13 Jul', rating: '4/5' },
+      { manager: 'Alex Walker', name: 'Mr Price Sport Sandton City Johannesburg', region: 'GP', channel: 'Mr Price Sport', lastVisit: '8 Jul', rating: '4/5' },
+      { manager: 'Alex Walker', name: 'Mr Price Sport Waterfall Mall Rustenburg', region: 'NW', channel: 'Mr Price Sport', lastVisit: '3 Jul', rating: '4/5' },
+      { manager: 'Enver de Bruyn', name: 'Mr Price Sport Cavendish Cape Town', region: 'CPT', channel: 'Mr Price Sport', lastVisit: '27 Jul', rating: '4/5' },
+      { manager: 'Kgothatso Matlou', name: 'Mr Price Sport Amanzimtoti Galleria', region: 'KZN', channel: 'Mr Price Sport', lastVisit: '24 Jul', rating: '3/5' },
+      { manager: 'Alex Walker', name: 'Mr Price Sport Cresta Johannesburg', region: 'GP', channel: 'Mr Price Sport', lastVisit: '13 Jul', rating: '4/5' },
+      { manager: 'Elijah Sekgate', name: 'Mr Price Sport Vaal Mall Vanderbijlpark', region: 'GP', channel: 'Mr Price Sport', lastVisit: '27 Jul', rating: '4/5' },
+      { manager: 'Mackenzie Gouws', name: 'Mr Price Sport Centurion Pretoria', region: 'GP', channel: 'Mr Price Sport', lastVisit: '13 Jul', rating: '4/5' },
+      { manager: 'Enver de Bruyn', name: 'Mr Price Sport Blue Route Cape Town', region: 'CPT', channel: 'Mr Price Sport', lastVisit: '27 Jul', rating: '4/5' },
+      { manager: 'Mackenzie Gouws', name: 'Mr Price Sport The Grove Pretoria', region: 'GP', channel: 'Mr Price Sport', lastVisit: '23 Jul', rating: '3/5' },
+      { manager: 'Mackenzie Gouws', name: 'Mr Price Sport Loch Logan Bloemfontein', region: 'FS', channel: 'Mr Price Sport', lastVisit: '4 Jul', rating: '3/5' },
+      { manager: 'Enver de Bruyn', name: 'Mr Price Sport Paarl Mall Paarl', region: 'CPT', channel: 'Mr Price Sport', lastVisit: '23 Jul', rating: '3/5' },
+      { manager: 'Enver de Bruyn', name: 'Mr Price Sport Stellenbosch Eikestad', region: 'CPT', channel: 'Mr Price Sport', lastVisit: '17 Jul', rating: '4/5' },
+    ],
+    leaderboard: [ { rank: 1, name: 'Elijah Sekgate', score: '4.0/5 · 2 stores' }, { rank: 2, name: 'Alex Walker', score: '3.6/5 · 14 stores' }, { rank: 3, name: 'Mackenzie Gouws', score: '3.6/5 · 8 stores' }, { rank: 4, name: 'Enver de Bruyn', score: '3.5/5 · 14 stores' }, { rank: 5, name: 'Kgothatso Matlou', score: '3.3/5 · 6 stores' } ],
+  },
+  { code: 'BEU-305', name: 'Beurer', logo: '/logos/beurer-logo.png',
+    staffName: 'Michael B.', staffEmail: 'michael.b@beurer.co.za', repStoreCount: 2,
+    compliance: '90%', completedPlanned: '108/120', storesCovered: '22/24', oosIssues: '3',
+    stores: [
+      { name: 'Clicks Sandton City', code: 'CLK-410', region: 'Jhb Central', lastVisit: 'Today', status: 'On track' },
+      { name: 'Dis-Chem Menlyn', code: 'DCM-311', region: 'Pretoria', lastVisit: 'Yesterday', status: 'On track' },
+      { name: 'Clicks Canal Walk', code: 'CLK-522', region: 'Cape Town', lastVisit: '4 days ago', status: 'Due' },
+      { name: 'Dis-Chem Somerset Mall', code: 'DCS-618', region: 'Cape Town', lastVisit: '7 days ago', status: 'Overdue' },
+    ],
+    leaderboard: [ { rank: 1, name: 'Michael B.', score: '93%' }, { rank: 2, name: 'Chantal R.', score: '90%' }, { rank: 3, name: 'Devan P.', score: '86%' } ],
+  },
+  { code: 'BRG-118', name: 'Bridgestone', logo: '/logos/bridgestone-logo.png',
+    staffName: 'Johan V.', staffEmail: 'johan.v@bridgestone.co.za', repStoreCount: 2,
+    compliance: '85%', completedPlanned: '119/140', storesCovered: '31/35', oosIssues: '6',
+    stores: [
+      { name: 'Tiger Wheel & Tyre Centurion', code: 'TWT-077', region: 'Pretoria', lastVisit: 'Today', status: 'On track' },
+      { name: 'Hi-Q Kempton Park', code: 'HIQ-118', region: 'Ekurhuleni', lastVisit: '2 days ago', status: 'On track' },
+      { name: 'Supa Quick Boksburg', code: 'SPQ-210', region: 'Ekurhuleni', lastVisit: '5 days ago', status: 'Due' },
+      { name: 'Trentyre Pretoria', code: 'TRT-305', region: 'Pretoria', lastVisit: '8 days ago', status: 'Overdue' },
+    ],
+    leaderboard: [ { rank: 1, name: 'Johan V.', score: '91%' }, { rank: 2, name: 'Ruan D.', score: '87%' }, { rank: 3, name: 'Karabo N.', score: '82%' } ],
+  },
+  { code: 'SUP-042', name: 'Supa Quick', logo: '/logos/supaquick-logo.png',
+    staffName: 'Kagiso T.', staffEmail: 'kagiso.t@supaquick.co.za', repStoreCount: 2,
+    compliance: '94%', completedPlanned: '141/150', storesCovered: '29/30', oosIssues: '2',
+    stores: [
+      { name: 'Supa Quick Randburg', code: 'SPQ-011', region: 'Jhb North', lastVisit: 'Today', status: 'On track' },
+      { name: 'Supa Quick Boksburg', code: 'SPQ-210', region: 'Ekurhuleni', lastVisit: 'Yesterday', status: 'On track' },
+      { name: 'Supa Quick Centurion', code: 'SPQ-330', region: 'Pretoria', lastVisit: '3 days ago', status: 'On track' },
+      { name: 'Supa Quick Vereeniging', code: 'SPQ-441', region: 'Vaal', lastVisit: '6 days ago', status: 'Due' },
+    ],
+    leaderboard: [ { rank: 1, name: 'Kagiso T.', score: '97%' }, { rank: 2, name: 'Willem P.', score: '93%' }, { rank: 3, name: 'Tumi R.', score: '90%' } ],
+  },
+  { code: 'HAT-009', name: 'Hatfield Motor Group', logo: '/logos/hatfield-logo.png',
+    staffName: 'Werner S.', staffEmail: 'werner.s@hatfieldmg.co.za', repStoreCount: 2,
+    compliance: '79%', completedPlanned: '62/80', storesCovered: '14/16', oosIssues: '4',
+    stores: [
+      { name: 'Hatfield Toyota Pretoria', code: 'HTP-001', region: 'Pretoria', lastVisit: 'Today', status: 'On track' },
+      { name: 'Hatfield VW Menlyn', code: 'HVM-002', region: 'Pretoria', lastVisit: '3 days ago', status: 'Due' },
+      { name: 'Hatfield Ford Silverton', code: 'HFS-003', region: 'Pretoria', lastVisit: '5 days ago', status: 'Due' },
+      { name: 'Hatfield Nissan Brooklyn', code: 'HNB-004', region: 'Pretoria', lastVisit: '10 days ago', status: 'Overdue' },
+    ],
+    leaderboard: [ { rank: 1, name: 'Werner S.', score: '88%' }, { rank: 2, name: 'Riaan K.', score: '80%' }, { rank: 3, name: 'Etienne B.', score: '74%' } ],
+  },
+  { code: 'TWR-260', name: 'Tower', logo: null,
+    staffName: 'Nomvula X.', staffEmail: 'nomvula.x@tower.co.za', repStoreCount: 2,
+    compliance: '87%', completedPlanned: '104/120', storesCovered: '25/28', oosIssues: '6',
+    stores: [
+      { name: 'Tower Bearings Alrode', code: 'TBA-501', region: 'Ekurhuleni', lastVisit: 'Today', status: 'On track' },
+      { name: 'Tower Bearings Epping', code: 'TBE-502', region: 'Cape Town', lastVisit: 'Yesterday', status: 'On track' },
+      { name: 'Tower Bearings Pinetown', code: 'TBP-503', region: 'KZN', lastVisit: '4 days ago', status: 'Due' },
+      { name: 'Tower Bearings Springs', code: 'TBS-504', region: 'Ekurhuleni', lastVisit: '7 days ago', status: 'Overdue' },
+    ],
+    leaderboard: [ { rank: 1, name: 'Nomvula X.', score: '92%' }, { rank: 2, name: 'Deon F.', score: '86%' }, { rank: 3, name: 'Palesa M.', score: '81%' } ],
+  },
+];
+
+// Minimal client picker list for the login screen's manager/admin dropdown —
+// derived from CLIENTS so there's one list to keep in sync with the tenant
+// codes in netlify/functions/_data.js, not a second hardcoded copy.
+export const TENANT_DIRECTORY = CLIENTS.map(c => ({ code: c.code, name: c.name, logo: c.logo }));
+
+export function visibleTenantDirectory(email) {
+  return visibleClients(email).map(c => ({ code: c.code, name: c.name, logo: c.logo }));
+}
+
+export const TRAINING_MATERIALS = [
+  { id: 'm1', title: 'Shelf Standards 101', type: 'Video', meta: '8 min' },
+  { id: 'm2', title: 'Q3 Product Launch briefing', type: 'PDF', meta: '6 pages' },
+  { id: 'm3', title: 'POS Placement Basics', type: 'Video', meta: '5 min' },
+];
