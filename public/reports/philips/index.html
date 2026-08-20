@@ -79,6 +79,12 @@
         <div style="font-size:12.5px; color:#6B7A90; margin-top:2px;">{{ activeSectionSub }}</div>
       </div>
       <div style="display:flex; align-items:center; gap:14px;">
+        <sc-if value="{{ hasLiveFeed }}" hint-placeholder-val="{{ false }}">
+          <div style="{{ liveBadgeStyle }}" title="{{ liveBadgeTitle }}">
+            <span style="{{ liveDotStyle }}"></span>
+            {{ liveBadgeLabel }}
+          </div>
+        </sc-if>
         <div style="background:#0B1B3A; border-radius:10px; padding:6px 14px;">
           <img src="assets/leegra-logo.png" alt="Leegra Marketing" style="height:30px; display:block;" />
         </div>
@@ -593,6 +599,26 @@ const REP_REGION = {
   'Kyle Samuels': 'Western Cape',
 };
 const KNOWN_REGIONS = ['Gauteng','Western Cape','Eastern Cape','KwaZulu-Natal','Free State','North West','Mpumalanga','Northern Cape','Limpopo'];
+const UPLOAD_CODE_KEY = 'philipsUploadCode';
+// Quote-aware CSV parse — store names carry commas, so a naive split corrupts rows.
+function parseCsv(text) {
+  const rows = [];
+  let row = [], cell = '', inQuotes = false;
+  const src = String(text).replace(/\r\n?/g, '\n');
+  for (let i = 0; i < src.length; i++) {
+    const ch = src[i];
+    if (inQuotes) {
+      if (ch === '"') {
+        if (src[i + 1] === '"') { cell += '"'; i++; } else inQuotes = false;
+      } else cell += ch;
+    } else if (ch === '"') inQuotes = true;
+    else if (ch === ',') { row.push(cell); cell = ''; }
+    else if (ch === '\n') { row.push(cell); rows.push(row); row = []; cell = ''; }
+    else cell += ch;
+  }
+  if (cell !== '' || row.length) { row.push(cell); rows.push(row); }
+  return rows.map(r => r.map(c => c.trim())).filter(r => r.some(c => c));
+}
 function normStr(s) { return String(s || '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim(); }
 function fileToBase64(file) {
   return new Promise((resolve, reject) => {
@@ -677,11 +703,10 @@ class Component extends DCLogic {
     }
     this.setState({ adminUnlocked: localStorage.getItem(ADMIN_UNLOCK_KEY) === 'true' });
 
-    fetch('phillips_data.json').then(r => r.json()).then(data => {
-      this.setState({ data, loaded: true });
-    }).catch(() => {
-      this.setState({ data: { feedback: [], attendance: [], salesValue: [], salesVolume: [], growth: [], stock: [], stockPricing: [], competitorFeedback: [], executionReport: [] }, loaded: true });
-    });
+    this.loadData();
+    // Reps check in through the day, so the live half is re-polled. The
+    // static half never changes between deploys and is fetched once.
+    this.liveTimer = setInterval(() => this.loadLiveFeed(), 90000);
 
     const demoFiles = [
       'Checkers Boksburg Gauteng Enver de Bruyn.jpeg',
@@ -900,17 +925,111 @@ class Component extends DCLogic {
   importExcel(e) {
     const file = e.target.files && e.target.files[0];
     if (!file) return;
-    // Lightweight demo-grade import: reads CSV back for the active section's row shape.
+    const section = this.state.activeSection;
+    const input = e.target;
     const reader = new FileReader();
     reader.onload = () => {
-      window.alert('Imported "' + file.name + '" (' + (reader.result.split('\n').length - 1) + ' rows read). Demo import — wire this to your data pipeline for production use.');
+      const rows = parseCsv(String(reader.result));
+      // Drop a header row if the first cell repeats the section's first column.
+      const headers = this.getExportRows(section).headers;
+      if (rows.length && headers.length && String(rows[0][0]).trim().toLowerCase() === String(headers[0]).trim().toLowerCase()) rows.shift();
+      if (!rows.length) { window.alert('No data rows found in ' + file.name); input.value = ''; return; }
+
+      const code = this.adminCodeForUpload();
+      if (!code) { input.value = ''; return; }
+
+      this.setState({ uploadBusy: true });
+      fetch('/api/report-history', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ code, tenant: 'PH-201', section, rows, fileName: file.name }),
+      })
+        .then(r => r.json().then(j => ({ ok: r.ok, j })))
+        .then(({ ok, j }) => {
+          this.setState({ uploadBusy: false });
+          if (!ok) {
+            if (j && /admin code/i.test(j.error || '')) sessionStorage.removeItem(UPLOAD_CODE_KEY);
+            window.alert('Upload failed: ' + ((j && j.error) || 'unknown error'));
+            return;
+          }
+          window.alert('Added ' + j.rows_added + ' rows to ' + section + ' history. Existing data was kept — this was appended.');
+          this.loadData();
+        })
+        .catch(() => {
+          this.setState({ uploadBusy: false });
+          window.alert('Upload failed — could not reach the server.');
+        })
+        .then(() => { input.value = ''; });
     };
     reader.readAsText(file);
+  }
+
+  // The append endpoint needs the monthly admin code. Asked once per browser
+  // session, then remembered so a run of uploads isn't nine prompts.
+  adminCodeForUpload() {
+    let code = sessionStorage.getItem(UPLOAD_CODE_KEY);
+    if (code) return code;
+    code = window.prompt('Admin access code (needed to save this upload):');
+    code = (code || '').trim();
+    if (!code) return null;
+    sessionStorage.setItem(UPLOAD_CODE_KEY, code);
+    return code;
   }
 
   selectSection(e) {
     const key = e.currentTarget.getAttribute('data-key');
     this.setState({ activeSection: key });
+  }
+
+  componentWillUnmount() {
+    if (this.liveTimer) clearInterval(this.liveTimer);
+  }
+
+  // Three layers, oldest first, all additive:
+  //   1. phillips_data.json  — the original static sidecar (read-only)
+  //   2. /api/report-history  — every history batch uploaded since (append-only)
+  //   3. /api/report-feed     — what reps have logged in the app (re-polled)
+  // Nothing here ever replaces an earlier layer, so uploaded history stays put.
+  loadData() {
+    const EMPTY = { feedback: [], attendance: [], salesValue: [], salesVolume: [], growth: [], stock: [], stockPricing: [], competitorFeedback: [], executionReport: [] };
+    Promise.all([
+      fetch('phillips_data.json').then(r => r.json()).catch(() => EMPTY),
+      fetch('/api/report-history?tenant=PH-201').then(r => (r.ok ? r.json() : null)).catch(() => null),
+    ]).then(([sidecar, history]) => {
+      const sections = (history && history.sections) || {};
+      const base = Object.assign({}, EMPTY, sidecar);
+      for (const key of Object.keys(sections)) {
+        base[key] = [...(base[key] || []), ...sections[key]];
+      }
+      this.baseData = base;
+      this.setState({
+        data: base,
+        loaded: true,
+        historyBatchCount: (history && history.batchCount) || 0,
+      });
+      this.loadLiveFeed();
+    });
+  }
+
+  loadLiveFeed() {
+    fetch('/api/report-feed?tenant=PH-201')
+      .then(r => (r.ok ? r.json() : Promise.reject(new Error('feed ' + r.status))))
+      .then(live => {
+        if (!live || !this.baseData) return;
+        const base = this.baseData;
+        this.setState({
+          data: Object.assign({}, base, {
+            attendance: [...(base.attendance || []), ...(live.attendance || [])],
+            feedback: [...(base.feedback || []), ...(live.feedback || [])],
+          }),
+          liveFeedSeen: true,
+          liveVisitCount: (live.attendance || []).length,
+          liveAnswerCount: (live.feedback || []).length,
+          liveUpdatedAt: live.generatedAt || new Date().toISOString(),
+          liveError: !!live.error,
+        });
+      })
+      .catch(() => this.setState({ liveFeedSeen: true, liveError: true }));
   }
 
   renderVals() {
@@ -1674,6 +1793,18 @@ class Component extends DCLogic {
       hasCrossFilters: crossFilters.length > 0,
       crossFilters,
       kpis,
+      hasLiveFeed: !!s.liveFeedSeen,
+      liveBadgeLabel: s.liveError
+        ? 'App feed unavailable'
+        : (s.liveVisitCount ? `${s.liveVisitCount} live app visits` : 'App feed connected — no visits yet'),
+      liveBadgeTitle: (s.liveUpdatedAt ? `App feed last read ${new Date(s.liveUpdatedAt).toLocaleTimeString()} — ${s.liveAnswerCount || 0} survey answers` : 'Waiting for the first check-in from the field app')
+        + ` · ${s.historyBatchCount || 0} stored history upload(s)`,
+      liveDotStyle: `width:7px; height:7px; border-radius:50%; display:inline-block; background:${s.liveError ? '#C0392B' : (s.liveVisitCount ? '#1E8A4C' : '#B4820A')};`,
+      liveBadgeStyle: s.liveError
+        ? 'display:flex; align-items:center; gap:7px; background:#FDECEC; color:#8E2A20; border:1px solid #F3C9C4; border-radius:999px; padding:5px 12px; font-size:11.5px; font-weight:700;'
+        : (s.liveVisitCount
+          ? 'display:flex; align-items:center; gap:7px; background:#E6F6EC; color:#146B39; border:1px solid #BFE6CD; border-radius:999px; padding:5px 12px; font-size:11.5px; font-weight:700;'
+          : 'display:flex; align-items:center; gap:7px; background:#FFF6E0; color:#8A6A00; border:1px solid #F0DFAE; border-radius:999px; padding:5px 12px; font-size:11.5px; font-weight:700;'),
       isFeedback: active === 'feedback',
       isAttendance: active === 'attendance',
       isBlitz: active === 'blitz',

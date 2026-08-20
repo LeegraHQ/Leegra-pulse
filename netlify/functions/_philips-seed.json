@@ -1,0 +1,4104 @@
+{
+  "tenantCode": "PH-201",
+  "fixedCode": null,
+  "staff": [
+    {
+      "email": "chris@leegra.co.za",
+      "name": "Chris",
+      "tier": "super_user",
+      "scopedTenantCode": null
+    }
+  ],
+  "stores": [
+    {
+      "code": "OFF-EDB",
+      "name": "Off Diary Call",
+      "region": "Western Cape"
+    },
+    {
+      "code": "A208",
+      "name": "BABY CITY CAPE GATE",
+      "region": "WC"
+    },
+    {
+      "code": "A203",
+      "name": "BABY CITY SOMERSET WEST",
+      "region": "WC"
+    },
+    {
+      "code": "CH-42973",
+      "name": "CHECKERS CC CAPE GATE",
+      "region": "WC"
+    },
+    {
+      "code": "CH-58689",
+      "name": "CHECKERS CC HERMANUS",
+      "region": "WC"
+    },
+    {
+      "code": "CH-45078",
+      "name": "CHECKERS CC MOUNTAIN MILL",
+      "region": "WC"
+    },
+    {
+      "code": "CH-82797",
+      "name": "CHECKERS CC WHALE COAST MALL",
+      "region": "WC"
+    },
+    {
+      "code": "CH-48385",
+      "name": "CHECKERS CC WILLOWBRIDGE",
+      "region": "WC"
+    },
+    {
+      "code": "CH-6519",
+      "name": "CHECKERS CO STELLENBOSCH",
+      "region": "WC"
+    },
+    {
+      "code": "CH-123",
+      "name": "CHECKERS CS DURBANVILLE",
+      "region": "WC"
+    },
+    {
+      "code": "CH-83549",
+      "name": "CHECKERS CX SITARI",
+      "region": "WC"
+    },
+    {
+      "code": "CH-6501",
+      "name": "CHECKERS HYPER CH N1 CITY HYPER",
+      "region": "WC"
+    },
+    {
+      "code": "CH-6446",
+      "name": "CHECKERS HYPER CH PAROW HYPER",
+      "region": "WC"
+    },
+    {
+      "code": "CH-39168",
+      "name": "CHECKERS HYPER CH SOMERSET WEST",
+      "region": "WC"
+    },
+    {
+      "code": "CH-2701",
+      "name": "CHECKERS HYPER CS BRACKENFELL HYPER",
+      "region": "WC"
+    },
+    {
+      "code": "C-2334",
+      "name": "CLICKS BLUE DOWNS SHOPNG CNTR",
+      "region": "WC"
+    },
+    {
+      "code": "C-131",
+      "name": "CLICKS BRACKENFELL (CPT)",
+      "region": "WC"
+    },
+    {
+      "code": "C-162",
+      "name": "CLICKS CAPE GATE",
+      "region": "WC"
+    },
+    {
+      "code": "C-2057",
+      "name": "CLICKS DRAKENSTEIN CENTRE",
+      "region": "WC"
+    },
+    {
+      "code": "C-133",
+      "name": "CLICKS DURBANVILLE (CPT)",
+      "region": "WC"
+    },
+    {
+      "code": "C-2268",
+      "name": "CLICKS GRABOUW",
+      "region": "WC"
+    },
+    {
+      "code": "C-2254",
+      "name": "CLICKS HELDERBERG CENTRE",
+      "region": "WC"
+    },
+    {
+      "code": "C-134",
+      "name": "CLICKS HERMANUS",
+      "region": "WC"
+    },
+    {
+      "code": "C-158",
+      "name": "CLICKS INTERCARE TYGERVALLEY PHARMACY",
+      "region": "WC"
+    },
+    {
+      "code": "C-126",
+      "name": "CLICKS N1 CITY GOODWOOD (CPT)",
+      "region": "WC"
+    },
+    {
+      "code": "C-105",
+      "name": "CLICKS PAARL",
+      "region": "WC"
+    },
+    {
+      "code": "C-165",
+      "name": "CLICKS PAARL MALL",
+      "region": "WC"
+    },
+    {
+      "code": "C-1940",
+      "name": "CLICKS ROBERTSON",
+      "region": "WC"
+    },
+    {
+      "code": "C-111",
+      "name": "CLICKS SANLAM CENTRE (PAROW)",
+      "region": "WC"
+    },
+    {
+      "code": "C-2049",
+      "name": "CLICKS SOMERSET CROSSING",
+      "region": "WC"
+    },
+    {
+      "code": "C-130",
+      "name": "CLICKS SOMERSET MALL (S/WEST)",
+      "region": "WC"
+    },
+    {
+      "code": "C-1541",
+      "name": "CLICKS SONEIKE (CPT)",
+      "region": "WC"
+    },
+    {
+      "code": "C-115",
+      "name": "CLICKS STELLENBOSCH",
+      "region": "WC"
+    },
+    {
+      "code": "C-1580",
+      "name": "CLICKS STELLENBOSCH SQUARE",
+      "region": "WC"
+    },
+    {
+      "code": "C-1860",
+      "name": "CLICKS THE SANCTUARY (SOM/WEST)",
+      "region": "WC"
+    },
+    {
+      "code": "C-122",
+      "name": "CLICKS TYGER VALLEY (CPT)",
+      "region": "WC"
+    },
+    {
+      "code": "C-163",
+      "name": "CLICKS WATERSTONE VILLAGE",
+      "region": "WC"
+    },
+    {
+      "code": "C-147",
+      "name": "CLICKS WELLINGTON",
+      "region": "WC"
+    },
+    {
+      "code": "C-1858",
+      "name": "CLICKS WHALE COAST MALL",
+      "region": "WC"
+    },
+    {
+      "code": "C-1953",
+      "name": "CLICKS WOODSTOCK QUARTERS",
+      "region": "WC"
+    },
+    {
+      "code": "C-117",
+      "name": "CLICKS WORCESTER",
+      "region": "WC"
+    },
+    {
+      "code": "C2184",
+      "name": "CLICKS ZEVENVIEW",
+      "region": "WC"
+    },
+    {
+      "code": "C-1539",
+      "name": "CLICKS ZEVENWACHT (KUILSRVR)",
+      "region": "WC"
+    },
+    {
+      "code": "S233",
+      "name": "DIS-CHEM BRACKENFELL CORNER",
+      "region": "WC"
+    },
+    {
+      "code": "S214",
+      "name": "DIS-CHEM CAPE GATE",
+      "region": "WC"
+    },
+    {
+      "code": "S203",
+      "name": "DIS-CHEM PAARL MALL",
+      "region": "WC"
+    },
+    {
+      "code": "S223",
+      "name": "DIS-CHEM PAROW CENTRE",
+      "region": "WC"
+    },
+    {
+      "code": "S224",
+      "name": "DIS-CHEM SITARI FIELDS",
+      "region": "WC"
+    },
+    {
+      "code": "S204",
+      "name": "DIS-CHEM SOMERSET MALL",
+      "region": "WC"
+    },
+    {
+      "code": "S209",
+      "name": "DIS-CHEM WORCESTER",
+      "region": "WC"
+    },
+    {
+      "code": "S210",
+      "name": "DIS-CHEM ZEVENWACHT MALL",
+      "region": "WC"
+    },
+    {
+      "code": "M19",
+      "name": "MAKRO CAPE GATE",
+      "region": "WC"
+    },
+    {
+      "code": "CH-70556",
+      "name": "MEDIRITE MRP WILLOWBRIDGE",
+      "region": "WC"
+    },
+    {
+      "code": "CH-79924",
+      "name": "MEDIRITE PLUS MRP PAARDEVLEI",
+      "region": "WC"
+    },
+    {
+      "code": "CH-78839",
+      "name": "MRP STELLENBOSCH",
+      "region": "WC"
+    },
+    {
+      "code": "OFF-KS",
+      "name": "Off Diary Call",
+      "region": "Western Cape"
+    },
+    {
+      "code": "A207",
+      "name": "BABY CITY KENILWORTH",
+      "region": "WC"
+    },
+    {
+      "code": "A206",
+      "name": "BABY CITY TABLE BAY MALL",
+      "region": "WC"
+    },
+    {
+      "code": "A205",
+      "name": "BABY CITY TOKAI",
+      "region": "WC"
+    },
+    {
+      "code": "CH-42999",
+      "name": "CHECKERS CC BIG BAY",
+      "region": "WC"
+    },
+    {
+      "code": "CH-55160",
+      "name": "CHECKERS CC DE GRENDEL",
+      "region": "WC"
+    },
+    {
+      "code": "CH-82802",
+      "name": "CHECKERS CC GORDON'S BAY MALL",
+      "region": "WC"
+    },
+    {
+      "code": "CH-34184",
+      "name": "CHECKERS CC LAGUNA MALL",
+      "region": "WC"
+    },
+    {
+      "code": "CH-85258",
+      "name": "CHECKERS CC RYLANDS VILLAGE",
+      "region": "WC"
+    },
+    {
+      "code": "CH-96710",
+      "name": "CHECKERS CC TABLE BAY MALL",
+      "region": "WC"
+    },
+    {
+      "code": "CH-39142",
+      "name": "CHECKERS CC VERGELEGEN PLEIN",
+      "region": "WC"
+    },
+    {
+      "code": "CH-52358",
+      "name": "CHECKERS CC WEST COAST MALL",
+      "region": "WC"
+    },
+    {
+      "code": "CH-6399",
+      "name": "CHECKERS CS KENILWORTH",
+      "region": "WC"
+    },
+    {
+      "code": "CH-1399",
+      "name": "CHECKERS CS PLUMSTEAD",
+      "region": "WC"
+    },
+    {
+      "code": "CH-161014",
+      "name": "CHECKERS CX BAYSIDE MALL",
+      "region": "WC"
+    },
+    {
+      "code": "CH-83531",
+      "name": "CHECKERS CX CONSTANTIA",
+      "region": "WC"
+    },
+    {
+      "code": "CH-160830",
+      "name": "CHECKERS CX SOMERSET MALL",
+      "region": "WC"
+    },
+    {
+      "code": "CH-67929",
+      "name": "CHECKERS HYPER CH HYPER SUNVALLEY",
+      "region": "WC"
+    },
+    {
+      "code": "CH-30732",
+      "name": "CHECKERS HYPER CH PARKLANDS HYPER",
+      "region": "WC"
+    },
+    {
+      "code": "CH-6551",
+      "name": "CHECKERS HYPER CH TOKAI HYPER",
+      "region": "WC"
+    },
+    {
+      "code": "CH-343",
+      "name": "CHECKERS SS BOTHASIG",
+      "region": "WC"
+    },
+    {
+      "code": "CH-199",
+      "name": "CHECKERS SS SEA POINT",
+      "region": "WC"
+    },
+    {
+      "code": "C-2005",
+      "name": "CLICKS 3 ARTS VILLAGE",
+      "region": "WC"
+    },
+    {
+      "code": "C-102",
+      "name": "CLICKS ADDERLEY STREET (CPT)",
+      "region": "WC"
+    },
+    {
+      "code": "C-145",
+      "name": "CLICKS CANAL WALK (CPT)",
+      "region": "WC"
+    },
+    {
+      "code": "C-2045",
+      "name": "CLICKS CAPE QUARTER",
+      "region": "WC"
+    },
+    {
+      "code": "C-1661",
+      "name": "CLICKS CAPRICORN PARK (CPT)",
+      "region": "WC"
+    },
+    {
+      "code": "C-103",
+      "name": "CLICKS CAVENDISH SQUARE (CLRMNT)",
+      "region": "WC"
+    },
+    {
+      "code": "C-1976",
+      "name": "CLICKS CONSTANTIA EMPORIUM",
+      "region": "WC"
+    },
+    {
+      "code": "C-112",
+      "name": "CLICKS GARDENS CENTRE (CPT)",
+      "region": "WC"
+    },
+    {
+      "code": "C-1979",
+      "name": "CLICKS GOODWOOD MALL",
+      "region": "WC"
+    },
+    {
+      "code": "C-1871",
+      "name": "CLICKS GORDONS BAY",
+      "region": "WC"
+    },
+    {
+      "code": "C-135",
+      "name": "CLICKS HOUT BAY (CPT)",
+      "region": "WC"
+    },
+    {
+      "code": "C-107",
+      "name": "CLICKS KENILWORTH CENTRE (CPT)",
+      "region": "WC"
+    },
+    {
+      "code": "C-148",
+      "name": "CLICKS LONG BEACH MALL (CPT)",
+      "region": "WC"
+    },
+    {
+      "code": "C-142",
+      "name": "CLICKS MALMESBURY",
+      "region": "WC"
+    },
+    {
+      "code": "C-113",
+      "name": "CLICKS MEADOWRIDGE",
+      "region": "WC"
+    },
+    {
+      "code": "C-2805",
+      "name": "CLICKS MEDICROSS TOKAI (CPT)",
+      "region": "WC"
+    },
+    {
+      "code": "C-2215",
+      "name": "CLICKS MONTAGUE GARDENS",
+      "region": "WC"
+    },
+    {
+      "code": "C-2277",
+      "name": "CLICKS NAUTICA",
+      "region": "WC"
+    },
+    {
+      "code": "C-1933",
+      "name": "CLICKS OBSERVATORY (CPT)",
+      "region": "WC"
+    },
+    {
+      "code": "C-2162",
+      "name": "CLICKS PHARM CONSTANTIA VILL PNP",
+      "region": "WC"
+    },
+    {
+      "code": "C-128",
+      "name": "CLICKS PINELANDS (CPT)",
+      "region": "WC"
+    },
+    {
+      "code": "C-156",
+      "name": "CLICKS PROMENADE",
+      "region": "WC"
+    },
+    {
+      "code": "C-2316",
+      "name": "CLICKS RIVERLANDS MALL-RIVER CLUB CL",
+      "region": "WC"
+    },
+    {
+      "code": "C-118",
+      "name": "CLICKS RONDEBOSCH (CPT)",
+      "region": "WC"
+    },
+    {
+      "code": "C-1872",
+      "name": "CLICKS RYLANDS VILLAGE (CPT)",
+      "region": "WC"
+    },
+    {
+      "code": "C-1897",
+      "name": "CLICKS SEASIDE VILLAGE",
+      "region": "WC"
+    },
+    {
+      "code": "C-110",
+      "name": "CLICKS SOMERSET WEST PHARM",
+      "region": "WC"
+    },
+    {
+      "code": "C-1751",
+      "name": "CLICKS STRAND SQUARE (STRAND)",
+      "region": "WC"
+    },
+    {
+      "code": "C-1818",
+      "name": "CLICKS TABLE BAY MALL (CPT)",
+      "region": "WC"
+    },
+    {
+      "code": "C-1992",
+      "name": "CLICKS THE COLOSSEUM",
+      "region": "WC"
+    },
+    {
+      "code": "C-1856",
+      "name": "CLICKS THE JUNCTION MALL (CPT)",
+      "region": "WC"
+    },
+    {
+      "code": "C-1678",
+      "name": "CLICKS THE PADDOCKS (CPT)",
+      "region": "WC"
+    },
+    {
+      "code": "C-129",
+      "name": "CLICKS V&A WATERFRONT (CPT)",
+      "region": "WC"
+    },
+    {
+      "code": "C-164",
+      "name": "CLICKS VANGATE MALL",
+      "region": "WC"
+    },
+    {
+      "code": "C-1742",
+      "name": "CLICKS VERGELEGEN PLEIN (S/W)",
+      "region": "WC"
+    },
+    {
+      "code": "C-127",
+      "name": "CLICKS WESTGATE (M/PLAIN)",
+      "region": "WC"
+    },
+    {
+      "code": "S230",
+      "name": "DIS-CHEM KENILWORTH",
+      "region": "WC"
+    },
+    {
+      "code": "S250",
+      "name": "DIS-CHEM LAGUNA MALL",
+      "region": "WC"
+    },
+    {
+      "code": "S208",
+      "name": "DIS-CHEM SEA POINT",
+      "region": "WC"
+    },
+    {
+      "code": "S217",
+      "name": "DIS-CHEM TABLE BAY MALL",
+      "region": "WC"
+    },
+    {
+      "code": "S232",
+      "name": "DIS-CHEM TABLE VIEW",
+      "region": "WC"
+    },
+    {
+      "code": "M20",
+      "name": "MAKRO MONTAGUE",
+      "region": "WC"
+    },
+    {
+      "code": "M06",
+      "name": "MAKRO OTTERY",
+      "region": "WC"
+    },
+    {
+      "code": "CH-79607",
+      "name": "MEDIRITE PLUS MRP BOTHASIG",
+      "region": "WC"
+    },
+    {
+      "code": "OFF-LK",
+      "name": "Off Diary Call",
+      "region": "KwaZulu-Natal"
+    },
+    {
+      "code": "CH-2028",
+      "name": "CHECKERS CC ST JOHNS CENTRE",
+      "region": "KZN"
+    },
+    {
+      "code": "CH-82593",
+      "name": "CHECKERS CC WATERCREST",
+      "region": "KZN"
+    },
+    {
+      "code": "CH-1276",
+      "name": "CHECKERS CS BLUFF",
+      "region": "KZN"
+    },
+    {
+      "code": "CH-1878",
+      "name": "CHECKERS CS OVERPORT",
+      "region": "KZN"
+    },
+    {
+      "code": "CH-6763",
+      "name": "CHECKERS CS SOUTHWAY MALL",
+      "region": "KZN"
+    },
+    {
+      "code": "CH-37140",
+      "name": "CHECKERS HYPER CH BROOKSIDE MALL",
+      "region": "KZN"
+    },
+    {
+      "code": "CH-54677",
+      "name": "CHECKERS HYPER CH GALLERIA HYPER",
+      "region": "KZN"
+    },
+    {
+      "code": "CH-48238",
+      "name": "CHECKERS HYPER CH SHALLCROSS HYPER",
+      "region": "KZN"
+    },
+    {
+      "code": "C-223",
+      "name": "CLICKS BLUFF (DBN)",
+      "region": "KZN"
+    },
+    {
+      "code": "C-2054",
+      "name": "CLICKS BLUFF TOWERS",
+      "region": "KZN"
+    },
+    {
+      "code": "C-217",
+      "name": "CLICKS CHATSWORTH (DBN)",
+      "region": "KZN"
+    },
+    {
+      "code": "C-2037",
+      "name": "CLICKS DELCAIRN LIFESTYLE CENTRE",
+      "region": "KZN"
+    },
+    {
+      "code": "C-1838",
+      "name": "CLICKS HAMMARSDALE",
+      "region": "KZN"
+    },
+    {
+      "code": "C-239",
+      "name": "CLICKS HIBISCUS MALL MARGATE",
+      "region": "KZN"
+    },
+    {
+      "code": "C-1682",
+      "name": "CLICKS KLOOF",
+      "region": "KZN"
+    },
+    {
+      "code": "C-1929",
+      "name": "CLICKS KWA MASHU",
+      "region": "KZN"
+    },
+    {
+      "code": "C-1670",
+      "name": "CLICKS LILLIES QUARTER (DBN)",
+      "region": "KZN"
+    },
+    {
+      "code": "C-2132",
+      "name": "CLICKS MALVERN PARK",
+      "region": "KZN"
+    },
+    {
+      "code": "C1989",
+      "name": "CLICKS MIDWAY CROSSING",
+      "region": "KZN"
+    },
+    {
+      "code": "C-1629",
+      "name": "CLICKS MUSGRAVE CENTRE (DBN)",
+      "region": "KZN"
+    },
+    {
+      "code": "C-2372",
+      "name": "CLICKS NORTHWAY MALL",
+      "region": "KZN"
+    },
+    {
+      "code": "C-242",
+      "name": "CLICKS PIETERMARITZBURG",
+      "region": "KZN"
+    },
+    {
+      "code": "C-1734",
+      "name": "CLICKS QUEENSBURGH PHARMACY",
+      "region": "KZN"
+    },
+    {
+      "code": "C-237",
+      "name": "CLICKS SCOTTBURGH",
+      "region": "KZN"
+    },
+    {
+      "code": "C-211",
+      "name": "CLICKS SHELLY BEACH",
+      "region": "KZN"
+    },
+    {
+      "code": "C-1562",
+      "name": "CLICKS SOUTH COAST MALL (SH/BCH)",
+      "region": "KZN"
+    },
+    {
+      "code": "C-1608",
+      "name": "CLICKS SOUTHWAY MALL (DBN)",
+      "region": "KZN"
+    },
+    {
+      "code": "C-1978",
+      "name": "CLICKS THE BRIDGE",
+      "region": "KZN"
+    },
+    {
+      "code": "C-1559",
+      "name": "CLICKS THE GALLERIA (TOTI)",
+      "region": "KZN"
+    },
+    {
+      "code": "C-1998",
+      "name": "CLICKS THE SPARK",
+      "region": "KZN"
+    },
+    {
+      "code": "C-1529",
+      "name": "CLICKS UMLAZI MEGA CITY",
+      "region": "KZN"
+    },
+    {
+      "code": "C-1745",
+      "name": "CLICKS WATERCREST MALL (DBN)",
+      "region": "KZN"
+    },
+    {
+      "code": "C-2285",
+      "name": "CLICKS WESTOWN SQUARE",
+      "region": "KZN"
+    },
+    {
+      "code": "C-210",
+      "name": "CLICKS WORKSHOP (DBN)",
+      "region": "KZN"
+    },
+    {
+      "code": "S406",
+      "name": "DIS-CHEM AMANZIMTOTI",
+      "region": "KZN"
+    },
+    {
+      "code": "S421",
+      "name": "DIS-CHEM CHATSWORTH",
+      "region": "KZN"
+    },
+    {
+      "code": "S400",
+      "name": "DIS-CHEM HILLCREST",
+      "region": "KZN"
+    },
+    {
+      "code": "S420",
+      "name": "DIS-CHEM MUSGRAVE",
+      "region": "KZN"
+    },
+    {
+      "code": "S411",
+      "name": "DIS-CHEM PINECREST",
+      "region": "KZN"
+    },
+    {
+      "code": "S443",
+      "name": "DIS-CHEM SCOTTBURGH MALL",
+      "region": "KZN"
+    },
+    {
+      "code": "S414",
+      "name": "DIS-CHEM SOUTH COAST MALL",
+      "region": "KZN"
+    },
+    {
+      "code": "S412",
+      "name": "DIS-CHEM THE BLUFF",
+      "region": "KZN"
+    },
+    {
+      "code": "S419",
+      "name": "DIS-CHEM TOTI CENTRE",
+      "region": "KZN"
+    },
+    {
+      "code": "S410",
+      "name": "DIS-CHEM WATERCREST MALL",
+      "region": "KZN"
+    },
+    {
+      "code": "S445",
+      "name": "DIS-CHEM WESTOWN SQUARE",
+      "region": "KZN"
+    },
+    {
+      "code": "S434",
+      "name": "DISICHEM MALVERN PARK",
+      "region": "KZN"
+    },
+    {
+      "code": "M08",
+      "name": "MAKRO PIETERMARITZBURG",
+      "region": "KZN"
+    },
+    {
+      "code": "OFF-SM",
+      "name": "Off Diary Call",
+      "region": "Gauteng"
+    },
+    {
+      "code": "A100",
+      "name": "BABY CITY CENTURION",
+      "region": "GAU"
+    },
+    {
+      "code": "A105",
+      "name": "BABY CITY IRENE LINK",
+      "region": "GAU"
+    },
+    {
+      "code": "A101",
+      "name": "BABY CITY OLYMPUS (FAERIE GLEN)",
+      "region": "GAU"
+    },
+    {
+      "code": "A013",
+      "name": "BABY CITY WOODLANDS BOULEVARD",
+      "region": "GAU"
+    },
+    {
+      "code": "CH-36128",
+      "name": "CHECKERS CC ATTERBURY VALUE M",
+      "region": "GAU"
+    },
+    {
+      "code": "CH-1852",
+      "name": "CHECKERS CC BROOKLYN",
+      "region": "GAU"
+    },
+    {
+      "code": "CH-55013",
+      "name": "CHECKERS CC CENTURION LIFESTY",
+      "region": "GAU"
+    },
+    {
+      "code": "CH-54570",
+      "name": "CHECKERS CC GREY OWL MIDSTREA",
+      "region": "GAU"
+    },
+    {
+      "code": "CH-521",
+      "name": "CHECKERS CC MORELETA PARK",
+      "region": "GAU"
+    },
+    {
+      "code": "CH-36110",
+      "name": "CHECKERS CC OLYMPUS VILLAGE",
+      "region": "GAU"
+    },
+    {
+      "code": "CH-48327",
+      "name": "CHECKERS CC RASLOUW",
+      "region": "GAU"
+    },
+    {
+      "code": "CH-30368",
+      "name": "CHECKERS CC SILVER LAKES",
+      "region": "GAU"
+    },
+    {
+      "code": "CH-58142",
+      "name": "CHECKERS CH LOFTUS",
+      "region": "GAU"
+    },
+    {
+      "code": "CH-85313",
+      "name": "CHECKERS CX CASTLE GATE",
+      "region": "GAU"
+    },
+    {
+      "code": "CH-79526",
+      "name": "CHECKERS CX MONAVONI",
+      "region": "GAU"
+    },
+    {
+      "code": "CH-16546",
+      "name": "CHECKERS CX THATCHFIELD",
+      "region": "GAU"
+    },
+    {
+      "code": "CH-70174",
+      "name": "CHECKERS CX ZAMBEZI JUNCTION",
+      "region": "GAU"
+    },
+    {
+      "code": "CH-7159",
+      "name": "CHECKERS HYPER CH CENTURION HYPER",
+      "region": "GAU"
+    },
+    {
+      "code": "CH-7743",
+      "name": "CHECKERS HYPER CH MAYVILLE HYPER",
+      "region": "GAU"
+    },
+    {
+      "code": "CH-301",
+      "name": "CHECKERS HYPER CH MONTANA",
+      "region": "GAU"
+    },
+    {
+      "code": "CH-166315",
+      "name": "CHECKERS HYPER HC DOTCOM MENLYN",
+      "region": "GAU"
+    },
+    {
+      "code": "C-438",
+      "name": "CLICKS ATTERBURY PHARM",
+      "region": "GAU"
+    },
+    {
+      "code": "C-1681",
+      "name": "CLICKS ATTERIDGEVILLE (PTA)",
+      "region": "GAU"
+    },
+    {
+      "code": "C-384",
+      "name": "CLICKS BROOKLYN MALL (PTA)",
+      "region": "GAU"
+    },
+    {
+      "code": "C-302",
+      "name": "CLICKS CASTLE WALK (PTA)",
+      "region": "GAU"
+    },
+    {
+      "code": "C-320",
+      "name": "CLICKS CENTURION CENTRE (PTA)",
+      "region": "GAU"
+    },
+    {
+      "code": "C-1632",
+      "name": "CLICKS CENTURION LIFESTYLE (PTA)",
+      "region": "GAU"
+    },
+    {
+      "code": "C-442",
+      "name": "CLICKS CORNWALL VIEW PHARM",
+      "region": "GAU"
+    },
+    {
+      "code": "C-255",
+      "name": "CLICKS DORINGKLOOF (PTA)",
+      "region": "GAU"
+    },
+    {
+      "code": "C-1603",
+      "name": "CLICKS ELDO SQUARE (PTA)",
+      "region": "GAU"
+    },
+    {
+      "code": "C-1560",
+      "name": "CLICKS GEZINA GALLERIES (PTA)",
+      "region": "GAU"
+    },
+    {
+      "code": "C-1658",
+      "name": "CLICKS GREY OWL VILLAGE (CENT)",
+      "region": "GAU"
+    },
+    {
+      "code": "C-362",
+      "name": "CLICKS HATFIELD PLAZA (PTA)",
+      "region": "GAU"
+    },
+    {
+      "code": "C-1959",
+      "name": "CLICKS JEAN VILLAGE",
+      "region": "GAU"
+    },
+    {
+      "code": "C-1633",
+      "name": "CLICKS JUBILEE MALL (HMNSKRL)",
+      "region": "GAU"
+    },
+    {
+      "code": "C-375",
+      "name": "CLICKS KOLONNADE CENTRE (PTA)",
+      "region": "GAU"
+    },
+    {
+      "code": "C-440",
+      "name": "CLICKS LYNRIDGE MALL",
+      "region": "GAU"
+    },
+    {
+      "code": "C-2211",
+      "name": "CLICKS MALL @ 55",
+      "region": "GAU"
+    },
+    {
+      "code": "C-1672",
+      "name": "CLICKS MAMELODI CROSSING (PTA)",
+      "region": "GAU"
+    },
+    {
+      "code": "C-2181",
+      "name": "CLICKS MAMELODI SQUARE",
+      "region": "GAU"
+    },
+    {
+      "code": "C-1884",
+      "name": "CLICKS MAMS MALL",
+      "region": "GAU"
+    },
+    {
+      "code": "C-364",
+      "name": "CLICKS MAYVILLE (PTA)",
+      "region": "GAU"
+    },
+    {
+      "code": "C-263",
+      "name": "CLICKS MENLYN RETAIL PARK",
+      "region": "GAU"
+    },
+    {
+      "code": "C-2872",
+      "name": "CLICKS MONTANA",
+      "region": "GAU"
+    },
+    {
+      "code": "C-1801",
+      "name": "CLICKS OLYMPUS VILLAGE (PTA)",
+      "region": "GAU"
+    },
+    {
+      "code": "C-1664",
+      "name": "CLICKS PARKVIEW (PTA)",
+      "region": "GAU"
+    },
+    {
+      "code": "C-1894",
+      "name": "CLICKS QUEENSWOOD QUARTERS(PTA)",
+      "region": "GAU"
+    },
+    {
+      "code": "C-2111",
+      "name": "CLICKS SILVER MALL",
+      "region": "GAU"
+    },
+    {
+      "code": "C-1512",
+      "name": "CLICKS SILVER OAKS CROSSING",
+      "region": "GAU"
+    },
+    {
+      "code": "C-530",
+      "name": "CLICKS SINOVILLE (PTA)",
+      "region": "GAU"
+    },
+    {
+      "code": "C-1853",
+      "name": "CLICKS SOSHANGUVE PLAZA",
+      "region": "GAU"
+    },
+    {
+      "code": "C-1519",
+      "name": "CLICKS SOUTHDOWNS (PTA)",
+      "region": "GAU"
+    },
+    {
+      "code": "C-1574",
+      "name": "CLICKS THE GROVE (PTA)",
+      "region": "GAU"
+    },
+    {
+      "code": "C-383",
+      "name": "CLICKS WAVERLY PLAZA (PTA)",
+      "region": "GAU"
+    },
+    {
+      "code": "C-520",
+      "name": "CLICKS WONDERPARK (PTA)",
+      "region": "GAU"
+    },
+    {
+      "code": "C-264",
+      "name": "CLICKS WOODLANDS BOULEVARD",
+      "region": "GAU"
+    },
+    {
+      "code": "S194",
+      "name": "DIS-CHEM ATTERBURY VALUE MART",
+      "region": "GAU"
+    },
+    {
+      "code": "S109",
+      "name": "DIS-CHEM BROOKLYN MALL",
+      "region": "GAU"
+    },
+    {
+      "code": "S131",
+      "name": "DIS-CHEM CASTLE GATE",
+      "region": "GAU"
+    },
+    {
+      "code": "S100",
+      "name": "DIS-CHEM CENTURION",
+      "region": "GAU"
+    },
+    {
+      "code": "S104",
+      "name": "DIS-CHEM HAZELDEAN",
+      "region": "GAU"
+    },
+    {
+      "code": "S121",
+      "name": "DIS-CHEM IRENE LINK",
+      "region": "GAU"
+    },
+    {
+      "code": "S116",
+      "name": "DIS-CHEM JEAN AVENUE",
+      "region": "GAU"
+    },
+    {
+      "code": "S169",
+      "name": "DIS-CHEM LINTONS CORNER",
+      "region": "GAU"
+    },
+    {
+      "code": "S123",
+      "name": "DIS-CHEM LOFTUS PARK",
+      "region": "GAU"
+    },
+    {
+      "code": "S127",
+      "name": "DIS-CHEM LYNWOOD LANE",
+      "region": "GAU"
+    },
+    {
+      "code": "S101",
+      "name": "DIS-CHEM LYNWOOD ROAD",
+      "region": "GAU"
+    },
+    {
+      "code": "S120",
+      "name": "DIS-CHEM MALL @ 55",
+      "region": "GAU"
+    },
+    {
+      "code": "S117",
+      "name": "DIS-CHEM MENLYN MALL",
+      "region": "GAU"
+    },
+    {
+      "code": "S103",
+      "name": "DIS-CHEM MONTANA NORTH",
+      "region": "GAU"
+    },
+    {
+      "code": "S102",
+      "name": "DIS-CHEM OLYMPUS",
+      "region": "GAU"
+    },
+    {
+      "code": "S105",
+      "name": "DIS-CHEM RASLOUW",
+      "region": "GAU"
+    },
+    {
+      "code": "S122",
+      "name": "DIS-CHEM THE CLUB",
+      "region": "GAU"
+    },
+    {
+      "code": "S106",
+      "name": "DIS-CHEM WONDERBOOM",
+      "region": "GAU"
+    },
+    {
+      "code": "S115",
+      "name": "DIS-CHEM WONDERPARK",
+      "region": "GAU"
+    },
+    {
+      "code": "S110",
+      "name": "DIS-CHEM WOODLANDS",
+      "region": "GAU"
+    },
+    {
+      "code": "ISOJ557",
+      "name": "ISER NEW WORLD MENLYN",
+      "region": "GAU"
+    },
+    {
+      "code": "M09",
+      "name": "MAKRO CENTURION",
+      "region": "GAU"
+    },
+    {
+      "code": "M17",
+      "name": "MAKRO SILVERLAKES",
+      "region": "GAU"
+    },
+    {
+      "code": "M16",
+      "name": "MAKRO WONDERBOOM",
+      "region": "GAU"
+    },
+    {
+      "code": "OFF-JK",
+      "name": "Off Diary Call",
+      "region": "Gauteng"
+    },
+    {
+      "code": "A005",
+      "name": "BABY CITY FOURWAYS",
+      "region": "GAU"
+    },
+    {
+      "code": "A003",
+      "name": "BABY CITY HEATHWAY",
+      "region": "GAU"
+    },
+    {
+      "code": "A006",
+      "name": "BABY CITY NORTHGATE",
+      "region": "GAU"
+    },
+    {
+      "code": "A012",
+      "name": "BABY CITY WEST RAND",
+      "region": "GAU"
+    },
+    {
+      "code": "CH-58134",
+      "name": "CHECKERS CC ALLENSNEK",
+      "region": "GAU"
+    },
+    {
+      "code": "CH-39249",
+      "name": "CHECKERS CC BRYAN PARK",
+      "region": "GAU"
+    },
+    {
+      "code": "CH-1941",
+      "name": "CHECKERS CC BRYANSTON",
+      "region": "GAU"
+    },
+    {
+      "code": "CH-48296",
+      "name": "CHECKERS CC COLUMBINE SQUARE",
+      "region": "GAU"
+    },
+    {
+      "code": "CH-36144",
+      "name": "CHECKERS CC CRADLESTONE",
+      "region": "GAU"
+    },
+    {
+      "code": "CH-45028",
+      "name": "CHECKERS CC EMFULENI",
+      "region": "GAU"
+    },
+    {
+      "code": "CH-85371",
+      "name": "CHECKERS CC FERNDALE",
+      "region": "GAU"
+    },
+    {
+      "code": "CH-2515",
+      "name": "CHECKERS CC GLENVISTA",
+      "region": "GAU"
+    },
+    {
+      "code": "CH-30376",
+      "name": "CHECKERS CC NICOLWAY",
+      "region": "GAU"
+    },
+    {
+      "code": "CH-40248",
+      "name": "CHECKERS CC NORTHGATE",
+      "region": "GAU"
+    },
+    {
+      "code": "CH-38227",
+      "name": "CHECKERS CC PINESLOPES",
+      "region": "GAU"
+    },
+    {
+      "code": "CH-55047",
+      "name": "CHECKERS CC RIVERWALK",
+      "region": "GAU"
+    },
+    {
+      "code": "CH-7581",
+      "name": "CHECKERS CO CRESTA",
+      "region": "GAU"
+    },
+    {
+      "code": "CH-85274",
+      "name": "CHECKERS CX THE GLEN",
+      "region": "GAU"
+    },
+    {
+      "code": "CH-1925",
+      "name": "CHECKERS HYPER CH ARCON PARK HYPER",
+      "region": "GAU"
+    },
+    {
+      "code": "CH-7311",
+      "name": "CHECKERS HYPER CH FOURWAYS HYPER",
+      "region": "GAU"
+    },
+    {
+      "code": "CH-7620",
+      "name": "CHECKERS HYPER CH ROODEPOORT HYPER",
+      "region": "GAU"
+    },
+    {
+      "code": "CH-7646",
+      "name": "CHECKERS HYPER CH WESTGATE HYPER",
+      "region": "GAU"
+    },
+    {
+      "code": "C-2144",
+      "name": "CLICKS 14TH AVENUE DISTRICT",
+      "region": "GAU"
+    },
+    {
+      "code": "C-1518",
+      "name": "CLICKS BEL AIR MALL",
+      "region": "GAU"
+    },
+    {
+      "code": "C-2043",
+      "name": "CLICKS BLUEBERRY SQUARE",
+      "region": "GAU"
+    },
+    {
+      "code": "C-524",
+      "name": "CLICKS BROADACRES (JHB)",
+      "region": "GAU"
+    },
+    {
+      "code": "C-1564",
+      "name": "CLICKS BRYANSTON (JHB)",
+      "region": "GAU"
+    },
+    {
+      "code": "C-256",
+      "name": "CLICKS CLEARWATER",
+      "region": "GAU"
+    },
+    {
+      "code": "C-175",
+      "name": "CLICKS COLUMBINE SQUARE",
+      "region": "GAU"
+    },
+    {
+      "code": "C-1573",
+      "name": "CLICKS COMARO VIEW (JHB)",
+      "region": "GAU"
+    },
+    {
+      "code": "C-1706",
+      "name": "CLICKS CRADLESTONE MALL (JHB)",
+      "region": "GAU"
+    },
+    {
+      "code": "C-1754",
+      "name": "CLICKS DAINFERN SQUARE (JHB)",
+      "region": "GAU"
+    },
+    {
+      "code": "C-1676",
+      "name": "CLICKS DIEPKLOOF (SOWETO) JHB",
+      "region": "GAU"
+    },
+    {
+      "code": "C-1857",
+      "name": "CLICKS DOBSONVILLE (JHB)",
+      "region": "GAU"
+    },
+    {
+      "code": "C-519",
+      "name": "CLICKS DOUGLASDALE (JHB)",
+      "region": "GAU"
+    },
+    {
+      "code": "C-1952",
+      "name": "CLICKS FAIRLANDS WALK",
+      "region": "GAU"
+    },
+    {
+      "code": "C-435",
+      "name": "CLICKS FEATHERBROOKE",
+      "region": "GAU"
+    },
+    {
+      "code": "C-315",
+      "name": "CLICKS FLORA CENTRE (JHB)",
+      "region": "GAU"
+    },
+    {
+      "code": "C-1572",
+      "name": "CLICKS FOURWAYS CROSSING (JHB)",
+      "region": "GAU"
+    },
+    {
+      "code": "C-368",
+      "name": "CLICKS FOURWAYS MALL (JHB)",
+      "region": "GAU"
+    },
+    {
+      "code": "C-268",
+      "name": "CLICKS FOURWAYS PHARMACY",
+      "region": "GAU"
+    },
+    {
+      "code": "C-2070",
+      "name": "CLICKS GOLDMAN CROSSING",
+      "region": "GAU"
+    },
+    {
+      "code": "C-1517",
+      "name": "CLICKS JABULANI",
+      "region": "GAU"
+    },
+    {
+      "code": "C-313",
+      "name": "CLICKS LONEHILL (JHB)",
+      "region": "GAU"
+    },
+    {
+      "code": "C-1760",
+      "name": "CLICKS MALL OF THE SOUTH (MYRTN)",
+      "region": "GAU"
+    },
+    {
+      "code": "C-533",
+      "name": "CLICKS MOUNTAIN VIEW (JHB)",
+      "region": "GAU"
+    },
+    {
+      "code": "C-2033",
+      "name": "CLICKS NICOLWAY SHOPPING CENTRE",
+      "region": "GAU"
+    },
+    {
+      "code": "C-1907",
+      "name": "CLICKS NORTHCLIFF SQUARE(JHB)",
+      "region": "GAU"
+    },
+    {
+      "code": "C-369",
+      "name": "CLICKS NORTHGATE (JHB)",
+      "region": "GAU"
+    },
+    {
+      "code": "C-516",
+      "name": "CLICKS OLIVEDALE (JHB)",
+      "region": "GAU"
+    },
+    {
+      "code": "C-318",
+      "name": "CLICKS RIVER SQUARE (VRENGNG)",
+      "region": "GAU"
+    },
+    {
+      "code": "C-2346",
+      "name": "CLICKS RIVERSTONE MALL",
+      "region": "GAU"
+    },
+    {
+      "code": "C-2822",
+      "name": "CLICKS SOPHIATOWN",
+      "region": "GAU"
+    },
+    {
+      "code": "C-431",
+      "name": "CLICKS SOUTHDALE (JHB)",
+      "region": "GAU"
+    },
+    {
+      "code": "C-348",
+      "name": "CLICKS SOUTHGATE (JHB)",
+      "region": "GAU"
+    },
+    {
+      "code": "C-392",
+      "name": "CLICKS THE GLEN (JHB)",
+      "region": "GAU"
+    },
+    {
+      "code": "C-532",
+      "name": "CLICKS TOWN SQUARE (JHB)",
+      "region": "GAU"
+    },
+    {
+      "code": "C-399",
+      "name": "CLICKS VAAL MALL (VDBP) PLUS",
+      "region": "GAU"
+    },
+    {
+      "code": "C-331",
+      "name": "CLICKS WESTGATE (JHB)",
+      "region": "GAU"
+    },
+    {
+      "code": "S135",
+      "name": "DIS-CHEM BRYANPARK",
+      "region": "GAU"
+    },
+    {
+      "code": "S094",
+      "name": "DIS-CHEM CHARTWELL CORNER",
+      "region": "GAU"
+    },
+    {
+      "code": "S032",
+      "name": "DIS-CHEM CLEARWATER MALL",
+      "region": "GAU"
+    },
+    {
+      "code": "S044",
+      "name": "DIS-CHEM CRADLESTONE",
+      "region": "GAU"
+    },
+    {
+      "code": "S004",
+      "name": "DIS-CHEM CRESTA",
+      "region": "GAU"
+    },
+    {
+      "code": "S052",
+      "name": "DIS-CHEM DAINFERN SQUARE",
+      "region": "GAU"
+    },
+    {
+      "code": "S722",
+      "name": "DIS-CHEM FOURWAYS CROSSING",
+      "region": "GAU"
+    },
+    {
+      "code": "S006",
+      "name": "DIS-CHEM FOURWAYS MALL",
+      "region": "GAU"
+    },
+    {
+      "code": "S033",
+      "name": "DIS-CHEM KRUGERSDORP",
+      "region": "GAU"
+    },
+    {
+      "code": "S053",
+      "name": "DIS-CHEM MALL OF THE SOUTH",
+      "region": "GAU"
+    },
+    {
+      "code": "S007",
+      "name": "DIS-CHEM MONDEOR",
+      "region": "GAU"
+    },
+    {
+      "code": "S039",
+      "name": "DIS-CHEM NICOLWAY",
+      "region": "GAU"
+    },
+    {
+      "code": "S008",
+      "name": "DIS-CHEM NORTHGATE",
+      "region": "GAU"
+    },
+    {
+      "code": "S011",
+      "name": "DIS-CHEM RANDRIDGE",
+      "region": "GAU"
+    },
+    {
+      "code": "S186",
+      "name": "DIS-CHEM RIVERSTONE MALL",
+      "region": "GAU"
+    },
+    {
+      "code": "S012",
+      "name": "DIS-CHEM ROODEPOORT",
+      "region": "GAU"
+    },
+    {
+      "code": "S043",
+      "name": "DIS-CHEM SOUTHGATE",
+      "region": "GAU"
+    },
+    {
+      "code": "S027",
+      "name": "DIS-CHEM STRUBENS VALLEY",
+      "region": "GAU"
+    },
+    {
+      "code": "S030",
+      "name": "DIS-CHEM THE GLEN",
+      "region": "GAU"
+    },
+    {
+      "code": "S035",
+      "name": "DIS-CHEM THREE RIVERS",
+      "region": "GAU"
+    },
+    {
+      "code": "S028",
+      "name": "DIS-CHEM VAAL MALL",
+      "region": "GAU"
+    },
+    {
+      "code": "S064",
+      "name": "DIS-CHEM VALLEY VIEW",
+      "region": "GAU"
+    },
+    {
+      "code": "S034",
+      "name": "DIS-CHEM VERDI",
+      "region": "GAU"
+    },
+    {
+      "code": "S038",
+      "name": "DIS-CHEM VICTORY PARK",
+      "region": "GAU"
+    },
+    {
+      "code": "S040",
+      "name": "DIS-CHEM WESTGATE",
+      "region": "GAU"
+    },
+    {
+      "code": "M04",
+      "name": "MAKRO CROWN MINES",
+      "region": "GAU"
+    },
+    {
+      "code": "M27",
+      "name": "MAKRO RIVERSANDS",
+      "region": "GAU"
+    },
+    {
+      "code": "M15W",
+      "name": "MAKRO STRUBENS VALLEY WEB STORE",
+      "region": "GAU"
+    },
+    {
+      "code": "M18",
+      "name": "MAKRO VAAL",
+      "region": "GAU"
+    },
+    {
+      "code": "CH-71455",
+      "name": "MEDIRITE MRP OLIVEDALE",
+      "region": "GAU"
+    },
+    {
+      "code": "CH-79885",
+      "name": "MEDIRITE PLUS MRP CRESTA CROSSING",
+      "region": "GAU"
+    },
+    {
+      "code": "OFF-MM",
+      "name": "Off Diary Call",
+      "region": "Gauteng"
+    },
+    {
+      "code": "A019",
+      "name": "BABY CITY GREENSTONE",
+      "region": "GAU"
+    },
+    {
+      "code": "A007",
+      "name": "BABY CITY KENSINGTON",
+      "region": "GAU"
+    },
+    {
+      "code": "A103",
+      "name": "BABY CITY MALL@55",
+      "region": "GAU"
+    },
+    {
+      "code": "A021",
+      "name": "BABY CITY SPRINGS MALL",
+      "region": "GAU"
+    },
+    {
+      "code": "CH-55089",
+      "name": "CHECKERS CC BARTLETT",
+      "region": "GAU"
+    },
+    {
+      "code": "CH-58469",
+      "name": "CHECKERS CC EAST RAND RETAIL",
+      "region": "GAU"
+    },
+    {
+      "code": "CH-165068",
+      "name": "CHECKERS CC GLEN BALAD",
+      "region": "GAU"
+    },
+    {
+      "code": "CH-48822",
+      "name": "CHECKERS CC GLEN MARAIS",
+      "region": "GAU"
+    },
+    {
+      "code": "CH-45010",
+      "name": "CHECKERS CC GREEN VALLEY",
+      "region": "GAU"
+    },
+    {
+      "code": "CH-85290",
+      "name": "CHECKERS CC GREENSTONE MALL N",
+      "region": "GAU"
+    },
+    {
+      "code": "CH-165131",
+      "name": "CHECKERS CC KEMPTON GATE",
+      "region": "GAU"
+    },
+    {
+      "code": "CH-686",
+      "name": "CHECKERS CC NORKEM PARK",
+      "region": "GAU"
+    },
+    {
+      "code": "CH-6111",
+      "name": "CHECKERS CC NORTHMEAD SQUARE",
+      "region": "GAU"
+    },
+    {
+      "code": "CH-38277",
+      "name": "CHECKERS CC SPRINGS MALL",
+      "region": "GAU"
+    },
+    {
+      "code": "CH-81173",
+      "name": "CHECKERS CX FLAMINGO",
+      "region": "GAU"
+    },
+    {
+      "code": "CH-85444",
+      "name": "CHECKERS CX VILLAGE VIEW",
+      "region": "GAU"
+    },
+    {
+      "code": "CH-7303",
+      "name": "CHECKERS HYPER CH EASTGATE HYPER",
+      "region": "GAU"
+    },
+    {
+      "code": "CH-7735",
+      "name": "CHECKERS HYPER CH EDENVALE HYPER",
+      "region": "GAU"
+    },
+    {
+      "code": "CH-7654",
+      "name": "CHECKERS HYPER CH KEMPTON PARK HYPE",
+      "region": "GAU"
+    },
+    {
+      "code": "C-321",
+      "name": "CLICKS ATLASVILLE (JHB)",
+      "region": "GAU"
+    },
+    {
+      "code": "C-329",
+      "name": "CLICKS BEDFORD SQUARE (JHB)",
+      "region": "GAU"
+    },
+    {
+      "code": "C-1668",
+      "name": "CLICKS BIRCHLEIGH NORTH (KMPTN)",
+      "region": "GAU"
+    },
+    {
+      "code": "C-198",
+      "name": "CLICKS CARNIVAL MALL",
+      "region": "GAU"
+    },
+    {
+      "code": "C-359",
+      "name": "CLICKS EAST RAND MALL (BXBURG)",
+      "region": "GAU"
+    },
+    {
+      "code": "C-308",
+      "name": "CLICKS EASTGATE (JHB)",
+      "region": "GAU"
+    },
+    {
+      "code": "C-265",
+      "name": "CLICKS EDENMEADOW (JHB)",
+      "region": "GAU"
+    },
+    {
+      "code": "C-2803",
+      "name": "CLICKS EDENVALE (JHB)",
+      "region": "GAU"
+    },
+    {
+      "code": "C-1576",
+      "name": "CLICKS ELRIDGE SQUARE (BXBRG)",
+      "region": "GAU"
+    },
+    {
+      "code": "C-1636",
+      "name": "CLICKS FARRARMERE (JHB)",
+      "region": "GAU"
+    },
+    {
+      "code": "C-2412",
+      "name": "CLICKS GARDEN WALK",
+      "region": "GAU"
+    },
+    {
+      "code": "C-2223",
+      "name": "CLICKS GLEN MARIAS",
+      "region": "GAU"
+    },
+    {
+      "code": "C-1525",
+      "name": "CLICKS GREENSTONE MALL (JHB)",
+      "region": "GAU"
+    },
+    {
+      "code": "C-2030",
+      "name": "CLICKS HARVEST PLACE",
+      "region": "GAU"
+    },
+    {
+      "code": "C-429",
+      "name": "CLICKS KARAGLEN (JHB)",
+      "region": "GAU"
+    },
+    {
+      "code": "C-2224",
+      "name": "CLICKS KEMPTON GATE",
+      "region": "GAU"
+    },
+    {
+      "code": "C-301",
+      "name": "CLICKS LAKESIDE MALL (BENONI)",
+      "region": "GAU"
+    },
+    {
+      "code": "C-1999",
+      "name": "CLICKS MALL OF TEMBISA",
+      "region": "GAU"
+    },
+    {
+      "code": "C-1715",
+      "name": "CLICKS MAYFIELD SQUARE (JHB)",
+      "region": "GAU"
+    },
+    {
+      "code": "C-537",
+      "name": "CLICKS NORKEM MALL (KMPTNPARK)",
+      "region": "GAU"
+    },
+    {
+      "code": "C-1561",
+      "name": "CLICKS NORTHMEAD SQUARE (BEN)",
+      "region": "GAU"
+    },
+    {
+      "code": "C-1814",
+      "name": "CLICKS OAKFIELDS (BENONI)",
+      "region": "GAU"
+    },
+    {
+      "code": "C-2115",
+      "name": "CLICKS PALM SPRINGS",
+      "region": "GAU"
+    },
+    {
+      "code": "C-1900",
+      "name": "CLICKS PARK MEADOWS",
+      "region": "GAU"
+    },
+    {
+      "code": "C-1514",
+      "name": "CLICKS PARKRAND PLUS",
+      "region": "GAU"
+    },
+    {
+      "code": "C-1926",
+      "name": "CLICKS PRIMROSE SQUARE(GRMSTN)",
+      "region": "GAU"
+    },
+    {
+      "code": "C-2120",
+      "name": "CLICKS RAVENSWOOD(BKBURG)",
+      "region": "GAU"
+    },
+    {
+      "code": "C-1807",
+      "name": "CLICKS SPRINGS MALL",
+      "region": "GAU"
+    },
+    {
+      "code": "C-1597",
+      "name": "CLICKS TEMBISA MALL (KMPTN)",
+      "region": "GAU"
+    },
+    {
+      "code": "C-1552",
+      "name": "CLICKS TSAKANE (SPRINGS)",
+      "region": "GAU"
+    },
+    {
+      "code": "C-434",
+      "name": "CLICKS WOODBRIDGE MALL (KMPTN)",
+      "region": "GAU"
+    },
+    {
+      "code": "S049",
+      "name": "DIS-CHEM BEDFORD SQUARE",
+      "region": "GAU"
+    },
+    {
+      "code": "S002",
+      "name": "DIS-CHEM BOKSBURG NORTH",
+      "region": "GAU"
+    },
+    {
+      "code": "S036",
+      "name": "DIS-CHEM CARNIVAL MALL",
+      "region": "GAU"
+    },
+    {
+      "code": "S005",
+      "name": "DIS-CHEM EAST POINT",
+      "region": "GAU"
+    },
+    {
+      "code": "S723",
+      "name": "DIS-CHEM EAST RAND PHARMACY",
+      "region": "GAU"
+    },
+    {
+      "code": "S075",
+      "name": "DIS-CHEM EASTGATE",
+      "region": "GAU"
+    },
+    {
+      "code": "S025",
+      "name": "DIS-CHEM FARRAMERE",
+      "region": "GAU"
+    },
+    {
+      "code": "S026",
+      "name": "DIS-CHEM GREENSTONE MALL",
+      "region": "GAU"
+    },
+    {
+      "code": "S060",
+      "name": "DIS-CHEM GREENVALLEY",
+      "region": "GAU"
+    },
+    {
+      "code": "S079",
+      "name": "DIS-CHEM LAKESIDE MALL",
+      "region": "GAU"
+    },
+    {
+      "code": "S089",
+      "name": "DIS-CHEM LINKSFIELD NEIGHBOURHOOD",
+      "region": "GAU"
+    },
+    {
+      "code": "S065",
+      "name": "DIS-CHEM MEADOWDALE MALL",
+      "region": "GAU"
+    },
+    {
+      "code": "S010",
+      "name": "DIS-CHEM PARKMEADOWS",
+      "region": "GAU"
+    },
+    {
+      "code": "S063",
+      "name": "DIS-CHEM SPRINGS MALL",
+      "region": "GAU"
+    },
+    {
+      "code": "M26W",
+      "name": "MAKRO CARNIVAL WEB STORE",
+      "region": "GAU"
+    },
+    {
+      "code": "M01",
+      "name": "MAKRO GERMISTON",
+      "region": "GAU"
+    },
+    {
+      "code": "CH-162531",
+      "name": "MEDIRITE PLUS MRP PARKLANDS",
+      "region": "GAU"
+    },
+    {
+      "code": "OFF-NH",
+      "name": "Off Diary Call",
+      "region": "KwaZulu-Natal"
+    },
+    {
+      "code": "A401",
+      "name": "BABY CITY PAVILLION",
+      "region": "KZN"
+    },
+    {
+      "code": "CH-34744",
+      "name": "CHECKERS CC BALLITO JUNCTION",
+      "region": "KZN"
+    },
+    {
+      "code": "CH-2175",
+      "name": "CHECKERS CC WESTVILLE",
+      "region": "KZN"
+    },
+    {
+      "code": "CH-6789",
+      "name": "CHECKERS CO DURBAN NORTH",
+      "region": "KZN"
+    },
+    {
+      "code": "CH-57324",
+      "name": "CHECKERS CX OCEANS MALL",
+      "region": "KZN"
+    },
+    {
+      "code": "CH-40206",
+      "name": "CHECKERS HYPER CH GATEWAY HYPER",
+      "region": "KZN"
+    },
+    {
+      "code": "CH-6810",
+      "name": "CHECKERS HYPER CH PAVILLION HYPER",
+      "region": "KZN"
+    },
+    {
+      "code": "C-1825",
+      "name": "CLICKS BALLITO JUNCTION",
+      "region": "KZN"
+    },
+    {
+      "code": "C-1822",
+      "name": "CLICKS CORNUBIA (MT EDGECOMBE)",
+      "region": "KZN"
+    },
+    {
+      "code": "C-243",
+      "name": "CLICKS GATEWAY (UMHLANGA)",
+      "region": "KZN"
+    },
+    {
+      "code": "C-1511",
+      "name": "CLICKS KENSINGTON SQUARE PLUS",
+      "region": "KZN"
+    },
+    {
+      "code": "C-1861",
+      "name": "CLICKS KWA DAKUZA MALL",
+      "region": "KZN"
+    },
+    {
+      "code": "C-215",
+      "name": "CLICKS LA LUCIA (DBN)",
+      "region": "KZN"
+    },
+    {
+      "code": "C-1845",
+      "name": "CLICKS MANDINI",
+      "region": "KZN"
+    },
+    {
+      "code": "C-244",
+      "name": "CLICKS MEERENSEE PHARMACY (R/BAY)",
+      "region": "KZN"
+    },
+    {
+      "code": "C-1876",
+      "name": "CLICKS NEW SALT ROCK",
+      "region": "KZN"
+    },
+    {
+      "code": "C-2168",
+      "name": "CLICKS OCEANS",
+      "region": "KZN"
+    },
+    {
+      "code": "C-2217",
+      "name": "CLICKS OTHONGATHI(KZN)",
+      "region": "KZN"
+    },
+    {
+      "code": "C-1680",
+      "name": "CLICKS PHOENIX PLAZA (DBN)",
+      "region": "KZN"
+    },
+    {
+      "code": "C-227",
+      "name": "CLICKS RICHARDS BAY",
+      "region": "KZN"
+    },
+    {
+      "code": "C-1647",
+      "name": "CLICKS STANGER",
+      "region": "KZN"
+    },
+    {
+      "code": "C-1673",
+      "name": "CLICKS THE CRESCENT (UMHLANGA)",
+      "region": "KZN"
+    },
+    {
+      "code": "C-2015",
+      "name": "CLICKS THE ODYSSEY-BALLITO",
+      "region": "KZN"
+    },
+    {
+      "code": "C-1657",
+      "name": "CLICKS UMHLALI (TONGAAT)",
+      "region": "KZN"
+    },
+    {
+      "code": "C-2010",
+      "name": "CLICKS VERULAM",
+      "region": "KZN"
+    },
+    {
+      "code": "C-208",
+      "name": "CLICKS WESTVILLE (DBN)",
+      "region": "KZN"
+    },
+    {
+      "code": "C-1655",
+      "name": "CLICKS WESTVILLE VILLAGE (DBN)",
+      "region": "KZN"
+    },
+    {
+      "code": "C-1662",
+      "name": "CLICKS WESTWOOD (DBN)",
+      "region": "KZN"
+    },
+    {
+      "code": "C-203",
+      "name": "CLICKS WINDERMERE (DBN)",
+      "region": "KZN"
+    },
+    {
+      "code": "CH-16790",
+      "name": "CLM BALLITO JUNCTION-16790",
+      "region": "KZN"
+    },
+    {
+      "code": "S404",
+      "name": "DIS-CHEM BALLITO",
+      "region": "KZN"
+    },
+    {
+      "code": "S415",
+      "name": "DIS-CHEM BALLITO LIFESTYLE",
+      "region": "KZN"
+    },
+    {
+      "code": "S416",
+      "name": "DIS-CHEM CORNUBIA",
+      "region": "KZN"
+    },
+    {
+      "code": "S417",
+      "name": "DIS-CHEM GATEWAY",
+      "region": "KZN"
+    },
+    {
+      "code": "S427",
+      "name": "DIS-CHEM NORTHLANDS",
+      "region": "KZN"
+    },
+    {
+      "code": "S424",
+      "name": "DIS-CHEM PEARLS",
+      "region": "KZN"
+    },
+    {
+      "code": "S409",
+      "name": "DIS-CHEM THE PAVILION",
+      "region": "KZN"
+    },
+    {
+      "code": "M28",
+      "name": "MAKRO CORNUBIA",
+      "region": "KZN"
+    },
+    {
+      "code": "M07W",
+      "name": "MAKRO SPRINGFIELD WEB STORE",
+      "region": "KZN"
+    },
+    {
+      "code": "CH-79615",
+      "name": "MEDIRITE MRP OCEANS MALL",
+      "region": "KZN"
+    },
+    {
+      "code": "OFF-NS",
+      "name": "Off Diary Call",
+      "region": "Gauteng"
+    },
+    {
+      "code": "A001",
+      "name": "BABY CITY BENMORE",
+      "region": "GAU"
+    },
+    {
+      "code": "A017",
+      "name": "BABY CITY CARLSWALD",
+      "region": "GAU"
+    },
+    {
+      "code": "A011",
+      "name": "BABY CITY CRAIGHALL",
+      "region": "GAU"
+    },
+    {
+      "code": "A009",
+      "name": "BABY CITY WOODMEAD",
+      "region": "GAU"
+    },
+    {
+      "code": "CH-10100",
+      "name": "CHECKERS CC BARLOW PARK",
+      "region": "GAU"
+    },
+    {
+      "code": "CH-85266",
+      "name": "CHECKERS CC FAIRLANDS",
+      "region": "GAU"
+    },
+    {
+      "code": "CH-58150",
+      "name": "CHECKERS CC KYALAMI",
+      "region": "GAU"
+    },
+    {
+      "code": "CH-83751",
+      "name": "CHECKERS CC MALL @ 55",
+      "region": "GAU"
+    },
+    {
+      "code": "CH-38243",
+      "name": "CHECKERS CC RIVONIA VILLAGE",
+      "region": "GAU"
+    },
+    {
+      "code": "CH-81563",
+      "name": "CHECKERS CC THE REEF",
+      "region": "GAU"
+    },
+    {
+      "code": "CH-38722",
+      "name": "CHECKERS CC WATERFALL CORNER",
+      "region": "GAU"
+    },
+    {
+      "code": "CH-79461",
+      "name": "CHECKERS CX DESIGN QUARTER",
+      "region": "GAU"
+    },
+    {
+      "code": "CH-161030",
+      "name": "CHECKERS CX NEW MARKET LIFEST",
+      "region": "GAU"
+    },
+    {
+      "code": "CH-83793",
+      "name": "CHECKERS CX ROSEBANK MALL",
+      "region": "GAU"
+    },
+    {
+      "code": "CH-7329",
+      "name": "CHECKERS HYPER CH HYPER SANDTON",
+      "region": "GAU"
+    },
+    {
+      "code": "CH-87276",
+      "name": "CHECKERS HYPER CH MALL OF AFRICA",
+      "region": "GAU"
+    },
+    {
+      "code": "C-1770",
+      "name": "CLICKS BLUE HILLS (JHB)",
+      "region": "GAU"
+    },
+    {
+      "code": "C-1513",
+      "name": "CLICKS BRACKENHURST",
+      "region": "GAU"
+    },
+    {
+      "code": "C-1604",
+      "name": "CLICKS CHRIS HANI CROSSING",
+      "region": "GAU"
+    },
+    {
+      "code": "C-545",
+      "name": "CLICKS ELSPARK (GERMISTON)",
+      "region": "GAU"
+    },
+    {
+      "code": "C-2826",
+      "name": "CLICKS GERMISTON",
+      "region": "GAU"
+    },
+    {
+      "code": "C-398",
+      "name": "CLICKS HYDE PARK (JHB)",
+      "region": "GAU"
+    },
+    {
+      "code": "C-303",
+      "name": "CLICKS KILLARNEY (JHB)",
+      "region": "GAU"
+    },
+    {
+      "code": "C-1593",
+      "name": "CLICKS LEMON TREE (ALBERTON)",
+      "region": "GAU"
+    },
+    {
+      "code": "C-1816",
+      "name": "CLICKS MALL OF AFRICA (JHB)",
+      "region": "GAU"
+    },
+    {
+      "code": "C-361",
+      "name": "CLICKS MIDRAND (JHB/PTA)",
+      "region": "GAU"
+    },
+    {
+      "code": "C-2042",
+      "name": "CLICKS POLOFIELDS CROSSING",
+      "region": "GAU"
+    },
+    {
+      "code": "C-1736",
+      "name": "CLICKS ROSEBANK MALL",
+      "region": "GAU"
+    },
+    {
+      "code": "C-382",
+      "name": "CLICKS SANDTON CITY (JHB)",
+      "region": "GAU"
+    },
+    {
+      "code": "C-2187",
+      "name": "CLICKS WOODMEAD RETAIL PARK",
+      "region": "GAU"
+    },
+    {
+      "code": "S001",
+      "name": "DIS-CHEM BENMORE GARDENS",
+      "region": "GAU"
+    },
+    {
+      "code": "S024",
+      "name": "DIS-CHEM CARLSWALD",
+      "region": "GAU"
+    },
+    {
+      "code": "S097",
+      "name": "DIS-CHEM DOUGLASDALE",
+      "region": "GAU"
+    },
+    {
+      "code": "S084",
+      "name": "DIS-CHEM KYALAMI CORNER",
+      "region": "GAU"
+    },
+    {
+      "code": "S055",
+      "name": "DIS-CHEM MALL OF AFRICA",
+      "region": "GAU"
+    },
+    {
+      "code": "S068",
+      "name": "DIS-CHEM MORNINGSIDE",
+      "region": "GAU"
+    },
+    {
+      "code": "S058",
+      "name": "DIS-CHEM NEWMARKET",
+      "region": "GAU"
+    },
+    {
+      "code": "S046",
+      "name": "DIS-CHEM ROSEBANK MALL",
+      "region": "GAU"
+    },
+    {
+      "code": "S070",
+      "name": "DIS-CHEM SANDTON CITY",
+      "region": "GAU"
+    },
+    {
+      "code": "S048",
+      "name": "DIS-CHEM SUNNINGHILL",
+      "region": "GAU"
+    },
+    {
+      "code": "S029",
+      "name": "DIS-CHEM WOODMEAD",
+      "region": "GAU"
+    },
+    {
+      "code": "M10",
+      "name": "MAKRO WOODMEAD",
+      "region": "GAU"
+    },
+    {
+      "code": "OFF-MZM",
+      "name": "Off Diary Call",
+      "region": "Gauteng"
+    },
+    {
+      "code": "BRU-001",
+      "name": "BABIES R US CAPE GATE",
+      "region": "WC",
+      "source": "2026 call diary"
+    },
+    {
+      "code": "BRU-002",
+      "name": "BABIES R US SOMERSET",
+      "region": "WC",
+      "source": "2026 call diary"
+    },
+    {
+      "code": "BRU-003",
+      "name": "BABIES R US STORES TO BE ADDED",
+      "region": "WC",
+      "source": "2026 call diary"
+    },
+    {
+      "code": "BRU-004",
+      "name": "BABIES R US TYGERVALLEY",
+      "region": "WC",
+      "source": "2026 call diary"
+    },
+    {
+      "code": "DA-001",
+      "name": "BABY CITY BELLVILLE",
+      "region": "WC",
+      "source": "2026 call diary"
+    },
+    {
+      "code": "DA-002",
+      "name": "BABY CITY N1 CITY",
+      "region": "WC",
+      "source": "2026 call diary"
+    },
+    {
+      "code": "DA-003",
+      "name": "CHECKERS DRAKENSTEYN",
+      "region": "WC",
+      "source": "2026 call diary"
+    },
+    {
+      "code": "DA-004",
+      "name": "CHECKERS FX VERGELEGEIN",
+      "region": "WC",
+      "source": "2026 call diary"
+    },
+    {
+      "code": "DA-005",
+      "name": "CHECKERS GANSBAY",
+      "region": "WC",
+      "source": "2026 call diary"
+    },
+    {
+      "code": "DA-006",
+      "name": "CLICKS DRAKENSTEYN",
+      "region": "WC",
+      "source": "2026 call diary"
+    },
+    {
+      "code": "DA-007",
+      "name": "DIS-CHEM N1 CITY",
+      "region": "WC",
+      "source": "2026 call diary"
+    },
+    {
+      "code": "DA-008",
+      "name": "DIS-CHEM TYGERVALLEY",
+      "region": "WC",
+      "source": "2026 call diary"
+    },
+    {
+      "code": "DA-009",
+      "name": "LITTLE ME BRACKENFELL",
+      "region": "WC",
+      "source": "2026 call diary"
+    },
+    {
+      "code": "DA-010",
+      "name": "TAFELBERG BELLVILLE",
+      "region": "WC",
+      "source": "2026 call diary"
+    },
+    {
+      "code": "BRU-005",
+      "name": "BABIES R US - CLEARWATER MALL",
+      "region": "GP",
+      "source": "2026 call diary"
+    },
+    {
+      "code": "BRU-006",
+      "name": "BABIES R US - CRADLESTONE MALL",
+      "region": "GP",
+      "source": "2026 call diary"
+    },
+    {
+      "code": "BRU-007",
+      "name": "BABIES R US - CRESTA MALL",
+      "region": "GP",
+      "source": "2026 call diary"
+    },
+    {
+      "code": "BRU-008",
+      "name": "BABIES R US - FOURWAYS CEDAR ROAD",
+      "region": "GP",
+      "source": "2026 call diary"
+    },
+    {
+      "code": "BRU-009",
+      "name": "BABIES R US - FOURWAYS MALL",
+      "region": "GP",
+      "source": "2026 call diary"
+    },
+    {
+      "code": "BRU-010",
+      "name": "BABIES R US - MALL OF THE SOUTH",
+      "region": "GP",
+      "source": "2026 call diary"
+    },
+    {
+      "code": "BRU-011",
+      "name": "BABIES R US - THE GLEN MALL",
+      "region": "GP",
+      "source": "2026 call diary"
+    },
+    {
+      "code": "BRU-012",
+      "name": "BABIES R US - VAAL MALL",
+      "region": "GP",
+      "source": "2026 call diary"
+    },
+    {
+      "code": "DA-011",
+      "name": "CHARTWELL - BABY CITY",
+      "region": "GP",
+      "source": "2026 call diary"
+    },
+    {
+      "code": "DA-012",
+      "name": "CHECKERS - FAIRLAND WALK",
+      "region": "GP",
+      "source": "2026 call diary"
+    },
+    {
+      "code": "DA-013",
+      "name": "CHECKERS FX - NOORDHEUWIL",
+      "region": "GP",
+      "source": "2026 call diary"
+    },
+    {
+      "code": "DA-014",
+      "name": "CHECKERS HYPER - VANDERBIJLPARK",
+      "region": "GP",
+      "source": "2026 call diary"
+    },
+    {
+      "code": "DA-015",
+      "name": "CHECKERS LITTLE ME - ROODEPOOT 14 AVE",
+      "region": "GP",
+      "source": "2026 call diary"
+    },
+    {
+      "code": "DA-016",
+      "name": "CLICKS - RIVERSIDE BLVD",
+      "region": "GP",
+      "source": "2026 call diary"
+    },
+    {
+      "code": "DA-017",
+      "name": "MEDIRITE - ARCON PARK",
+      "region": "GP",
+      "source": "2026 call diary"
+    },
+    {
+      "code": "DA-018",
+      "name": "MR AMERICA - VEREENIGING",
+      "region": "GP",
+      "source": "2026 call diary"
+    },
+    {
+      "code": "DA-019",
+      "name": "SANDRIDGE - CLICKS",
+      "region": "GP",
+      "source": "2026 call diary"
+    },
+    {
+      "code": "BRU-013",
+      "name": "BABIES R US CAVENDISH",
+      "region": "WC",
+      "source": "2026 call diary"
+    },
+    {
+      "code": "BRU-014",
+      "name": "BABIES R US TABLE BAY MALL",
+      "region": "WC",
+      "source": "2026 call diary"
+    },
+    {
+      "code": "BRU-015",
+      "name": "BABIES R US TOKAI",
+      "region": "WC",
+      "source": "2026 call diary"
+    },
+    {
+      "code": "BRU-016",
+      "name": "BRU CANALWALK",
+      "region": "WC",
+      "source": "2026 call diary"
+    },
+    {
+      "code": "DA-020",
+      "name": "CHECKERS CANALWALK",
+      "region": "WC",
+      "source": "2026 call diary"
+    },
+    {
+      "code": "DA-021",
+      "name": "CHECKERS LITTLE ME DE SWARTLAND",
+      "region": "WC",
+      "source": "2026 call diary"
+    },
+    {
+      "code": "DA-022",
+      "name": "CLICKS BABY CITY",
+      "region": "WC",
+      "source": "2026 call diary"
+    },
+    {
+      "code": "DA-023",
+      "name": "CLICKS LONGSTRET",
+      "region": "WC",
+      "source": "2026 call diary"
+    },
+    {
+      "code": "DA-024",
+      "name": "CLICKS SEAPOINT",
+      "region": "WC",
+      "source": "2026 call diary"
+    },
+    {
+      "code": "DA-025",
+      "name": "DIS-CHEM CAVENDISH",
+      "region": "WC",
+      "source": "2026 call diary"
+    },
+    {
+      "code": "DA-026",
+      "name": "DIS-CHEM CAVENDISH SQUARE",
+      "region": "WC",
+      "source": "2026 call diary"
+    },
+    {
+      "code": "DA-027",
+      "name": "DIS-CHEM TOKAI",
+      "region": "WC",
+      "source": "2026 call diary"
+    },
+    {
+      "code": "DA-028",
+      "name": "DISCHEM BABY CITY SABLE SQUARE",
+      "region": "WC",
+      "source": "2026 call diary"
+    },
+    {
+      "code": "DA-029",
+      "name": "DISCHEM BABY CITY TOKAI",
+      "region": "WC",
+      "source": "2026 call diary"
+    },
+    {
+      "code": "DA-030",
+      "name": "DISCHEM CANALWALK",
+      "region": "WC",
+      "source": "2026 call diary"
+    },
+    {
+      "code": "BRU-017",
+      "name": "BABIES R US - SHELLY BEACH",
+      "region": "KZN",
+      "source": "2026 call diary"
+    },
+    {
+      "code": "BRU-018",
+      "name": "BABIES R US - WATERCREST MALL",
+      "region": "KZN",
+      "source": "2026 call diary"
+    },
+    {
+      "code": "DA-031",
+      "name": "CHECKERS FX SHELLYBEACH",
+      "region": "KZN",
+      "source": "2026 call diary"
+    },
+    {
+      "code": "DA-032",
+      "name": "CHECKERS HYPER MEDIRITE HILLCREST",
+      "region": "KZN",
+      "source": "2026 call diary"
+    },
+    {
+      "code": "DA-033",
+      "name": "CHECKERS HYPER MRP HILLCREST MEDIRITE",
+      "region": "KZN",
+      "source": "2026 call diary"
+    },
+    {
+      "code": "DA-034",
+      "name": "CHECKERS HYPER WESTOWN",
+      "region": "KZN",
+      "source": "2026 call diary"
+    },
+    {
+      "code": "DA-035",
+      "name": "CHECKERS ST JOHNS PINETOWN",
+      "region": "KZN",
+      "source": "2026 call diary"
+    },
+    {
+      "code": "DA-036",
+      "name": "CHECKERS ST JOHNS MEDIRITE PINETOWN",
+      "region": "KZN",
+      "source": "2026 call diary"
+    },
+    {
+      "code": "DA-037",
+      "name": "CLICKS HAYFIEDS",
+      "region": "KZN",
+      "source": "2026 call diary"
+    },
+    {
+      "code": "DA-038",
+      "name": "CLICKS LIBERTY MALL",
+      "region": "KZN",
+      "source": "2026 call diary"
+    },
+    {
+      "code": "DA-039",
+      "name": "CLICKS OVERPORT MALL",
+      "region": "KZN",
+      "source": "2026 call diary"
+    },
+    {
+      "code": "DA-040",
+      "name": "CLICKS PINECREST",
+      "region": "KZN",
+      "source": "2026 call diary"
+    },
+    {
+      "code": "DA-041",
+      "name": "DISCHEM BABY CITY - GALLERIA",
+      "region": "KZN",
+      "source": "2026 call diary"
+    },
+    {
+      "code": "DA-042",
+      "name": "DISCHEM LIBERTY MALL",
+      "region": "KZN",
+      "source": "2026 call diary"
+    },
+    {
+      "code": "BRU-019",
+      "name": "BABIES R US - EAST RAND MALL",
+      "region": "GP",
+      "source": "2026 call diary"
+    },
+    {
+      "code": "BRU-020",
+      "name": "BABIES R US - GREENSTONE",
+      "region": "GP",
+      "source": "2026 call diary"
+    },
+    {
+      "code": "BRU-021",
+      "name": "BABIES R US EAST GATE MALL",
+      "region": "GP",
+      "source": "2026 call diary"
+    },
+    {
+      "code": "BRU-022",
+      "name": "BABIES R US SPRINGS",
+      "region": "GP",
+      "source": "2026 call diary"
+    },
+    {
+      "code": "DA-043",
+      "name": "BABY CITY - PARKMEADOW",
+      "region": "GP",
+      "source": "2026 call diary"
+    },
+    {
+      "code": "DA-044",
+      "name": "BABY CITY- BOKSBURG",
+      "region": "GP",
+      "source": "2026 call diary"
+    },
+    {
+      "code": "DA-045",
+      "name": "CHECKERS FX NEIGHBOURHOOD [83719]",
+      "region": "GP",
+      "source": "2026 call diary"
+    },
+    {
+      "code": "DA-046",
+      "name": "CHECKERS HYPER CARNIVAL MALL",
+      "region": "GP",
+      "source": "2026 call diary"
+    },
+    {
+      "code": "DA-047",
+      "name": "CHECKERS HYPER PARKDENE MALL",
+      "region": "GP",
+      "source": "2026 call diary"
+    },
+    {
+      "code": "DA-048",
+      "name": "CLICKS DAVETON",
+      "region": "GP",
+      "source": "2026 call diary"
+    },
+    {
+      "code": "DA-049",
+      "name": "MASONS",
+      "region": "GP",
+      "source": "2026 call diary"
+    },
+    {
+      "code": "BRU-023",
+      "name": "BABIES R US - UMHLANGA CRESCENT",
+      "region": "KZN",
+      "source": "2026 call diary"
+    },
+    {
+      "code": "BRU-024",
+      "name": "BABIES R US - GATEWAY",
+      "region": "KZN",
+      "source": "2026 call diary"
+    },
+    {
+      "code": "BRU-025",
+      "name": "BABIES R US - PAVILION",
+      "region": "KZN",
+      "source": "2026 call diary"
+    },
+    {
+      "code": "BRU-026",
+      "name": "BABIES R US BOARDWALK",
+      "region": "KZN",
+      "source": "2026 call diary"
+    },
+    {
+      "code": "DA-050",
+      "name": "CHECKERS MOUNT RICHMORE SALT ROCK",
+      "region": "KZN",
+      "source": "2026 call diary"
+    },
+    {
+      "code": "DA-051",
+      "name": "CLICKS GAMECITY",
+      "region": "KZN",
+      "source": "2026 call diary"
+    },
+    {
+      "code": "DA-052",
+      "name": "CLICKS MTEDGECOMBE",
+      "region": "KZN",
+      "source": "2026 call diary"
+    },
+    {
+      "code": "DA-053",
+      "name": "CLICKS PAVILION",
+      "region": "KZN",
+      "source": "2026 call diary"
+    },
+    {
+      "code": "DA-054",
+      "name": "DISCHEM LA LUCIA",
+      "region": "KZN",
+      "source": "2026 call diary"
+    },
+    {
+      "code": "BRU-027",
+      "name": "BABIES R US FOURWAYS",
+      "region": "GP",
+      "source": "2026 call diary"
+    },
+    {
+      "code": "BRU-028",
+      "name": "BABIES R US MALL OF AFRICA",
+      "region": "GP",
+      "source": "2026 call diary"
+    },
+    {
+      "code": "BRU-029",
+      "name": "BABIES R US ROSEBANK MALL",
+      "region": "GP",
+      "source": "2026 call diary"
+    },
+    {
+      "code": "BRU-030",
+      "name": "BABIES R US WOODMEAD",
+      "region": "GP",
+      "source": "2026 call diary"
+    },
+    {
+      "code": "DA-055",
+      "name": "BABY CITY - SANDTON CITY",
+      "region": "GP",
+      "source": "2026 call diary"
+    },
+    {
+      "code": "DA-056",
+      "name": "CHECKERS MELROSE BLUE BIRD",
+      "region": "GP",
+      "source": "2026 call diary"
+    },
+    {
+      "code": "DA-057",
+      "name": "CLICKS KYALAMI CORNER",
+      "region": "GP",
+      "source": "2026 call diary"
+    },
+    {
+      "code": "DA-058",
+      "name": "CLICKS NEW MARKET",
+      "region": "GP",
+      "source": "2026 call diary"
+    },
+    {
+      "code": "DA-059",
+      "name": "DISCHEM GERMISTON",
+      "region": "GP",
+      "source": "2026 call diary"
+    },
+    {
+      "code": "DA-060",
+      "name": "STAX DUNKELD",
+      "region": "GP",
+      "source": "2026 call diary"
+    },
+    {
+      "code": "BRU-031",
+      "name": "BABIES R US ATTERBURY",
+      "region": "GP",
+      "source": "2026 call diary"
+    },
+    {
+      "code": "BRU-032",
+      "name": "BABIES R US CENTURION MALL",
+      "region": "GP",
+      "source": "2026 call diary"
+    },
+    {
+      "code": "BRU-033",
+      "name": "BABIES R US KOLANNADE",
+      "region": "GP",
+      "source": "2026 call diary"
+    },
+    {
+      "code": "BRU-034",
+      "name": "BABIES R US MENLYN",
+      "region": "GP",
+      "source": "2026 call diary"
+    },
+    {
+      "code": "BRU-035",
+      "name": "BABIES R US THE GROVE",
+      "region": "GP",
+      "source": "2026 call diary"
+    },
+    {
+      "code": "BRU-036",
+      "name": "BABIES R US WONDERBOOM",
+      "region": "GP",
+      "source": "2026 call diary"
+    },
+    {
+      "code": "DA-061",
+      "name": "BABY CITY KOLONANADE",
+      "region": "GP",
+      "source": "2026 call diary"
+    },
+    {
+      "code": "DA-062",
+      "name": "BABY CITY MONTANA RETAIL PARK",
+      "region": "GP",
+      "source": "2026 call diary"
+    },
+    {
+      "code": "DA-063",
+      "name": "CHECKERS HYPER KOLLONADE (MEDIRITE)",
+      "region": "GP",
+      "source": "2026 call diary"
+    },
+    {
+      "code": "DA-064",
+      "name": "CLICKS LYNWOOD ROAD",
+      "region": "GP",
+      "source": "2026 call diary"
+    },
+    {
+      "code": "DA-065",
+      "name": "KLOOPERS PTA",
+      "region": "GP",
+      "source": "2026 call diary"
+    },
+    {
+      "code": "DA-066",
+      "name": "CHECKERS KOLLONADE ACTIVATION",
+      "region": "GP",
+      "source": "2026 call diary"
+    },
+    {
+      "code": "DA-067",
+      "name": "DIS-CHEM - THE CLUB SURGICAL CENTRE",
+      "region": "GP",
+      "source": "2026 call diary"
+    },
+    {
+      "code": "DA-068",
+      "name": "DISCHEM MUSHROOM",
+      "region": "GP",
+      "source": "2026 call diary"
+    },
+    {
+      "code": "DA-069",
+      "name": "DIS-CHEM - ATTERBURY",
+      "region": "GP",
+      "source": "2026 call diary"
+    },
+    {
+      "code": "DA-070",
+      "name": "CHECKERS KYALAMI",
+      "region": "GP",
+      "source": "2026 call diary"
+    },
+    {
+      "code": "DA-071",
+      "name": "CHECKERS ATTERBURY",
+      "region": "GP",
+      "source": "2026 call diary"
+    },
+    {
+      "code": "DA-072",
+      "name": "CLICKS ATTERBURY PHARM - C-438",
+      "region": "GP",
+      "source": "2026 call diary"
+    },
+    {
+      "code": "DA-073",
+      "name": "DIS-CHEM - KYALAMI CORNER - S084",
+      "region": "GP",
+      "source": "2026 call diary"
+    },
+    {
+      "code": "DA-074",
+      "name": "CHECKERS MUSHROOM",
+      "region": "GP",
+      "source": "2026 call diary"
+    },
+    {
+      "code": "DA-075",
+      "name": "CLICKS - CLEARWATER - C-256",
+      "region": "GP",
+      "source": "2026 call diary"
+    },
+    {
+      "code": "DA-076",
+      "name": "CHECKERS HYPER - WESTGATE",
+      "region": "GP",
+      "source": "2026 call diary"
+    },
+    {
+      "code": "DA-077",
+      "name": "CHECKERS - NORTHGATE",
+      "region": "GP",
+      "source": "2026 call diary"
+    },
+    {
+      "code": "DA-078",
+      "name": "CHECKERS GREENVALLEY",
+      "region": "GP",
+      "source": "2026 call diary"
+    },
+    {
+      "code": "DA-079",
+      "name": "DIS-CHEM - CLEARWATER MALL - S032",
+      "region": "GP",
+      "source": "2026 call diary"
+    },
+    {
+      "code": "DA-080",
+      "name": "CHECKERS FX ROSEBANK MALL",
+      "region": "GP",
+      "source": "2026 call diary"
+    },
+    {
+      "code": "DA-081",
+      "name": "CLICKS - WESTGATE (JHB) - C-331",
+      "region": "GP",
+      "source": "2026 call diary"
+    },
+    {
+      "code": "DA-082",
+      "name": "CLICKS - NORTHGATE",
+      "region": "GP",
+      "source": "2026 call diary"
+    },
+    {
+      "code": "DA-083",
+      "name": "DIS-CHEM - WESTGATE - S040",
+      "region": "GP",
+      "source": "2026 call diary"
+    },
+    {
+      "code": "DA-084",
+      "name": "DIS-CHEM - NORTHGATE - S008",
+      "region": "GP",
+      "source": "2026 call diary"
+    },
+    {
+      "code": "DA-085",
+      "name": "CLICKS STONE RIDGE",
+      "region": "GP",
+      "source": "2026 call diary"
+    },
+    {
+      "code": "DA-086",
+      "name": "CHECKERS - ALLENS NEK (MEDIRITE)",
+      "region": "GP",
+      "source": "2026 call diary"
+    },
+    {
+      "code": "DA-087",
+      "name": "DIS-CHEM - ROODEPOORT SO12 (PRINSESS CROSSING)",
+      "region": "GP",
+      "source": "2026 call diary"
+    },
+    {
+      "code": "DA-088",
+      "name": "CHECKERSFLAMINGO",
+      "region": "GP",
+      "source": "2026 call diary"
+    },
+    {
+      "code": "DA-089",
+      "name": "MAKRO - STRUBENSVALLEY",
+      "region": "GP",
+      "source": "2026 call diary"
+    },
+    {
+      "code": "DA-090",
+      "name": "BABY CITY ROSEBANK MALL",
+      "region": "GP",
+      "source": "2026 call diary"
+    },
+    {
+      "code": "DA-091",
+      "name": "DISCHEM FLAMINGO",
+      "region": "GP",
+      "source": "2026 call diary"
+    },
+    {
+      "code": "DA-092",
+      "name": "MEDIRITE - OLIVEDALE",
+      "region": "GP",
+      "source": "2026 call diary"
+    },
+    {
+      "code": "DA-093",
+      "name": "CLICKS BEDFORD SQUARE (JHB) - C-329",
+      "region": "GP",
+      "source": "2026 call diary"
+    },
+    {
+      "code": "DA-094",
+      "name": "CHECKERS MEDIRITE MONAVONI",
+      "region": "GP",
+      "source": "2026 call diary"
+    },
+    {
+      "code": "DA-095",
+      "name": "CLICKS SANDTON CITY (JHB) - C-382",
+      "region": "GP",
+      "source": "2026 call diary"
+    },
+    {
+      "code": "DA-096",
+      "name": "CLICKS BROADACRES (JHB) - C-524",
+      "region": "GP",
+      "source": "2026 call diary"
+    },
+    {
+      "code": "DA-097",
+      "name": "DIS-CHEM - BEDFORD SQUARE - S049",
+      "region": "GP",
+      "source": "2026 call diary"
+    },
+    {
+      "code": "DA-098",
+      "name": "CHECKERS HYPER SANDTON (MEDIRITE)",
+      "region": "GP",
+      "source": "2026 call diary"
+    },
+    {
+      "code": "DA-099",
+      "name": "CLICKS LONEHILL (JHB) - C-313",
+      "region": "GP",
+      "source": "2026 call diary"
+    },
+    {
+      "code": "DA-100",
+      "name": "CLICKS DISCHEM MEADOWDALE",
+      "region": "GP",
+      "source": "2026 call diary"
+    },
+    {
+      "code": "DA-101",
+      "name": "CLICKS PRIMROSE",
+      "region": "GP",
+      "source": "2026 call diary"
+    },
+    {
+      "code": "DA-102",
+      "name": "DIS-CHEM - SANDTON CITY - S070",
+      "region": "GP",
+      "source": "2026 call diary"
+    },
+    {
+      "code": "DA-103",
+      "name": "CLICKS DAINFERN SQUARE (JHB) - C-1754",
+      "region": "GP",
+      "source": "2026 call diary"
+    },
+    {
+      "code": "DA-104",
+      "name": "CHECKERS EDENVALE",
+      "region": "GP",
+      "source": "2026 call diary"
+    },
+    {
+      "code": "DA-105",
+      "name": "CHECKERS VILLAGE VIEW [85444]",
+      "region": "GP",
+      "source": "2026 call diary"
+    },
+    {
+      "code": "DA-106",
+      "name": "DIS-CHEM - DAINFERN SQUARE - S052",
+      "region": "GP",
+      "source": "2026 call diary"
+    },
+    {
+      "code": "DA-107",
+      "name": "DISCHEM VILLAGE VIEW",
+      "region": "GP",
+      "source": "2026 call diary"
+    },
+    {
+      "code": "DA-108",
+      "name": "DIS-CHEM - BENMORE - S001",
+      "region": "GP",
+      "source": "2026 call diary"
+    }
+  ],
+  "users": [
+    {
+      "email": "enver.debruyn@leegrapulse.co.za",
+      "name": "Enver De Bruyn",
+      "role": "field_rep",
+      "storeCodes": [
+        "OFF-EDB",
+        "A208",
+        "A203",
+        "CH-42973",
+        "CH-58689",
+        "CH-45078",
+        "CH-82797",
+        "CH-48385",
+        "CH-6519",
+        "CH-123",
+        "CH-83549",
+        "CH-6501",
+        "CH-6446",
+        "CH-39168",
+        "CH-2701",
+        "C-2334",
+        "C-131",
+        "C-162",
+        "C-2057",
+        "C-133",
+        "C-2268",
+        "C-2254",
+        "C-134",
+        "C-158",
+        "C-126",
+        "C-105",
+        "C-165",
+        "C-1940",
+        "C-111",
+        "C-2049",
+        "C-130",
+        "C-1541",
+        "C-115",
+        "C-1580",
+        "C-1860",
+        "C-122",
+        "C-163",
+        "C-147",
+        "C-1858",
+        "C-1953",
+        "C-117",
+        "C2184",
+        "C-1539",
+        "S233",
+        "S214",
+        "S203",
+        "S223",
+        "S224",
+        "S204",
+        "S209",
+        "S210",
+        "M19",
+        "CH-70556",
+        "CH-79924",
+        "CH-78839",
+        "BRU-001",
+        "BRU-002",
+        "BRU-003",
+        "BRU-004",
+        "DA-001",
+        "DA-002",
+        "DA-003",
+        "DA-004",
+        "DA-005",
+        "DA-006",
+        "DA-007",
+        "DA-008",
+        "DA-009",
+        "DA-010"
+      ],
+      "fixedCode": "2648"
+    },
+    {
+      "email": "kyle.samuels@leegrapulse.co.za",
+      "name": "Kyle Samuels",
+      "role": "field_rep",
+      "storeCodes": [
+        "OFF-KS",
+        "A207",
+        "A206",
+        "A205",
+        "CH-42999",
+        "CH-55160",
+        "CH-82802",
+        "CH-34184",
+        "CH-85258",
+        "CH-96710",
+        "CH-39142",
+        "CH-52358",
+        "CH-6399",
+        "CH-1399",
+        "CH-161014",
+        "CH-83531",
+        "CH-160830",
+        "CH-67929",
+        "CH-30732",
+        "CH-6551",
+        "CH-343",
+        "CH-199",
+        "C-2005",
+        "C-102",
+        "C-145",
+        "C-2045",
+        "C-1661",
+        "C-103",
+        "C-1976",
+        "C-112",
+        "C-1979",
+        "C-1871",
+        "C-135",
+        "C-107",
+        "C-148",
+        "C-142",
+        "C-113",
+        "C-2805",
+        "C-2215",
+        "C-2277",
+        "C-1933",
+        "C-2162",
+        "C-128",
+        "C-156",
+        "C-2316",
+        "C-118",
+        "C-1872",
+        "C-1897",
+        "C-110",
+        "C-1751",
+        "C-1818",
+        "C-1992",
+        "C-1856",
+        "C-1678",
+        "C-129",
+        "C-164",
+        "C-1742",
+        "C-127",
+        "S230",
+        "S250",
+        "S208",
+        "S217",
+        "S232",
+        "M20",
+        "M06",
+        "CH-79607",
+        "BRU-013",
+        "BRU-014",
+        "BRU-015",
+        "BRU-016",
+        "DA-020",
+        "DA-021",
+        "DA-022",
+        "DA-023",
+        "DA-024",
+        "DA-025",
+        "DA-026",
+        "DA-027",
+        "DA-028",
+        "DA-029",
+        "DA-030"
+      ],
+      "fixedCode": "8152"
+    },
+    {
+      "email": "lindani.khanyile@leegrapulse.co.za",
+      "name": "Lindani Khanyile",
+      "role": "field_rep",
+      "storeCodes": [
+        "OFF-LK",
+        "CH-2028",
+        "CH-82593",
+        "CH-1276",
+        "CH-1878",
+        "CH-6763",
+        "CH-37140",
+        "CH-54677",
+        "CH-48238",
+        "C-223",
+        "C-2054",
+        "C-217",
+        "C-2037",
+        "C-1838",
+        "C-239",
+        "C-1682",
+        "C-1929",
+        "C-1670",
+        "C-2132",
+        "C1989",
+        "C-1629",
+        "C-2372",
+        "C-242",
+        "C-1734",
+        "C-237",
+        "C-211",
+        "C-1562",
+        "C-1608",
+        "C-1978",
+        "C-1559",
+        "C-1998",
+        "C-1529",
+        "C-1745",
+        "C-2285",
+        "C-210",
+        "S406",
+        "S421",
+        "S400",
+        "S420",
+        "S411",
+        "S443",
+        "S414",
+        "S412",
+        "S419",
+        "S410",
+        "S445",
+        "S434",
+        "M08",
+        "BRU-017",
+        "BRU-018",
+        "DA-031",
+        "DA-032",
+        "DA-033",
+        "DA-034",
+        "DA-035",
+        "DA-036",
+        "DA-037",
+        "DA-038",
+        "DA-039",
+        "DA-040",
+        "DA-041",
+        "DA-042"
+      ],
+      "fixedCode": "9375"
+    },
+    {
+      "email": "sello.matlou@leegrapulse.co.za",
+      "name": "Sello Matlou",
+      "role": "field_rep",
+      "storeCodes": [
+        "OFF-SM",
+        "A100",
+        "A105",
+        "A101",
+        "A013",
+        "CH-36128",
+        "CH-1852",
+        "CH-55013",
+        "CH-54570",
+        "CH-521",
+        "CH-36110",
+        "CH-48327",
+        "CH-30368",
+        "CH-58142",
+        "CH-85313",
+        "CH-79526",
+        "CH-16546",
+        "CH-70174",
+        "CH-7159",
+        "CH-7743",
+        "CH-301",
+        "CH-166315",
+        "C-438",
+        "C-1681",
+        "C-384",
+        "C-302",
+        "C-320",
+        "C-1632",
+        "C-442",
+        "C-255",
+        "C-1603",
+        "C-1560",
+        "C-1658",
+        "C-362",
+        "C-1959",
+        "C-1633",
+        "C-375",
+        "C-440",
+        "C-2211",
+        "C-1672",
+        "C-2181",
+        "C-1884",
+        "C-364",
+        "C-263",
+        "C-2872",
+        "C-1801",
+        "C-1664",
+        "C-1894",
+        "C-2111",
+        "C-1512",
+        "C-530",
+        "C-1853",
+        "C-1519",
+        "C-1574",
+        "C-383",
+        "C-520",
+        "C-264",
+        "S194",
+        "S109",
+        "S131",
+        "S100",
+        "S104",
+        "S121",
+        "S116",
+        "S169",
+        "S123",
+        "S127",
+        "S101",
+        "S120",
+        "S117",
+        "S103",
+        "S102",
+        "S105",
+        "S122",
+        "S106",
+        "S115",
+        "S110",
+        "ISOJ557",
+        "M09",
+        "M17",
+        "M16",
+        "BRU-031",
+        "BRU-032",
+        "BRU-033",
+        "BRU-034",
+        "BRU-035",
+        "BRU-036",
+        "DA-061",
+        "DA-062",
+        "DA-063",
+        "DA-064",
+        "DA-065"
+      ],
+      "fixedCode": "5137"
+    },
+    {
+      "email": "jose.kelly@leegrapulse.co.za",
+      "name": "Jose Kelly",
+      "role": "field_rep",
+      "storeCodes": [
+        "OFF-JK",
+        "A005",
+        "A003",
+        "A006",
+        "A012",
+        "CH-58134",
+        "CH-39249",
+        "CH-1941",
+        "CH-48296",
+        "CH-36144",
+        "CH-45028",
+        "CH-85371",
+        "CH-2515",
+        "CH-30376",
+        "CH-40248",
+        "CH-38227",
+        "CH-55047",
+        "CH-7581",
+        "CH-85274",
+        "CH-1925",
+        "CH-7311",
+        "CH-7620",
+        "CH-7646",
+        "C-2144",
+        "C-1518",
+        "C-2043",
+        "C-524",
+        "C-1564",
+        "C-256",
+        "C-175",
+        "C-1573",
+        "C-1706",
+        "C-1754",
+        "C-1676",
+        "C-1857",
+        "C-519",
+        "C-1952",
+        "C-435",
+        "C-315",
+        "C-1572",
+        "C-368",
+        "C-268",
+        "C-2070",
+        "C-1517",
+        "C-313",
+        "C-2211",
+        "C-1760",
+        "C-533",
+        "C-2033",
+        "C-1907",
+        "C-369",
+        "C-516",
+        "C-318",
+        "C-2346",
+        "C-2822",
+        "C-431",
+        "C-348",
+        "C-392",
+        "C-532",
+        "C-399",
+        "C-331",
+        "S135",
+        "S094",
+        "S032",
+        "S044",
+        "S004",
+        "S052",
+        "S722",
+        "S006",
+        "S033",
+        "S053",
+        "S007",
+        "S039",
+        "S008",
+        "S011",
+        "S186",
+        "S012",
+        "S043",
+        "S027",
+        "S030",
+        "S035",
+        "S028",
+        "S064",
+        "S034",
+        "S038",
+        "S040",
+        "M04",
+        "M27",
+        "M15W",
+        "M18",
+        "CH-71455",
+        "CH-79885",
+        "BRU-005",
+        "BRU-006",
+        "BRU-007",
+        "BRU-008",
+        "BRU-009",
+        "BRU-010",
+        "BRU-011",
+        "BRU-012",
+        "DA-011",
+        "DA-012",
+        "DA-013",
+        "DA-014",
+        "DA-015",
+        "DA-016",
+        "DA-017",
+        "DA-018",
+        "DA-019"
+      ],
+      "fixedCode": "4821"
+    },
+    {
+      "email": "mmuluki.makhurane@leegrapulse.co.za",
+      "name": "Mmuluki Makhurane",
+      "role": "field_rep",
+      "storeCodes": [
+        "OFF-MM",
+        "A019",
+        "A007",
+        "A103",
+        "A021",
+        "CH-55089",
+        "CH-58469",
+        "CH-165068",
+        "CH-48822",
+        "CH-45010",
+        "CH-85290",
+        "CH-165131",
+        "CH-686",
+        "CH-6111",
+        "CH-38277",
+        "CH-81173",
+        "CH-85444",
+        "CH-7303",
+        "CH-7735",
+        "CH-7654",
+        "C-321",
+        "C-329",
+        "C-1668",
+        "C-198",
+        "C-359",
+        "C-308",
+        "C-265",
+        "C-2803",
+        "C-1576",
+        "C-1636",
+        "C-2412",
+        "C-2223",
+        "C-1525",
+        "C-2030",
+        "C-429",
+        "C-2224",
+        "C-301",
+        "C-1999",
+        "C-1715",
+        "C-537",
+        "C-1561",
+        "C-1814",
+        "C-2115",
+        "C-1900",
+        "C-1514",
+        "C-1926",
+        "C-2120",
+        "C-1807",
+        "C-1597",
+        "C-1552",
+        "C-434",
+        "S049",
+        "S002",
+        "S036",
+        "S005",
+        "S723",
+        "S075",
+        "S025",
+        "S026",
+        "S060",
+        "S079",
+        "S089",
+        "S120",
+        "S065",
+        "S010",
+        "S063",
+        "S030",
+        "M26W",
+        "M01",
+        "CH-162531",
+        "BRU-019",
+        "BRU-020",
+        "BRU-021",
+        "BRU-022",
+        "DA-043",
+        "DA-044",
+        "DA-045",
+        "DA-046",
+        "DA-047",
+        "DA-048",
+        "DA-049"
+      ],
+      "fixedCode": "6294"
+    },
+    {
+      "email": "nicholas.haripershad@leegrapulse.co.za",
+      "name": "Nicholas Haripershad",
+      "role": "field_rep",
+      "storeCodes": [
+        "OFF-NH",
+        "A401",
+        "CH-34744",
+        "CH-2175",
+        "CH-6789",
+        "CH-57324",
+        "CH-40206",
+        "CH-6810",
+        "C-1825",
+        "C-1822",
+        "C-243",
+        "C-1511",
+        "C-1861",
+        "C-215",
+        "C-1845",
+        "C-244",
+        "C-1876",
+        "C-2168",
+        "C-2217",
+        "C-1680",
+        "C-227",
+        "C-1647",
+        "C-1673",
+        "C-2015",
+        "C-1657",
+        "C-2010",
+        "C-208",
+        "C-1655",
+        "C-1662",
+        "C-203",
+        "CH-16790",
+        "S404",
+        "S415",
+        "S416",
+        "S417",
+        "S427",
+        "S424",
+        "S409",
+        "M28",
+        "M07W",
+        "CH-79615",
+        "BRU-023",
+        "BRU-024",
+        "BRU-025",
+        "BRU-026",
+        "DA-050",
+        "DA-051",
+        "DA-052",
+        "DA-053",
+        "DA-054"
+      ],
+      "fixedCode": "5083"
+    },
+    {
+      "email": "nishay.singh@leegrapulse.co.za",
+      "name": "Nishay Singh",
+      "role": "field_rep",
+      "storeCodes": [
+        "OFF-NS",
+        "A001",
+        "A017",
+        "A011",
+        "A005",
+        "A003",
+        "A103",
+        "A006",
+        "A009",
+        "CH-10100",
+        "CH-39249",
+        "CH-85266",
+        "CH-85371",
+        "CH-58150",
+        "CH-83751",
+        "CH-40248",
+        "CH-38227",
+        "CH-38243",
+        "CH-81563",
+        "CH-38722",
+        "CH-79461",
+        "CH-161030",
+        "CH-83793",
+        "CH-7311",
+        "CH-7329",
+        "CH-87276",
+        "C-1770",
+        "C-1513",
+        "C-524",
+        "C-1604",
+        "C-1754",
+        "C-519",
+        "C-545",
+        "C-1572",
+        "C-368",
+        "C-2826",
+        "C-398",
+        "C-303",
+        "C-1593",
+        "C-313",
+        "C-1816",
+        "C-361",
+        "C-2033",
+        "C-369",
+        "C-2042",
+        "C-1736",
+        "C-382",
+        "C-2187",
+        "S001",
+        "S024",
+        "S094",
+        "S052",
+        "S097",
+        "S006",
+        "S084",
+        "S055",
+        "S068",
+        "S058",
+        "S039",
+        "S008",
+        "S011",
+        "S046",
+        "S070",
+        "S048",
+        "S029",
+        "M01",
+        "M10",
+        "CH-71455",
+        "BRU-027",
+        "BRU-028",
+        "BRU-029",
+        "BRU-030",
+        "DA-055",
+        "DA-056",
+        "DA-057",
+        "DA-058",
+        "DA-059",
+        "DA-060"
+      ],
+      "fixedCode": "3706"
+    },
+    {
+      "email": "mzwakhe.mokhoane@leegrapulse.co.za",
+      "name": "Mzwakhe Mokhoane",
+      "role": "field_rep",
+      "storeCodes": [
+        "OFF-MZM",
+        "C-1736",
+        "S060",
+        "S046",
+        "A006",
+        "M01",
+        "S120",
+        "S121",
+        "A105",
+        "C-2211",
+        "A001",
+        "DA-066",
+        "DA-067",
+        "DA-068",
+        "DA-069",
+        "DA-070",
+        "DA-071",
+        "DA-057",
+        "DA-072",
+        "DA-073",
+        "BRU-031",
+        "DA-074",
+        "DA-075",
+        "DA-076",
+        "DA-077",
+        "DA-078",
+        "DA-079",
+        "DA-080",
+        "DA-081",
+        "DA-082",
+        "BRU-005",
+        "DA-083",
+        "DA-084",
+        "DA-085",
+        "DA-086",
+        "BRU-029",
+        "DA-087",
+        "DA-088",
+        "DA-089",
+        "DA-090",
+        "DA-091",
+        "DA-092",
+        "DA-093",
+        "DA-094",
+        "DA-095",
+        "DA-096",
+        "DA-097",
+        "DA-098",
+        "DA-099",
+        "DA-100",
+        "DA-101",
+        "DA-102",
+        "DA-103",
+        "DA-104",
+        "DA-105",
+        "DA-055",
+        "DA-106",
+        "DA-107",
+        "DA-108"
+      ],
+      "fixedCode": "7461"
+    }
+  ],
+  "perUserCodes": true
+}
