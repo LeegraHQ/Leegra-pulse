@@ -84,17 +84,31 @@
     <button id="go">Load the three surveys</button>
     <div class="out" id="out"></div>
   </div>
+
+  <div class="card">
+    <p class="kicker">Testing</p>
+    <p>Creates a Philips test rep that can check into all 510 stores, so you can run the surveys without using a real rep's diary.</p>
+    <p class="note"><strong style="color:var(--text);font-weight:500">fleet@retailstar.co.za</strong> · code <strong style="color:var(--text);font-weight:500">1105</strong></p>
+    <button id="go-rep">Create the test rep</button>
+    <div class="out" id="out-rep"></div>
+  </div>
 </main>
 
 <script>
   const codeEl = document.getElementById('code');
   const goEl = document.getElementById('go');
   const outEl = document.getElementById('out');
+  const goRepEl = document.getElementById('go-rep');
+  const outRepEl = document.getElementById('out-rep');
+
+  function showIn(target, nodes) {
+    target.innerHTML = '';
+    for (const n of nodes) target.appendChild(n);
+    target.classList.add('show');
+  }
 
   function show(nodes) {
-    outEl.innerHTML = '';
-    for (const n of nodes) outEl.appendChild(n);
-    outEl.classList.add('show');
+    showIn(outEl, nodes);
   }
 
   function note(text, kind) {
@@ -153,6 +167,42 @@
 
   goEl.addEventListener('click', run);
   codeEl.addEventListener('keydown', function (e) { if (e.key === 'Enter') run(); });
+
+  async function runTestRep() {
+    const code = codeEl.value.trim();
+    if (!code) { showIn(outRepEl, [note('Enter the admin access code above first.', 'bad')]); codeEl.focus(); return; }
+
+    goRepEl.disabled = true;
+    goRepEl.textContent = 'Creating…';
+    showIn(outRepEl, [note('Creating the test rep…')]);
+
+    try {
+      const res = await fetch('/api/admin-seed-test-rep', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ code: code })
+      });
+      const data = await res.json().catch(function () { return {}; });
+
+      if (!res.ok) {
+        showIn(outRepEl, [note(data.error || ('Refused (' + res.status + ') — check the code and try again.'), 'bad')]);
+        return;
+      }
+
+      const rep = data.test_rep || {};
+      showIn(outRepEl, [
+        note(data.created ? 'Test rep created.' : 'Test rep refreshed.', 'ok'),
+        note('Sign in as ' + rep.email + ' with code ' + rep.code + ' — ' + rep.stores + ' stores.')
+      ]);
+    } catch (err) {
+      showIn(outRepEl, [note('Could not reach the server: ' + err.message, 'bad')]);
+    } finally {
+      goRepEl.disabled = false;
+      goRepEl.textContent = 'Create the test rep';
+    }
+  }
+
+  goRepEl.addEventListener('click', runTestRep);
 </script>
 </body>
 </html>
