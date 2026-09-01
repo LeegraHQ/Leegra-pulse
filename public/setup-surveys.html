@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Leegra Pulse — Load Philips surveys</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #161826; --surface: #1e2133; --line: #2c3049;
+    --text: #e9e9ed; --muted: #9a9cb0; --accent: #9184d9; --ok: #7fb08a; --bad: #d98a84;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; min-height: 100vh; padding: 32px 20px;
+    background: var(--bg); color: var(--text);
+    font-family: Inter, system-ui, sans-serif; font-size: 14px; line-height: 1.55;
+    display: flex; justify-content: center; align-items: flex-start;
+  }
+  main { width: 100%; max-width: 460px; display: flex; flex-direction: column; gap: 20px; }
+  h1 { font-size: 21px; font-weight: 500; margin: 0; letter-spacing: -0.01em; }
+  .kicker { font-size: 11px; letter-spacing: 0.09em; text-transform: uppercase; color: var(--accent); margin: 0; }
+  p { margin: 0; color: var(--muted); text-wrap: pretty; }
+  .card {
+    background: var(--surface); border: 1px solid var(--line); border-radius: 8px;
+    padding: 20px; display: flex; flex-direction: column; gap: 14px;
+  }
+  ol { margin: 0; padding-left: 20px; color: var(--muted); display: flex; flex-direction: column; gap: 6px; }
+  ol strong { color: var(--text); font-weight: 500; }
+  label { display: flex; flex-direction: column; gap: 6px; font-size: 12px; color: var(--muted); }
+  input {
+    font: inherit; color: var(--text); background: #171a29;
+    border: 1px solid var(--line); border-radius: 8px; padding: 11px 12px; width: 100%;
+  }
+  input:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-color: var(--accent); }
+  button {
+    font: inherit; font-weight: 500; cursor: pointer; padding: 12px 16px;
+    background: transparent; color: var(--accent);
+    border: 1px solid var(--accent); border-radius: 8px; width: 100%;
+  }
+  button:hover:not(:disabled) { background: color-mix(in oklab, var(--accent) 14%, transparent); }
+  button:active:not(:disabled) { background: color-mix(in oklab, var(--accent) 24%, transparent); }
+  button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  button:disabled { opacity: 0.45; cursor: default; }
+  .out { display: none; flex-direction: column; gap: 10px; }
+  .out.show { display: flex; }
+  .line { display: flex; gap: 10px; align-items: baseline; padding-bottom: 8px; border-bottom: 1px solid var(--line); }
+  .line:last-child { border-bottom: 0; padding-bottom: 0; }
+  .line .n { font-size: 12px; color: var(--muted); margin-left: auto; white-space: nowrap; }
+  .note { font-size: 12px; }
+  .note.ok { color: var(--ok); }
+  .note.bad { color: var(--bad); }
+  pre {
+    margin: 0; font-size: 11px; color: var(--muted); white-space: pre-wrap;
+    background: #171a29; border: 1px solid var(--line); border-radius: 8px; padding: 12px; max-height: 220px; overflow: auto;
+  }
+</style>
+</head>
+<body>
+<main>
+  <div>
+    <p class="kicker">Leegra Pulse · one-time setup</p>
+    <h1>Load the Philips PH surveys</h1>
+  </div>
+
+  <p>Writes the three weekly-cadence surveys onto Philips (PH-201). Safe to run more than once — it updates the same three surveys in place and touches nothing else, including the Snag Report.</p>
+
+  <div class="card">
+    <ol>
+      <li><strong>Stock Count &amp; Pricing Feedback</strong> — 15 fields per SKU line</li>
+      <li><strong>Execution (Image Report)</strong> — before and after images per SKU</li>
+      <li><strong>Competitor Feedback</strong> — 10 fields per competitor SKU</li>
+    </ol>
+    <p class="note">All three cover 510 stores. Every Dis-Chem branch is excluded.</p>
+  </div>
+
+  <div class="card">
+    <label>
+      Admin access code
+      <input id="code" type="password" inputmode="text" autocomplete="off" placeholder="Your Leegra admin code">
+    </label>
+    <button id="go">Load the three surveys</button>
+    <div class="out" id="out"></div>
+  </div>
+</main>
+
+<script>
+  const codeEl = document.getElementById('code');
+  const goEl = document.getElementById('go');
+  const outEl = document.getElementById('out');
+
+  function show(nodes) {
+    outEl.innerHTML = '';
+    for (const n of nodes) outEl.appendChild(n);
+    outEl.classList.add('show');
+  }
+
+  function note(text, kind) {
+    const el = document.createElement('p');
+    el.className = 'note ' + (kind || '');
+    el.textContent = text;
+    return el;
+  }
+
+  async function run() {
+    const code = codeEl.value.trim();
+    if (!code) { show([note('Enter the admin access code first.', 'bad')]); codeEl.focus(); return; }
+
+    goEl.disabled = true;
+    goEl.textContent = 'Loading…';
+    show([note('Writing the surveys…')]);
+
+    try {
+      const res = await fetch('/api/admin-seed-philips-surveys', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ code: code })
+      });
+      const data = await res.json().catch(function () { return {}; });
+
+      if (!res.ok) {
+        show([note(data.error || ('Refused (' + res.status + ') — check the code and try again.'), 'bad')]);
+        return;
+      }
+
+      const nodes = [note('Done. The reps will see these at check-in.', 'ok')];
+      for (const q of (data.loaded || [])) {
+        const row = document.createElement('div');
+        row.className = 'line';
+        const name = document.createElement('div');
+        name.textContent = q.name;
+        const n = document.createElement('div');
+        n.className = 'n';
+        n.textContent = q.line_fields + ' fields · ' + q.stores + ' stores';
+        row.appendChild(name);
+        row.appendChild(n);
+        nodes.push(row);
+      }
+      nodes.push(note('Excluded: ' + (data.excluded || '—')));
+      const pre = document.createElement('pre');
+      pre.textContent = JSON.stringify(data, null, 2);
+      nodes.push(pre);
+      show(nodes);
+    } catch (err) {
+      show([note('Could not reach the server: ' + err.message, 'bad')]);
+    } finally {
+      goEl.disabled = false;
+      goEl.textContent = 'Load the three surveys';
+    }
+  }
+
+  goEl.addEventListener('click', run);
+  codeEl.addEventListener('keydown', function (e) { if (e.key === 'Enter') run(); });
+</script>
+</body>
+</html>
