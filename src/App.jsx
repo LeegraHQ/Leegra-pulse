@@ -161,6 +161,25 @@ export default function App() {
     setVisitType('');
   }
 
+  // Leaving a store must NOT end the session — it checks out, then returns the rep to store selection.
+  async function handleCheckOutAndLeave() {
+    if (!visit) return handleExitStore();
+    try {
+      await checkOut(session.token, visit.id);
+      handleExitStore();
+    } catch (err) {
+      setVisitError(err.message);
+    }
+  }
+
+  function handleExitStore() {
+    setVisit(null);
+    setAnswers({});
+    setVisitError('');
+    setVisitType('');
+    setSelectedStoreCode('');
+  }
+
   async function handleToggleCheckin() {
     if (!visit) {
       const stores = session.client.stores;
@@ -172,10 +191,7 @@ export default function App() {
     } else {
       try {
         await checkOut(session.token, visit.id);
-        setVisit(null);
-        setAnswers({});
-        setVisitError('');
-        setVisitType('');
+        handleExitStore();
       } catch (err) {
         setVisitError(err.message);
       }
@@ -256,7 +272,7 @@ export default function App() {
                 className="lp-input"
                 inputMode="numeric"
                 autoComplete="off"
-                placeholder="Your 4-digit Leegra Pulse code"
+                placeholder="Code from your email, or your access code"
                 value={otpCode}
                 onChange={e => { setOtpCode(e.target.value); setError(''); }}
                 autoFocus
@@ -269,10 +285,17 @@ export default function App() {
           {!otpSent ? (
             <>
               <button className="lp-btn lp-btn-primary lp-block" type="submit" disabled={sendingCode}>
-                {sendingCode ? 'Checking…' : 'Continue'}
+                {sendingCode ? 'Sending…' : 'Send login code'}
+              </button>
+              <button
+                className="lp-btn lp-btn-secondary lp-block"
+                type="button"
+                onClick={() => { setOtpSent(true); setError(''); }}
+              >
+                I already have a code
               </button>
               <div className="lp-muted" style={{ textAlign: 'center', fontSize: 11 }}>
-                Enter your work email, then the code Leegra sent you. It doesn't expire.
+                We'll email a one-time code to sign in — no need to remember your client or a code.
               </div>
             </>
           ) : (
@@ -457,7 +480,7 @@ export default function App() {
               {client.logo && <img src={client.logo} alt={client.name} height={22} />}
               <div className="lp-nav-brand">{client.name}</div>
               <img src="/logos/leegra-logo.png" alt="Leegra" height={18} style={{ marginLeft: 'auto' }} />
-              <button className="lp-tag lp-tag-outline" onClick={handleLogout}>Log out</button>
+              <button className="lp-tag lp-tag-outline" onClick={handleLogout}>Sign out</button>
             </div>
             <div className="lp-muted">No stores have been assigned to you yet — check with your manager.</div>
           </div>
@@ -472,7 +495,10 @@ export default function App() {
             {client.logo && <img src={client.logo} alt={client.name} height={22} />}
             <div className="lp-nav-brand">{client.name}</div>
             <img src="/logos/leegra-logo.png" alt="Leegra" height={18} style={{ marginLeft: 'auto' }} />
-            <button className="lp-tag lp-tag-outline" onClick={handleLogout}>Log out</button>
+            {visit && (
+              <button className="lp-tag lp-tag-outline" onClick={handleCheckOutAndLeave}>Check out and leave</button>
+            )}
+            <button className="lp-tag lp-tag-outline" onClick={handleLogout}>Sign out</button>
           </div>
           <div className="lp-muted">{client.staffName} · Field rep · {client.repStoreCount} stores assigned</div>
 
