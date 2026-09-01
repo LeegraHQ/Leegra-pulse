@@ -87,9 +87,9 @@
 
   <div class="card">
     <p class="kicker">Testing</p>
-    <p>Creates a Philips test rep that can check into all 510 stores, so you can run the surveys without using a real rep's diary.</p>
-    <p class="note"><strong style="color:var(--text);font-weight:500">fleet@retailstar.co.za</strong> · its code is your current shared access code</p>
-    <button id="go-rep">Create the test rep</button>
+    <p>Creates two Philips test reps that can check into all 510 stores, so you can run the surveys without using a real rep's diary.</p>
+    <p class="note"><strong style="color:var(--text);font-weight:500">fleet@retailstar.co.za</strong> · signs in with the shared access code<br><strong style="color:var(--text);font-weight:500">chris@leegra.co.za</strong> · shared code opens the rep app, admin code still opens the dashboards</p>
+    <button id="go-rep">Create the test reps</button>
     <div class="out" id="out-rep"></div>
   </div>
 </main>
@@ -189,16 +189,17 @@
         return;
       }
 
-      const rep = data.test_rep || {};
-      showIn(outRepEl, [
-        note(data.created ? 'Test rep created.' : 'Test rep refreshed.', 'ok'),
-        note('Sign in as ' + rep.email + ' with code ' + rep.code + ' — ' + rep.stores + ' stores.')
-      ]);
+      const reps = data.test_reps || (data.test_rep ? [data.test_rep] : []);
+      const nodes = [note('Done.', 'ok')];
+      for (const rep of reps) {
+        nodes.push(note('Sign in as ' + rep.email + ' with ' + rep.code + ' — ' + rep.stores + ' stores.'));
+      }
+      showIn(outRepEl, nodes);
     } catch (err) {
       showIn(outRepEl, [note('Could not reach the server: ' + err.message, 'bad')]);
     } finally {
       goRepEl.disabled = false;
-      goRepEl.textContent = 'Create the test rep';
+      goRepEl.textContent = 'Create the test reps';
     }
   }
 

@@ -88,12 +88,34 @@ exports.handler = async (event) => {
     ? accessCode.isAdminCode(submittedCode)
     : accessCode.verify(holder.tenantCode, submittedCode));
 
+  // A Leegra staff code holder who types the SHARED access code (not the admin
+  // code) is signed in as their OWN field-rep record, if they have one. That is
+  // how Chris tests the rep app with his own email: admin code -> the
+  // dashboards, shared code -> the rep app. Without a rep record on a tenant
+  // the sign-in is refused exactly as before — this widens nothing on its own.
+  const isStaffSharedCodeLogin = !!holder
+    && holder.role.startsWith('leegra_')
+    && !accessCode.isAdminCode(submittedCode)
+    && accessCode.verify(holder.tenantCode, submittedCode);
+
   const isTestRepLogin = process.env.TEST_REP_EMAIL
     && process.env.TEST_REP_PERMANENT_CODE
     && normalizedEmail === process.env.TEST_REP_EMAIL.trim().toLowerCase()
     && submittedCode === process.env.TEST_REP_PERMANENT_CODE;
 
   let identity = await resolveIdentityByEmail(normalizedEmail);
+
+  // Shared code + a staff email: swap in that person's field-rep record so the
+  // app opens the rep screens. Refused outright if they don't have one, rather
+  // than falling through to their staff rights.
+  if (isStaffSharedCodeLogin) {
+    const asRep = await resolveIdentityByEmail(normalizedEmail, { preferTenantUser: true });
+    const repRole = asRep && asRep.kind === 'tenant_user' ? (asRep.userRecord.role || 'field_rep') : null;
+    if (repRole !== 'field_rep') {
+      return { statusCode: 401, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ error: 'That code is not valid for this account.' }) };
+    }
+    identity = asRep;
+  }
 
   // A code holder doesn't need a user record on the tenant — the holder entry
   // in _data.js is the record.
@@ -114,7 +136,7 @@ exports.handler = async (event) => {
   const fixedCode = identity.kind === 'tenant_user' ? identity.userRecord.fixedCode : null;
   const isFixedCodeLogin = fixedCode && submittedCode === fixedCode;
 
-  if (!isTestRepLogin && !isFixedCodeLogin && !isHolderCodeLogin) {
+  if (!isTestRepLogin && !isFixedCodeLogin && !isHolderCodeLogin && !isStaffSharedCodeLogin) {
     const otp = await getOtp(normalizedEmail);
     if (!otp || otp.code !== submittedCode || Date.now() > otp.expiresAt) {
       return { statusCode: 401, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ error: 'Invalid or expired code' }) };

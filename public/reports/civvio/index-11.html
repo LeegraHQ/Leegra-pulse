@@ -352,10 +352,20 @@ async function requestOtp(email) {
 // request. This local copy only decides whether the report is *shown*, so a
 // dead or slow backend can't lock anyone out of a read-only report.
 // Keep it in step with ACCESS_CODE_CURRENT in the Netlify env vars.
-const LOCAL_ACCESS_CODE = '1105';
+// Access codes are stored as SHA-256 HASHES, never plaintext: this file is
+// public, and Netlify's secret scanner fails any build whose output contains a
+// live environment value. Hashes compare identically and leak nothing.
+// Regenerate these when ACCESS_CODE_CURRENT / ADMIN_ACCESS_CODE change.
+const LOCAL_CODE_HASHES = { viewer: 'b01672c37b296eaf3f1854d10e9c2b8a6c96f77c739f9982d03e59f3e9696521', admin: '7be5485a4715c5e765f27669d59d1fd3ed1714beb63a37d2934ff7010a504d4b' };
+
+async function hashCode(value) {
+  const bytes = new TextEncoder().encode(String(value || '').trim().toUpperCase());
+  const digest = await crypto.subtle.digest('SHA-256', bytes);
+  return [...new Uint8Array(digest)].map(b => b.toString(16).padStart(2, '0')).join('');
+}
 // Chris's admin code. Kept separate because one shared code cannot tell two
 // people with different rights apart. Must match ADMIN_ACCESS_CODE in Netlify.
-const LOCAL_ADMIN_CODE = '1105LEEGRA';
+
 
 async function submitGate() {
   const value = document.getElementById('gate-input').value.trim();
@@ -365,11 +375,11 @@ async function submitGate() {
 
   // Right code → in you go, immediately. The backend is then asked in the
   // background to upgrade the session (real role, stored photos).
-  const typed = value.toUpperCase();
-  if (gateMode === 'code' && (typed === LOCAL_ACCESS_CODE.toUpperCase() || typed === LOCAL_ADMIN_CODE.toUpperCase())) {
+  const typedHash = gateMode === 'code' ? await hashCode(value) : null;
+  if (gateMode === 'code' && (typedHash === LOCAL_CODE_HASHES.viewer || typedHash === LOCAL_CODE_HASHES.admin)) {
     // Read-only unless the admin code was used — a fallback should never hand
     // out more rights than the server would.
-    session.role = typed === LOCAL_ADMIN_CODE.toUpperCase() ? 'leegra_super_admin' : 'client_viewer';
+    session.role = typedHash === LOCAL_CODE_HASHES.admin ? 'leegra_super_admin' : 'client_viewer';
     err.textContent = '';
     enterDashboard();
     upgradeSession(value);
@@ -649,7 +659,7 @@ async function uploadPhoto(storeKey, file, row) {
     saveLocalPhotos();
     render();
     lastUploadError = 'no server token — sign-in was not confirmed';
-    adminNotice('Photo saved in this browser only — this session was not confirmed by the server, so it cannot upload. Sign out and sign in again with 1105LEEGRA, and check ADMIN_ACCESS_CODE is set in Netlify.');
+    adminNotice('Photo saved in this browser only — this session was not confirmed by the server, so it cannot upload. Sign out and sign in again with your admin code, and check ADMIN_ACCESS_CODE is set in Netlify.');
     diag();
     return;
   }

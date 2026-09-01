@@ -1,11 +1,15 @@
 // POST /api/admin-seed-test-rep   { code: "<admin access code>" }
 //
-// Creates (or refreshes) one Philips PH-201 test rep that can check into
+// Creates (or refreshes) the Philips PH-201 test reps that can check into
 // EVERY store the surveys cover — 510 stores, Dis-Chem excluded — so the
 // three weekly surveys can be tested end to end without borrowing a real
 // rep's diary.
 //
-//   fleet@retailstar.co.za
+//   fleet@retailstar.co.za    signs in with the permanent code below
+//   chris@leegra.co.za        signs in with the SHARED access code, which
+//                             opens the rep app instead of the dashboards
+//                             (see auth-login.js) — his admin code still
+//                             takes him to the dashboards as before
 //
 // Its permanent code is NOT written here: it is read from
 // TEST_REP_PERMANENT_CODE, or failing that the current shared access code
@@ -30,11 +34,13 @@ const accessCode = require('./_lib/accesscode');
 const { getUsers, saveUsers } = require('./_lib/records');
 const SEED = require('./_philips-survey-seed.json');
 
-const TEST_REP = {
-  email: 'fleet@retailstar.co.za',
-  name: 'Fleet Test Rep',
-  role: 'field_rep',
-};
+const TEST_REPS = [
+  { email: 'fleet@retailstar.co.za', name: 'Fleet Test Rep', role: 'field_rep', useCode: true },
+  // No fixedCode: Chris reaches the rep app with the shared access code, which
+  // auth-login resolves against this record. Giving him a fixedCode here would
+  // be a second credential to keep in step for no gain.
+  { email: 'chris@leegra.co.za', name: 'Chris (rep test)', role: 'field_rep', useCode: false },
+];
 
 function testRepCode() {
   const fromEnv = (process.env.TEST_REP_PERMANENT_CODE || process.env.ACCESS_CODE_CURRENT || '').trim();
@@ -65,13 +71,23 @@ exports.handler = async (event) => {
   }
 
   const users = await getUsers(tenantCode);
-  const idx = users.findIndex(u => u.email.toLowerCase() === TEST_REP.email);
-  const record = Object.assign({}, idx >= 0 ? users[idx] : {}, TEST_REP, {
-    fixedCode: code,
-    storeCodes: [...storeCodes],
-    updatedAt: new Date().toISOString(),
-  });
-  if (idx >= 0) users[idx] = record; else users.push(record);
+  const seeded = [];
+  for (const rep of TEST_REPS) {
+    const { useCode, ...fields } = rep;
+    const idx = users.findIndex(u => u.email.toLowerCase() === rep.email);
+    const record = Object.assign({}, idx >= 0 ? users[idx] : {}, fields, {
+      storeCodes: [...storeCodes],
+      updatedAt: new Date().toISOString(),
+    });
+    if (useCode) record.fixedCode = code;
+    if (idx >= 0) users[idx] = record; else users.push(record);
+    seeded.push({
+      email: record.email,
+      code: useCode ? record.fixedCode : 'your shared access code',
+      stores: record.storeCodes.length,
+      created: idx < 0,
+    });
+  }
   await saveUsers(tenantCode, users);
 
   return {
@@ -80,13 +96,9 @@ exports.handler = async (event) => {
     body: JSON.stringify({
       ok: true,
       tenant_code: tenantCode,
-      created: idx < 0,
-      test_rep: {
-        email: record.email,
-        code: record.fixedCode,
-        stores: record.storeCodes.length,
-        excluded: SEED.excluded,
-      },
+      excluded: SEED.excluded,
+      test_rep: seeded[0],
+      test_reps: seeded,
       users_total: users.length,
     }),
   };

@@ -12,15 +12,25 @@
 const { TENANTS, SUPER_ADMIN_EMAIL } = require('../_data');
 const { getStaff, getUsers } = require('./records');
 
-async function resolveIdentityByEmail(normalizedEmail) {
-  if (normalizedEmail === SUPER_ADMIN_EMAIL) {
-    return { kind: 'super_admin' };
-  }
+// opts.preferTenantUser: skip the staff/super-admin short-circuits and look
+// only for a tenant user record. Leegra staff who also hold a field-rep record
+// (Chris, for testing the rep app) resolve to STAFF by default — this is how
+// auth-login asks for the rep side of the same email instead. Returns null when
+// there is no tenant record, so a caller can never silently fall back to
+// staff rights it didn't ask for.
+async function resolveIdentityByEmail(normalizedEmail, opts) {
+  const preferTenantUser = !!(opts && opts.preferTenantUser);
 
-  const staff = await getStaff();
-  const staffRecord = staff.find(s => s.email === normalizedEmail);
-  if (staffRecord) {
-    return { kind: 'staff', staffRecord };
+  if (!preferTenantUser) {
+    if (normalizedEmail === SUPER_ADMIN_EMAIL) {
+      return { kind: 'super_admin' };
+    }
+
+    const staff = await getStaff();
+    const staffRecord = staff.find(s => s.email === normalizedEmail);
+    if (staffRecord) {
+      return { kind: 'staff', staffRecord };
+    }
   }
 
   const perTenant = await Promise.all(TENANTS.map(async tenant => {
