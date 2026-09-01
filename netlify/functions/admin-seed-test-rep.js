@@ -5,7 +5,14 @@
 // three weekly surveys can be tested end to end without borrowing a real
 // rep's diary.
 //
-//   fleet@retailstar.co.za    permanent code 1105
+//   fleet@retailstar.co.za
+//
+// Its permanent code is NOT written here: it is read from
+// TEST_REP_PERMANENT_CODE, or failing that the current shared access code
+// (ACCESS_CODE_CURRENT). Netlify's secret scanner fails any build whose
+// source contains a live env value, so the code must never be a literal in
+// this repo — and reading it from the env means the test rep's code follows
+// the shared code automatically when it rotates.
 //
 // The store list is read from _philips-survey-seed.json, the same list the
 // questionnaires are scoped to, so the test rep and the surveys can never
@@ -27,8 +34,12 @@ const TEST_REP = {
   email: 'fleet@retailstar.co.za',
   name: 'Fleet Test Rep',
   role: 'field_rep',
-  fixedCode: '1105',
 };
+
+function testRepCode() {
+  const fromEnv = (process.env.TEST_REP_PERMANENT_CODE || process.env.ACCESS_CODE_CURRENT || '').trim();
+  return fromEnv || null;
+}
 
 exports.handler = async (event) => {
   if (event.httpMethod !== 'POST') return { statusCode: 405, body: 'Method not allowed' };
@@ -45,9 +56,18 @@ exports.handler = async (event) => {
     return { statusCode: 500, body: JSON.stringify({ error: 'Survey seed carries no store list' }) };
   }
 
+  const code = testRepCode();
+  if (!code) {
+    return {
+      statusCode: 500,
+      body: JSON.stringify({ error: 'No code available — set TEST_REP_PERMANENT_CODE or ACCESS_CODE_CURRENT in the Netlify env vars.' }),
+    };
+  }
+
   const users = await getUsers(tenantCode);
   const idx = users.findIndex(u => u.email.toLowerCase() === TEST_REP.email);
   const record = Object.assign({}, idx >= 0 ? users[idx] : {}, TEST_REP, {
+    fixedCode: code,
     storeCodes: [...storeCodes],
     updatedAt: new Date().toISOString(),
   });
