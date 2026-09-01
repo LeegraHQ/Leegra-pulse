@@ -272,7 +272,7 @@ export default function App() {
                 className="lp-input"
                 inputMode="numeric"
                 autoComplete="off"
-                placeholder="Code from your email, or your access code"
+                placeholder="Your 4-digit Leegra Pulse code"
                 value={otpCode}
                 onChange={e => { setOtpCode(e.target.value); setError(''); }}
                 autoFocus
@@ -285,17 +285,10 @@ export default function App() {
           {!otpSent ? (
             <>
               <button className="lp-btn lp-btn-primary lp-block" type="submit" disabled={sendingCode}>
-                {sendingCode ? 'Sending…' : 'Send login code'}
-              </button>
-              <button
-                className="lp-btn lp-btn-secondary lp-block"
-                type="button"
-                onClick={() => { setOtpSent(true); setError(''); }}
-              >
-                I already have a code
+                {sendingCode ? 'Checking…' : 'Continue'}
               </button>
               <div className="lp-muted" style={{ textAlign: 'center', fontSize: 11 }}>
-                We'll email a one-time code to sign in — no need to remember your client or a code.
+                Enter your work email, then the code Leegra sent you. It doesn't expire.
               </div>
             </>
           ) : (
