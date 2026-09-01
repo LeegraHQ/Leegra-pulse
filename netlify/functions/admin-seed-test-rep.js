@@ -5,11 +5,16 @@
 // three weekly surveys can be tested end to end without borrowing a real
 // rep's diary.
 //
-//   fleet@retailstar.co.za    signs in with the permanent code below
+//   TEST_REP_EMAIL (env)      signs in with the permanent code below
 //   chris@leegra.co.za        signs in with the SHARED access code, which
 //                             opens the rep app instead of the dashboards
 //                             (see auth-login.js) — his admin code still
 //                             takes him to the dashboards as before
+//
+// The first account's ADDRESS is read from the TEST_REP_EMAIL env var rather
+// than written here: it is a configured value, and Netlify's secret scanner
+// fails any build whose source contains one. If TEST_REP_EMAIL is unset only
+// Chris's rep record is created.
 //
 // Its permanent code is NOT written here: it is read from
 // TEST_REP_PERMANENT_CODE, or failing that the current shared access code
@@ -34,13 +39,18 @@ const accessCode = require('./_lib/accesscode');
 const { getUsers, saveUsers } = require('./_lib/records');
 const SEED = require('./_philips-survey-seed.json');
 
-const TEST_REPS = [
-  { email: 'fleet@retailstar.co.za', name: 'Fleet Test Rep', role: 'field_rep', useCode: true },
+function testReps() {
+  const reps = [];
+  const configured = (process.env.TEST_REP_EMAIL || '').trim().toLowerCase();
+  if (configured) {
+    reps.push({ email: configured, name: 'Fleet Test Rep', role: 'field_rep', useCode: true });
+  }
   // No fixedCode: Chris reaches the rep app with the shared access code, which
   // auth-login resolves against this record. Giving him a fixedCode here would
   // be a second credential to keep in step for no gain.
-  { email: 'chris@leegra.co.za', name: 'Chris (rep test)', role: 'field_rep', useCode: false },
-];
+  reps.push({ email: 'chris@leegra.co.za', name: 'Chris (rep test)', role: 'field_rep', useCode: false });
+  return reps;
+}
 
 function testRepCode() {
   const fromEnv = (process.env.TEST_REP_PERMANENT_CODE || process.env.ACCESS_CODE_CURRENT || '').trim();
