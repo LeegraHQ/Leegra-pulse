@@ -28,6 +28,17 @@ const CLIENT_REPORT_LINKS = {
   'CIV-088': '/reports/civvio/',
 };
 
+// The surveys a rep can start a visit with. The value is the visit_type sent
+// to /api/visits, which the backend matches against each questionnaire's
+// visitType (see _lib/records.js pickQuestionnaire) — so adding a survey here
+// means loading a questionnaire with the same visit_type, and nothing else.
+const VISIT_SURVEYS = [
+  { value: 'stock_pricing', label: 'Stock Count & Pricing Feedback' },
+  { value: 'execution_image', label: 'Execution (Image Report)' },
+  { value: 'competitor_feedback', label: 'Competitor Feedback' },
+  { value: 'snag_report', label: 'Snag Report' },
+];
+
 export default function App() {
   const [screen, setScreen] = useState('login'); // login | app | dashboard | superadmin
   const [session, setSession] = useState(null); // { token, role, client, isSuperAdmin }
@@ -196,6 +207,38 @@ export default function App() {
         setVisitError(err.message);
       }
     }
+  }
+
+  // --- repeating rows -----------------------------------------------------
+  // A 'repeat' question's answer is an array of row objects keyed by field id
+  // (one row per SKU line). The whole array is saved on every edit, so a
+  // dropped connection mid-visit never leaves half a row on the server.
+  function rowsOf(questionId) {
+    const rows = answers[questionId];
+    return Array.isArray(rows) ? rows : [];
+  }
+
+  async function saveRows(questionId, rows) {
+    setAnswers(a => ({ ...a, [questionId]: rows }));
+    if (visit) await submitAnswer(session.token, visit.id, questionId, rows);
+  }
+
+  function handleAddRow(q) {
+    saveRows(q.id, [...rowsOf(q.id), {}]);
+  }
+
+  function handleRemoveRow(q, idx) {
+    saveRows(q.id, rowsOf(q.id).filter((_, i) => i !== idx));
+  }
+
+  function handleCellChange(q, idx, fieldId, value) {
+    saveRows(q.id, rowsOf(q.id).map((r, i) => (i === idx ? { ...r, [fieldId]: value } : r)));
+  }
+
+  async function handleCellPhoto(q, idx, field, file) {
+    if (!visit || !file) return;
+    const res = await uploadPhotoAnswer(session.token, visit.id, `${q.id}__${idx}__${field.id}`, file);
+    handleCellChange(q, idx, field.id, { photoId: res.photo_id, previewUrl: res.previewUrl });
   }
 
   async function handleAnswerChange(questionId, value) {
@@ -463,7 +506,7 @@ export default function App() {
 
   if (screen === 'app') {
     const questions = visit?.questionnaire?.questions || [];
-    const isAnswered = a => a !== undefined && a !== null && a !== '';
+    const isAnswered = a => (Array.isArray(a) ? a.length > 0 : a !== undefined && a !== null && a !== '');
     const doneCount = questions.filter(q => isAnswered(answers[q.id])).length;
     if (!client.stores.length) {
       return (
@@ -510,14 +553,16 @@ export default function App() {
                 </select>
               </label>
               <label className="lp-field">
-                Visit type
+                Survey
                 <select
                   className="lp-input"
                   value={visitType}
                   onChange={e => setVisitType(e.target.value)}
                 >
-                  <option value="">Standard visit</option>
-                  <option value="snag_report">Snag Report</option>
+                  <option value="" disabled>Choose a survey…</option>
+                  {VISIT_SURVEYS.map(s => (
+                    <option key={s.value} value={s.value}>{s.label}</option>
+                  ))}
                 </select>
               </label>
             </>
@@ -530,7 +575,11 @@ export default function App() {
             </div>
           )}
 
-          {!visit && <button className="lp-btn lp-btn-primary lp-block" onClick={handleToggleCheckin}>Check in — verify GPS</button>}
+          {!visit && (
+            <button className="lp-btn lp-btn-primary lp-block" disabled={!visitType} onClick={handleToggleCheckin}>
+              {visitType ? 'Check in — verify GPS' : 'Choose a survey to check in'}
+            </button>
+          )}
 
           {visit && (
             <>
@@ -540,6 +589,92 @@ export default function App() {
               <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                 {questions.map(q => {
                   const answer = answers[q.id];
+                  if (q.type === 'repeat') {
+                    const rows = Array.isArray(answer) ? answer : [];
+                    const rowLabel = q.rowLabel || 'Row';
+                    return (
+                      <div key={q.id} style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                        {rows.map((row, idx) => (
+                          <div key={idx} className="lp-inner-card" style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                              <div className="lp-kicker" style={{ marginBottom: 0 }}>{rowLabel} {idx + 1}</div>
+                              <button
+                                className="lp-tag lp-tag-outline"
+                                style={{ marginLeft: 'auto' }}
+                                onClick={() => handleRemoveRow(q, idx)}
+                              >
+                                Remove
+                              </button>
+                            </div>
+                            {(q.fields || []).map(f => {
+                              const cell = row?.[f.id];
+                              if (f.type === 'boolean') {
+                                return (
+                                  <div key={f.id} className="lp-row-card" onClick={() => handleCellChange(q, idx, f.id, !cell)}>
+                                    <span className="lp-dot" style={{ background: cell ? 'var(--accent-2-400)' : 'var(--neutral-500)' }} />
+                                    <div style={{ flex: 1, fontSize: 13 }}>{f.label}{f.required ? ' *' : ''}</div>
+                                    <div className={cell ? 'lp-tag lp-tag-accent2' : 'lp-tag lp-tag-neutral'}>{cell ? 'Yes' : 'No'}</div>
+                                  </div>
+                                );
+                              }
+                              if (f.type === 'photo') {
+                                const photoCell = cell && typeof cell === 'object' ? cell : null;
+                                return (
+                                  <div key={f.id} className="lp-row-card" style={{ alignItems: 'center' }}>
+                                    <div style={{ flex: 1, fontSize: 13 }}>{f.label}{f.required ? ' *' : ''}</div>
+                                    {photoCell?.previewUrl && (
+                                      <img src={photoCell.previewUrl} alt="" style={{ width: 36, height: 36, borderRadius: 6, objectFit: 'cover', marginRight: 8 }} />
+                                    )}
+                                    <label className="lp-tag lp-tag-outline" style={{ cursor: 'pointer' }}>
+                                      {photoCell ? 'Retake' : 'Take photo'}
+                                      <input
+                                        type="file"
+                                        accept="image/*"
+                                        capture="environment"
+                                        style={{ display: 'none' }}
+                                        onChange={e => handleCellPhoto(q, idx, f, e.target.files[0])}
+                                      />
+                                    </label>
+                                  </div>
+                                );
+                              }
+                              if (f.type === 'choice') {
+                                return (
+                                  <div key={f.id} className="lp-row-card">
+                                    <div style={{ flex: 1, fontSize: 13 }}>{f.label}{f.required ? ' *' : ''}</div>
+                                    <select
+                                      className="lp-input"
+                                      style={{ width: 140 }}
+                                      value={cell || ''}
+                                      onChange={e => handleCellChange(q, idx, f.id, e.target.value)}
+                                    >
+                                      <option value="" disabled>Choose…</option>
+                                      {(f.options || []).map(opt => <option key={opt} value={opt}>{opt}</option>)}
+                                    </select>
+                                  </div>
+                                );
+                              }
+                              return (
+                                <div key={f.id} className="lp-row-card">
+                                  <div style={{ flex: 1, fontSize: 13 }}>{f.label}{f.required ? ' *' : ''}</div>
+                                  <input
+                                    className="lp-input"
+                                    style={{ width: 140 }}
+                                    type={f.type === 'number' ? 'number' : 'text'}
+                                    value={cell ?? ''}
+                                    onChange={e => handleCellChange(q, idx, f.id, e.target.value)}
+                                  />
+                                </div>
+                              );
+                            })}
+                          </div>
+                        ))}
+                        <button className="lp-btn lp-btn-secondary lp-block" onClick={() => handleAddRow(q)}>
+                          + Add {rows.length ? 'another ' : ''}{rowLabel.toLowerCase()}
+                        </button>
+                      </div>
+                    );
+                  }
                   if (q.type === 'boolean') {
                     return (
                       <div key={q.id} className="lp-row-card" onClick={() => handleAnswerChange(q.id, !answer)}>
