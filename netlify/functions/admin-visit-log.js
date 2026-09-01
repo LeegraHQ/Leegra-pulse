@@ -47,6 +47,28 @@ async function tenantVisitRows(tenant) {
     source: 'live',
     answers: (v.questions || []).map(q => {
       const raw = v.answers?.[q.id];
+      // A 'repeat' answer is an array of row objects (one per SKU line).
+      // Flattened into named cells here so every consumer — the dashboard
+      // table, the Excel export, the PDF — sees the same labelled shape.
+      if (q.type === 'repeat') {
+        const rows = Array.isArray(raw) ? raw : [];
+        return {
+          label: q.label,
+          type: 'repeat',
+          value: `${rows.length} ${(q.rowLabel || 'row').toLowerCase()}${rows.length === 1 ? '' : 's'}`,
+          photoId: null,
+          rows: rows.map(row => (q.fields || []).map(f => {
+            const cell = row?.[f.id];
+            const isPhoto = f.type === 'photo' && cell && typeof cell === 'object';
+            return {
+              label: f.label,
+              type: f.type,
+              value: isPhoto ? null : (cell ?? null),
+              photoId: isPhoto ? cell.photoId : null,
+            };
+          })),
+        };
+      }
       const isPhoto = q.type === 'photo' && raw && typeof raw === 'object';
       return {
         label: q.label,
@@ -114,9 +136,41 @@ exports.handler = async (event) => {
       'Duration (min)': r.durationMinutes,
       Answers: r.answers.map(a => `${a.label}: ${a.photoId ? '[photo]' : a.value}`).join(' | '),
     }));
+    // Second sheet: one spreadsheet row per repeat line (per SKU), which is
+    // the shape the client's reporting cadence workbook expects. Visits with
+    // no repeat questions contribute nothing here.
+    const lineRows = [];
+    for (const r of rows) {
+      const single = {};
+      for (const a of r.answers) {
+        if (a.type !== 'repeat') single[a.label] = a.photoId ? '[photo]' : a.value;
+      }
+      for (const a of r.answers) {
+        if (a.type !== 'repeat') continue;
+        (a.rows || []).forEach((cells, i) => {
+          const out = {
+            Tenant: r.tenantName,
+            Store: r.storeName,
+            'Store Code': r.storeCode,
+            Rep: r.repEmail,
+            'Checked in': r.checkinAt,
+            'Checked out': r.checkoutAt,
+            Survey: a.label,
+            Line: i + 1,
+            ...single,
+          };
+          for (const c of cells) out[c.label] = c.photoId ? '[photo]' : c.value;
+          lineRows.push(out);
+        });
+      }
+    }
+
     const ws = XLSX.utils.json_to_sheet(flatRows);
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, 'Visit Log');
+    if (lineRows.length) {
+      XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(lineRows), 'SKU Lines');
+    }
     const buf = XLSX.write(wb, { type: 'buffer', bookType: 'xlsx' });
     return {
       statusCode: 200,
@@ -160,7 +214,27 @@ exports.handler = async (event) => {
       );
       y -= lineHeight;
 
+      // Repeat questions are expanded into their rows so the PDF carries the
+      // per-SKU detail (and its before/after images), not just a line count.
+      const printable = [];
       for (const a of r.answers) {
+        if (a.type === 'repeat') {
+          printable.push({ label: a.label + ' — ' + a.value, value: '', photoId: null, heading: true });
+          (a.rows || []).forEach((cells, i) => {
+            printable.push({ label: '  ' + (i + 1) + '.', value: '', photoId: null, heading: true });
+            for (const c of cells) printable.push({ label: '    ' + c.label, value: c.value, photoId: c.photoId });
+          });
+        } else {
+          printable.push(a);
+        }
+      }
+      for (const a of printable) {
+        if (a.heading) {
+          ensureSpace(lineHeight);
+          page.drawText(a.label, { x: marginX + 10, y, size: 9, font: boldFont });
+          y -= lineHeight;
+          continue;
+        }
         if (a.photoId) {
           const photo = await getPhoto(r.tenantCode, a.photoId);
           if (photo) {

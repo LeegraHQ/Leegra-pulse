@@ -9,6 +9,19 @@ function isAnswered(answer) {
   return answer !== undefined && answer !== null && answer !== '';
 }
 
+// A required 'repeat' needs at least one row, and every row must carry its
+// own required fields — otherwise a rep could add three blank SKU lines and
+// check out with nothing captured.
+function repeatProblem(q, rows) {
+  if (!Array.isArray(rows) || !rows.length) return `${q.label} — add at least one ${(q.rowLabel || 'row').toLowerCase()}`;
+  const required = (q.fields || []).filter(f => f.required);
+  for (let i = 0; i < rows.length; i++) {
+    const missing = required.filter(f => !isAnswered(rows[i]?.[f.id])).map(f => f.label);
+    if (missing.length) return `${q.label} ${i + 1} — ${missing.join(', ')}`;
+  }
+  return null;
+}
+
 exports.handler = async (event) => {
   const claims = jwt.fromAuthHeader(event);
   if (!claims) return { statusCode: 401, body: JSON.stringify({ error: 'Not authenticated' }) };
@@ -22,9 +35,16 @@ exports.handler = async (event) => {
     return { statusCode: 404, body: JSON.stringify({ error: 'Visit not found' }) };
   }
 
-  const missing = (visit.questions || [])
-    .filter(q => q.required && !isAnswered(visit.answers?.[q.id]))
-    .map(q => q.label);
+  const missing = [];
+  for (const q of (visit.questions || [])) {
+    if (q.type === 'repeat') {
+      if (!q.required) continue;
+      const problem = repeatProblem(q, visit.answers?.[q.id]);
+      if (problem) missing.push(problem);
+    } else if (q.required && !isAnswered(visit.answers?.[q.id])) {
+      missing.push(q.label);
+    }
+  }
   if (missing.length) {
     return { statusCode: 400, body: JSON.stringify({ error: 'Answer all required questions before checking out', missing }) };
   }

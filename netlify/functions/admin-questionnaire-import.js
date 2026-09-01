@@ -19,14 +19,36 @@ const { getQuestionnaires, saveQuestionnaires } = require('./_lib/records');
 const { LEEGRA_WRITE_ROLES } = require('./_data');
 const { tenantScopeOk } = require('./_lib/scope');
 
-function normalizeQuestions(questions) {
-  return (questions || []).map((q, i) => ({
+const FIELD_TYPES = ['boolean', 'number', 'text', 'choice', 'photo'];
+
+function normalizeField(q, i) {
+  return {
     id: q.id || `q_${i}_${String(q.label || '').toLowerCase().replace(/[^a-z0-9]+/g, '_').slice(0, 30)}`,
     label: q.label,
-    type: ['boolean', 'number', 'text', 'choice', 'photo'].includes(q.type) ? q.type : 'boolean',
+    type: FIELD_TYPES.includes(q.type) ? q.type : 'boolean',
     options: q.type === 'choice' ? (q.options || []) : undefined,
     required: !!q.required,
-  }));
+  };
+}
+
+// A 'repeat' question holds a row of fields the rep can add over and over in
+// one visit — one row per SKU line, which is how the Philips reporting sheets
+// are shaped. Its answer is an ARRAY of row objects keyed by field id, not a
+// single value. Repeats cannot nest: a repeat's fields are plain field types.
+function normalizeQuestions(questions) {
+  return (questions || []).map((q, i) => {
+    if (q.type === 'repeat') {
+      return {
+        id: q.id || `repeat_${i}`,
+        label: q.label,
+        type: 'repeat',
+        rowLabel: q.rowLabel || q.row_label || 'Row',
+        required: !!q.required,
+        fields: (q.fields || []).map(normalizeField),
+      };
+    }
+    return normalizeField(q, i);
+  });
 }
 
 exports.handler = async (event) => {
