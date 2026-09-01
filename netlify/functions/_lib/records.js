@@ -173,11 +173,16 @@ function pickQuestionnaire(questionnaires, storeCode, visitType) {
   let best = null;
   let bestScore = -1;
   for (const q of questionnaires) {
-    const storeMatch = Array.isArray(q.storeCodes) && q.storeCodes.length > 0 && q.storeCodes.includes(storeCode);
-    const typeMatch = !!q.visitType && !!visitType && q.visitType === visitType;
-    const isDefault = (!Array.isArray(q.storeCodes) || q.storeCodes.length === 0) && !q.visitType;
-    if (!storeMatch && !typeMatch && !isDefault) continue;
-    const score = (storeMatch ? 2 : 0) + (typeMatch ? 1 : 0);
+    // Both scopes are HARD FILTERS, not bonuses: a questionnaire limited to a
+    // store list must never be served to a store outside it (Philips PH-201
+    // excludes every Dis-Chem branch this way), and one limited to a visit
+    // type must never be served to a different type. A questionnaire with
+    // neither is the tenant-wide default and always qualifies.
+    const scoped = Array.isArray(q.storeCodes) && q.storeCodes.length > 0;
+    if (scoped && !q.storeCodes.includes(storeCode)) continue;
+    const typed = !!q.visitType;
+    if (typed && q.visitType !== visitType) continue;
+    const score = (scoped ? 2 : 0) + (typed ? 1 : 0);
     if (score > bestScore) { bestScore = score; best = q; }
   }
   return best;
