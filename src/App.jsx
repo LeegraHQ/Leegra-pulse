@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { login, requestLoginCode, getDashboardSummary, checkIn, checkOut, submitAnswer, uploadPhotoAnswer, getVisitLog, downloadVisitLogExport, clearVisitHistory, getLoginStatus } from './api.js';
 import { TRAINING_MATERIALS, TENANT_DIRECTORY } from './clients.js';
 import './theme.css';
@@ -39,9 +39,40 @@ const VISIT_SURVEYS = [
   { value: 'snag_report', label: 'Snag Report' },
 ];
 
+// --- session persistence -------------------------------------------------
+// The signed token has no server-side expiry, so the ONLY thing that used to
+// end a session was the page losing its React state — which mobile browsers
+// do routinely: opening the camera for a photo, switching apps, or letting
+// the screen sleep can discard the tab and reload it. That reload looked to
+// reps like a random logout, and took any in-progress call with it. So the
+// session, the current screen and the live visit (answers included) are
+// mirrored into localStorage on every change and restored on boot.
+const SESSION_KEY = 'lp_session_v1';
+
+function readStored(key) {
+  try {
+    const raw = localStorage.getItem(key);
+    return raw ? JSON.parse(raw) : null;
+  } catch {
+    return null;
+  }
+}
+
+function writeStored(key, value) {
+  try {
+    if (value == null) localStorage.removeItem(key);
+    else localStorage.setItem(key, JSON.stringify(value));
+  } catch {
+    /* private mode / full quota — the app still works, just not across reloads */
+  }
+}
+
+// Read once at load, not per render.
+const BOOT = readStored(SESSION_KEY);
+
 export default function App() {
-  const [screen, setScreen] = useState('login'); // login | app | dashboard | superadmin
-  const [session, setSession] = useState(null); // { token, role, client, isSuperAdmin }
+  const [screen, setScreen] = useState(BOOT?.session ? (BOOT.screen || 'login') : 'login'); // login | app | dashboard | superadmin
+  const [session, setSession] = useState(BOOT?.session || null); // { token, role, client, isSuperAdmin }
   const [email, setEmail] = useState('');
   const [otpSent, setOtpSent] = useState(false);
   const [otpCode, setOtpCode] = useState('');
@@ -50,21 +81,59 @@ export default function App() {
   const [tenantChoices, setTenantChoices] = useState(null); // set only for the shared demo account (assigned to multiple tenants)
   const [dashTab, setDashTab] = useState('overview'); // overview | stores | staff — client dashboard nav
 
-  const [visit, setVisit] = useState(null); // { id, checkedInAt, questionnaire: { id, name, questions } }
-  const [answers, setAnswers] = useState({}); // { [questionId]: answer }
+  const [visit, setVisit] = useState(() => {
+    const v = BOOT?.visit;
+    return v ? { ...v, checkedInAt: new Date(v.checkedInAt) } : null;
+  }); // { id, checkedInAt, questionnaire: { id, name, questions } }
+  const [answers, setAnswers] = useState(() => BOOT?.answers || {}); // { [questionId]: answer }
   const [visitError, setVisitError] = useState('');
+  const [callDone, setCallDone] = useState(''); // store name of the call just ended, shown on the store picker
   const [training, setTraining] = useState({ m1: false, m2: false, m3: false });
 
   const [visitLog, setVisitLog] = useState([]);
   const [visitLogLoading, setVisitLogLoading] = useState(false);
   const [visitLogError, setVisitLogError] = useState('');
   const [clearTenantCode, setClearTenantCode] = useState('');
-  const [selectedStoreCode, setSelectedStoreCode] = useState('');
-  const [visitType, setVisitType] = useState(''); // '' = tenant's default questionnaire; set to pick a visit_type-scoped one instead (see pickQuestionnaire)
+  const [selectedStoreCode, setSelectedStoreCode] = useState(BOOT?.selectedStoreCode || '');
+  const [visitType, setVisitType] = useState(BOOT?.visitType || ''); // '' = tenant's default questionnaire; set to pick a visit_type-scoped one instead (see pickQuestionnaire)
 
   const [loginStatus, setLoginStatus] = useState({ users: [], count: 0, loggedInCount: 0 });
   const [loginStatusLoading, setLoginStatusLoading] = useState(false);
   const [loginStatusError, setLoginStatusError] = useState('');
+
+  // Mirror everything needed to resume after a reload. Photo preview URLs are
+  // per-page blob URLs, so they are dropped here — the photo itself is already
+  // on the server, only the thumbnail is lost.
+  useEffect(() => {
+    if (!session) {
+      writeStored(SESSION_KEY, null);
+      return;
+    }
+    const strippedAnswers = {};
+    for (const [k, v] of Object.entries(answers)) {
+      if (Array.isArray(v)) {
+        strippedAnswers[k] = v.map(row => {
+          const out = {};
+          for (const [fk, fv] of Object.entries(row || {})) {
+            out[fk] = fv && typeof fv === 'object' ? { photoId: fv.photoId } : fv;
+          }
+          return out;
+        });
+      } else if (v && typeof v === 'object') {
+        strippedAnswers[k] = { photoId: v.photoId };
+      } else {
+        strippedAnswers[k] = v;
+      }
+    }
+    writeStored(SESSION_KEY, {
+      session,
+      screen,
+      visit: visit ? { ...visit, checkedInAt: visit.checkedInAt.toISOString() } : null,
+      answers: strippedAnswers,
+      selectedStoreCode,
+      visitType,
+    });
+  }, [session, screen, visit, answers, selectedStoreCode, visitType]);
 
   async function handleRequestCode(e) {
     e.preventDefault();
@@ -162,6 +231,7 @@ export default function App() {
   }
 
   function handleLogout() {
+    writeStored(SESSION_KEY, null);
     setSession(null);
     setScreen('login');
     setEmail('');
@@ -170,6 +240,22 @@ export default function App() {
     setSelectedStoreCode('');
     setTenantChoices(null);
     setVisitType('');
+    setVisit(null);
+    setAnswers({});
+    setCallDone('');
+  }
+
+  // End the call: check out, then drop the rep back on store selection with a
+  // confirmation, session intact, ready to pick the next store.
+  async function handleEndCall() {
+    const storeName = (session.client.stores.find(s => s.code === selectedStoreCode) || session.client.stores[0])?.name || 'this store';
+    try {
+      if (visit) await checkOut(session.token, visit.id);
+      handleExitStore();
+      setCallDone(storeName);
+    } catch (err) {
+      setVisitError(err.message);
+    }
   }
 
   // Leaving a store must NOT end the session — it checks out, then returns the rep to store selection.
@@ -178,6 +264,7 @@ export default function App() {
     try {
       await checkOut(session.token, visit.id);
       handleExitStore();
+      setCallDone('');
     } catch (err) {
       setVisitError(err.message);
     }
@@ -199,6 +286,7 @@ export default function App() {
       setVisit({ id: v.id, checkedInAt: new Date(v.checkin_at), questionnaire: v.questionnaire });
       setAnswers({});
       setVisitError('');
+      setCallDone('');
     } else {
       try {
         await checkOut(session.token, visit.id);
@@ -540,6 +628,12 @@ export default function App() {
 
           {!visit ? (
             <>
+              {callDone && (
+                <div className="lp-inner-card" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <span className="lp-dot" style={{ background: 'var(--accent-2-400)' }} />
+                  <div style={{ flex: 1, fontSize: 13 }}>Call at {callDone} completed and submitted. Choose your next store.</div>
+                </div>
+              )}
               <label className="lp-field">
                 Store
                 <select
@@ -577,7 +671,7 @@ export default function App() {
 
           {!visit && (
             <button className="lp-btn lp-btn-primary lp-block" disabled={!visitType} onClick={handleToggleCheckin}>
-              {visitType ? 'Check in — verify GPS' : 'Choose a survey to check in'}
+              {visitType ? (callDone ? 'Start new call — verify GPS' : 'Check in — verify GPS') : 'Choose a store and survey to start a call'}
             </button>
           )}
 
@@ -731,7 +825,7 @@ export default function App() {
                 })}
               </div>
               {visitError && <div className="lp-error">{visitError}</div>}
-              <button className="lp-btn lp-btn-primary lp-block" onClick={handleToggleCheckin}>Check out</button>
+              <button className="lp-btn lp-btn-primary lp-block" onClick={handleEndCall}>End call</button>
             </>
           )}
 
