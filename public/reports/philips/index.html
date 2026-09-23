@@ -17,6 +17,9 @@
     ::-webkit-scrollbar-thumb { background: #D3DAE4; border-radius: 4px; }
     input[type="checkbox"] { accent-color: #0A5EEA; }
   </style>
+  <!-- Reads .xlsx / .xls workbooks in the browser so a section can be updated
+       straight from Excel; CSV still works and needs no library. -->
+  <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
 </helmet>
 
 <div style="font-family: 'Helvetica Neue', Arial, sans-serif; background: #F3F5F8; min-height: 100vh; display: flex; color: #14181F;">
@@ -60,7 +63,7 @@
         </button>
         <label style="display:flex; align-items:center; gap:8px; background:#132A57; color:#fff; border:1px solid rgba(255,255,255,0.12); border-radius:8px; padding:9px 12px; font-size:12.5px; font-weight:600; cursor:pointer;" style-hover="background:#1B3A72;">
           <span>⬆</span> Import from Excel
-          <input type="file" accept=".csv" onChange="{{ importExcel }}" style="display:none;" />
+          <input type="file" accept=".xlsx,.xls,.xlsm,.csv" onChange="{{ importExcel }}" style="display:none;" />
         </label>
       </sc-if>
       <button onClick="{{ resetFilters }}" style="display:flex; align-items:center; justify-content:center; gap:8px; background:transparent; color:#8EA3C7; border:1px solid rgba(255,255,255,0.14); border-radius:8px; padding:8px 12px; font-size:12px; font-weight:600; cursor:pointer;" style-hover="color:#fff; border-color:#C6F135;">
@@ -96,9 +99,12 @@
       <div style="display:flex; gap:10px; flex-wrap:wrap; padding: 14px 28px; background:#fff; border-bottom:1px solid #E4E9F0;">
         <sc-for list="{{ crossFilters }}" as="cf" hint-placeholder-count="4">
           <div style="display:flex; flex-direction:column; gap:3px;">
-            <span style="font-size:10px; font-weight:700; color:#8592A6; text-transform:uppercase; letter-spacing:0.4px;">{{ cf.label }}</span>
+            <span style="font-size:10px; font-weight:700; color:#8592A6; text-transform:uppercase; letter-spacing:0.4px; white-space:nowrap;">{{ cf.label }}</span>
             <sc-if value="{{ cf.isSearch }}" hint-placeholder-val="{{ false }}">
               <input type="text" placeholder="Type a store name…" onInput="{{ cf.onChange }}" value="{{ cf.value }}" style="border:1px solid #DCE3ED; border-radius:7px; padding:6px 10px; font-size:12.5px; font-weight:600; color:#1B2433; background:#F8FAFC; min-width:160px;" />
+            </sc-if>
+            <sc-if value="{{ cf.isDate }}" hint-placeholder-val="{{ false }}">
+              <input type="date" onChange="{{ cf.onChange }}" value="{{ cf.value }}" min="{{ cf.min }}" max="{{ cf.max }}" style="border:1px solid #DCE3ED; border-radius:7px; padding:5px 10px; font-size:12.5px; font-weight:600; color:#1B2433; background:#F8FAFC; min-width:140px;" />
             </sc-if>
             <sc-if value="{{ cf.options }}" hint-placeholder-val="{{ true }}">
               <select onChange="{{ cf.onChange }}" value="{{ cf.value }}" style="border:1px solid #DCE3ED; border-radius:7px; padding:6px 10px; font-size:12.5px; font-weight:600; color:#1B2433; background:#F8FAFC; min-width:140px;">
@@ -887,22 +893,43 @@ class Component extends DCLogic {
     this.setState({ subFilters: {}, crossFilterValues: {} });
   }
 
+  // Downloads the WHOLE dashboard as one workbook — a sheet per section, named
+  // after that section, in the same column order the importer expects. So the
+  // file that comes out is the file you edit and put straight back in.
   exportExcel() {
-    const section = this.state.activeSection;
-    const { rows, headers } = this.getExportRows(section);
-    const csv = [headers.join(',')].concat(rows.map(r => r.map(v => {
-      const s = String(v == null ? '' : v);
-      return /[",\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
-    }).join(','))).join('\n');
-    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = section + '-export.csv';
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-    URL.revokeObjectURL(url);
+    const stamp = new Date().toISOString().slice(0, 10);
+    if (typeof XLSX === 'undefined') {
+      const section = this.state.activeSection;
+      const { rows, headers } = this.getExportRows(section);
+      const csv = [headers.join(',')].concat(rows.map(r => r.map(v => {
+        const s = String(v == null ? '' : v);
+        return /[",\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
+      }).join(','))).join('\n');
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = section + '-export.csv';
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+      return;
+    }
+    const wb = XLSX.utils.book_new();
+    for (const def of SECTION_DEFS) {
+      const { rows, headers } = this.getExportRows(def.key);
+      if (!headers.length) continue;
+      const data = [headers].concat(rows.map(r => headers.map((_, i) => {
+        const v = Array.isArray(r) ? r[i] : null;
+        return v == null ? '' : v;
+      })));
+      const ws = XLSX.utils.aoa_to_sheet(data);
+      ws['!cols'] = headers.map(() => ({ wch: 18 }));
+      ws['!freeze'] = { xSplit: 0, ySplit: 1 };
+      XLSX.utils.book_append_sheet(wb, ws, def.label.slice(0, 31));
+    }
+    XLSX.writeFile(wb, 'philips-ph-dashboard-data-' + stamp + '.xlsx');
   }
 
   getExportRows(section) {
@@ -922,14 +949,51 @@ class Component extends DCLogic {
     return map[section] || { headers: [], rows: [] };
   }
 
+  // Pull the rows for THIS section out of a parsed workbook. If a sheet is
+  // named after the section (as in the Leegra data workbook) that sheet wins;
+  // otherwise the first sheet with content is used, so a one-sheet export
+  // straight out of Excel works too.
+  rowsFromWorkbook(wb, section) {
+    const label = (SECTION_DEFS.find(s => s.key === section) || {}).label || section;
+    const norm = s => String(s || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+    const wanted = norm(label);
+    const named = wb.SheetNames.find(n => norm(n) === wanted)
+      || wb.SheetNames.find(n => wanted.indexOf(norm(n)) === 0 && norm(n).length > 5);
+    const order = named ? [named] : wb.SheetNames;
+    for (const name of order) {
+      const rows = XLSX.utils.sheet_to_json(wb.Sheets[name], { header: 1, blankrows: false, raw: false, defval: '' });
+      const filled = rows.filter(r => r.some(c => String(c).trim() !== ''));
+      if (filled.length) return filled;
+    }
+    return [];
+  }
+
   importExcel(e) {
     const file = e.target.files && e.target.files[0];
     if (!file) return;
     const section = this.state.activeSection;
     const input = e.target;
+    // .xlsx / .xls go through SheetJS; anything else is read as CSV text.
+    const isWorkbook = /\.(xlsx|xlsm|xls)$/i.test(file.name);
+    if (isWorkbook && typeof XLSX === 'undefined') {
+      window.alert('The Excel reader has not finished loading — wait a moment and try again, or save the sheet as CSV.');
+      input.value = '';
+      return;
+    }
     const reader = new FileReader();
     reader.onload = () => {
-      const rows = parseCsv(String(reader.result));
+      let rows;
+      if (isWorkbook) {
+        try {
+          rows = this.rowsFromWorkbook(XLSX.read(new Uint8Array(reader.result), { type: 'array' }), section);
+        } catch (err) {
+          window.alert('Could not read ' + file.name + ' — ' + err.message);
+          input.value = '';
+          return;
+        }
+      } else {
+        rows = parseCsv(String(reader.result));
+      }
       // Drop a header row if the first cell repeats the section's first column.
       const headers = this.getExportRows(section).headers;
       if (rows.length && headers.length && String(rows[0][0]).trim().toLowerCase() === String(headers[0]).trim().toLowerCase()) rows.shift();
@@ -961,7 +1025,7 @@ class Component extends DCLogic {
         })
         .then(() => { input.value = ''; });
     };
-    reader.readAsText(file);
+    if (isWorkbook) reader.readAsArrayBuffer(file); else reader.readAsText(file);
   }
 
   // The append endpoint needs the monthly admin code. Asked once per browser
@@ -1017,10 +1081,41 @@ class Component extends DCLogic {
       .then(live => {
         if (!live || !this.baseData) return;
         const base = this.baseData;
+        // An app visit that was exported and re-imported as history would
+        // otherwise show twice, so live rows already in the base are skipped.
+        const norm = (x) => String(x == null ? '' : x).replace(/\s+/g, ' ').trim().toLowerCase();
+        const attKey = (r) => [r[0], r[1], r[2], r[7]].map(norm).join('|');
+        const fbKey = (r) => [r[3], r[5], r[6], r[8]].map(norm).join('|');
+        const seenAtt = new Set((base.attendance || []).map(attKey));
+        const seenFb = new Set((base.feedback || []).map(fbKey));
+        // App rep names are matched to the dashboard's spelling (e.g. the
+        // double space in "Mmuluki  Makhurane") so each rep shows once.
+        const repByNorm = {};
+        for (const n of REP_NAMES) repByNorm[norm(n)] = n;
+        const fixRep = (n) => repByNorm[norm(n)] || n;
+        const liveAtt = (live.attendance || []).map(r => [fixRep(r[0]), ...r.slice(1)]).filter(r => !seenAtt.has(attKey(r)));
+        const liveFb = (live.feedback || []).map(r => [...r.slice(0, 3), fixRep(r[3]), ...r.slice(4)]).filter(r => !seenFb.has(fbKey(r)));
+        // App check-ins also feed each rep's Blitz Call Diary detail table.
+        const toMin = (t) => { const [hh, mm] = String(t || '').split(':').map(Number); return (hh || 0) * 60 + (mm || 0); };
+        const blitzDetail = {};
+        for (const [k, rows] of Object.entries(base.blitzVisitDetail || {})) blitzDetail[k] = [...rows];
+        for (const r of liveAtt) {
+          const rep = repByNorm[norm(r[0])] || r[0];
+          const list = blitzDetail[rep] = blitzDetail[rep] || [];
+          if (list.some(v => norm(v.date) === norm(r[1]) && norm(v.store) === norm(r[7]) && norm(v.start) === norm(r[2]))) continue;
+          list.push({
+            date: r[1], store: r[7], channel: r[5], start: r[2], end: r[3] || '—',
+            duration: r[4] ? toMin(r[4]) : 0,
+            lateCheckin: !!r[2] && toMin(r[2]) > 8 * 60,
+            lateCheckout: false, locationDrift: false, source: 'app',
+          });
+        }
+        for (const k of Object.keys(blitzDetail)) blitzDetail[k].sort((a, b) => String(b.date).localeCompare(String(a.date)) || String(b.start).localeCompare(String(a.start)));
         this.setState({
           data: Object.assign({}, base, {
-            attendance: [...(base.attendance || []), ...(live.attendance || [])],
-            feedback: [...(base.feedback || []), ...(live.feedback || [])],
+            attendance: [...(base.attendance || []), ...liveAtt],
+            feedback: [...(base.feedback || []), ...liveFb],
+            blitzVisitDetail: blitzDetail,
           }),
           liveFeedSeen: true,
           liveVisitCount: (live.attendance || []).length,
@@ -1226,6 +1321,21 @@ class Component extends DCLogic {
     if (cf.channel && cf.channel !== 'All') attFiltered = attFiltered.filter(r => r[5] === cf.channel);
     if (cf.region && cf.region !== 'All') attFiltered = attFiltered.filter(r => (REP_REGION[r[0]] || 'Unassigned') === cf.region);
     if (cf.blitz && cf.blitz !== 'All') attFiltered = attFiltered.filter(r => r[0] === cf.blitz);
+    const toISO = (v) => {
+      if (v == null || v === '') return '';
+      if (typeof v === 'number') { const dt = new Date(Math.round((v - 25569) * 864e5)); return dt.toISOString().slice(0, 10); }
+      const s = String(v).trim();
+      let m = s.match(/^(\d{4})[-\/.](\d{1,2})[-\/.](\d{1,2})/);
+      if (m) return m[1] + '-' + m[2].padStart(2, '0') + '-' + m[3].padStart(2, '0');
+      m = s.match(/^(\d{1,2})[-\/.](\d{1,2})[-\/.](\d{4})/);
+      if (m) return m[3] + '-' + m[2].padStart(2, '0') + '-' + m[1].padStart(2, '0');
+      const dt = new Date(s); if (isNaN(dt)) return '';
+      return dt.getFullYear() + '-' + String(dt.getMonth() + 1).padStart(2, '0') + '-' + String(dt.getDate()).padStart(2, '0');
+    };
+    const inRange = (iso, from, to) => !!iso && (!from || iso >= from) && (!to || iso <= to);
+    const attIsoDates = d.attendance.map(r => toISO(r[1])).filter(Boolean).sort();
+    const attMinDate = attIsoDates[0] || '', attMaxDate = attIsoDates[attIsoDates.length - 1] || '';
+    if (cf.dateFrom || cf.dateTo) attFiltered = attFiltered.filter(r => inRange(toISO(r[1]), cf.dateFrom, cf.dateTo));
     const attStoreQuery = (cf.storeSearch || '').trim().toLowerCase();
     if (attStoreQuery) attFiltered = attFiltered.filter(r => String(r[7] || '').toLowerCase().includes(attStoreQuery));
 
@@ -1320,12 +1430,15 @@ class Component extends DCLogic {
 
     // ---- Per-visit detail table for whichever rep is expanded ----
     const blitzDetailChannelOptions = ['All', ...new Set(Object.values(blitzVisitDetailAll).flat().map(v => v.channel))].filter(Boolean);
+    const blitzIsoDates = Object.values(blitzVisitDetailAll).flat().map(v => toISO(v.date)).filter(Boolean).sort();
+    const blitzMinDate = blitzIsoDates[0] || '', blitzMaxDate = blitzIsoDates[blitzIsoDates.length - 1] || '';
     const blitzDetailMonthOptions = ['All', ...[...new Set(Object.values(blitzVisitDetailAll).flat().map(v => (v.date || '').slice(0, 7)))].filter(Boolean).sort()];
     let blitzDetailRows = [];
     if (expandedBlitzRep && blitzVisitDetailAll[expandedBlitzRep]) {
       blitzDetailRows = blitzVisitDetailAll[expandedBlitzRep];
       if (cf.blitzDetailChannel && cf.blitzDetailChannel !== 'All') blitzDetailRows = blitzDetailRows.filter(v => v.channel === cf.blitzDetailChannel);
       if (cf.blitzMonth && cf.blitzMonth !== 'All') blitzDetailRows = blitzDetailRows.filter(v => (v.date || '').slice(0, 7) === cf.blitzMonth);
+      if (cf.blitzDateFrom || cf.blitzDateTo) blitzDetailRows = blitzDetailRows.filter(v => inRange(toISO(v.date), cf.blitzDateFrom, cf.blitzDateTo));
       if (cf.blitzLateCheckin === 'Yes') blitzDetailRows = blitzDetailRows.filter(v => v.lateCheckin);
       if (cf.blitzLateCheckout === 'Yes') blitzDetailRows = blitzDetailRows.filter(v => v.lateCheckout);
       if (cf.blitzLocationDrift === 'Yes') blitzDetailRows = blitzDetailRows.filter(v => v.locationDrift);
@@ -1626,12 +1739,16 @@ class Component extends DCLogic {
         { label: 'Region', value: cf.region || 'All', options: attRegions, onChange: (e) => this.setCrossFilter('attendance', 'region', e.target.value) },
         { label: 'Channel', value: cf.channel || 'All', options: attChannels, onChange: (e) => this.setCrossFilter('attendance', 'channel', e.target.value) },
         { label: 'Blitz Member', value: cf.blitz || 'All', options: attBlitzMembers, onChange: (e) => this.setCrossFilter('attendance', 'blitz', e.target.value) },
+        { label: 'From Day', value: cf.dateFrom || '', options: null, isDate: true, min: attMinDate, max: attMaxDate, onChange: (e) => this.setCrossFilter('attendance', 'dateFrom', e.target.value) },
+        { label: 'To Day', value: cf.dateTo || '', options: null, isDate: true, min: attMinDate, max: attMaxDate, onChange: (e) => this.setCrossFilter('attendance', 'dateTo', e.target.value) },
         { label: 'Search Store', value: cf.storeSearch || '', options: null, isSearch: true, onChange: (e) => this.setCrossFilter('attendance', 'storeSearch', e.target.value) },
       ];
     } else if (active === 'blitz') {
       crossFilters = [
         { label: 'Visit Channel (in detail below)', value: cf.blitzDetailChannel || 'All', options: blitzDetailChannelOptions, onChange: (e) => this.setCrossFilter('blitz', 'blitzDetailChannel', e.target.value) },
         { label: 'Month (in detail below)', value: cf.blitzMonth || 'All', options: blitzDetailMonthOptions, onChange: (e) => this.setCrossFilter('blitz', 'blitzMonth', e.target.value) },
+        { label: 'From Day (in detail below)', value: cf.blitzDateFrom || '', options: null, isDate: true, min: blitzMinDate, max: blitzMaxDate, onChange: (e) => this.setCrossFilter('blitz', 'blitzDateFrom', e.target.value) },
+        { label: 'To Day (in detail below)', value: cf.blitzDateTo || '', options: null, isDate: true, min: blitzMinDate, max: blitzMaxDate, onChange: (e) => this.setCrossFilter('blitz', 'blitzDateTo', e.target.value) },
         { label: 'Late Check-in (>8am)', value: cf.blitzLateCheckin || 'All', options: ['All', 'Yes'], onChange: (e) => this.setCrossFilter('blitz', 'blitzLateCheckin', e.target.value) },
         { label: 'Late Check-out (>17:00)', value: cf.blitzLateCheckout || 'All', options: ['All', 'Yes'], onChange: (e) => this.setCrossFilter('blitz', 'blitzLateCheckout', e.target.value) },
         { label: 'Far From Store (>1km)', value: cf.blitzLocationDrift || 'All', options: ['All', 'Yes'], onChange: (e) => this.setCrossFilter('blitz', 'blitzLocationDrift', e.target.value) },
