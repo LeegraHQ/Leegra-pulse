@@ -1,0 +1,2011 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    @font-face { font-family: 'Inter'; src: local('Inter'); }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #F3F5F8; }
+    ::-webkit-scrollbar { width: 8px; height: 8px; }
+    ::-webkit-scrollbar-thumb { background: #D3DAE4; border-radius: 4px; }
+    input[type="checkbox"] { accent-color: #0A5EEA; }
+  </style>
+  <!-- Reads .xlsx / .xls workbooks in the browser so a section can be updated
+       straight from Excel; CSV still works and needs no library. -->
+  <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
+</helmet>
+
+<div style="font-family: 'Helvetica Neue', Arial, sans-serif; background: #F3F5F8; min-height: 100vh; display: flex; color: #14181F;">
+
+  <!-- SIDEBAR -->
+  <div style="width: 260px; min-width: 260px; background: #0B1B3A; display: flex; flex-direction: column; height: 100vh; position: sticky; top: 0;">
+    <div style="padding: 20px 18px 14px 18px; display: flex; align-items: center; gap: 10px; border-bottom: 1px solid rgba(255,255,255,0.08);">
+      <img src="assets/philips-logo.jpg" alt="Philips" style="width: 34px; height: 34px; object-fit: contain; border-radius: 7px; background: #fff;" />
+      <div style="display:flex; flex-direction:column; line-height:1.15;">
+        <span style="color:#fff; font-size:14px; font-weight:700; letter-spacing:0.2px;">Phillips PH</span>
+        <span style="color:#8EA3C7; font-size:11px; font-weight:500;">Blitz Dashboard</span>
+      </div>
+    </div>
+
+    <div style="flex:1; overflow-y:auto; padding: 14px 12px;">
+      <div style="color:#5E7AA8; font-size:10.5px; font-weight:700; letter-spacing:0.8px; padding: 4px 8px 8px 8px; text-transform:uppercase;">Report Slicers</div>
+      <sc-for list="{{ sections }}" as="sec" hint-placeholder-count="7">
+        <div onClick="{{ selectSection }}" data-key="{{ sec.key }}" style="{{ sec.buttonStyle }}">
+          <span style="{{ sec.dotStyle }}"></span>
+          <span style="flex:1;">{{ sec.label }}</span>
+          <span style="{{ sec.badgeStyle }}">{{ sec.count }}</span>
+        </div>
+      </sc-for>
+
+      <div style="color:#5E7AA8; font-size:10.5px; font-weight:700; letter-spacing:0.8px; padding: 18px 8px 8px 8px; text-transform:uppercase;">{{ subFilterLabel }}</div>
+      <div style="max-height: 260px; overflow-y:auto; padding: 0 4px;">
+        <sc-for list="{{ subFilterOptions }}" as="opt" hint-placeholder-count="5">
+          <label style="display:flex; align-items:center; gap:8px; padding:6px 8px; border-radius:7px; cursor:pointer; color:#C7D4E8; font-size:12.5px;" style-hover="background: rgba(255,255,255,0.06);">
+            <input type="checkbox" checked="{{ opt.checked }}" onChange="{{ opt.toggle }}" style="width:13px;height:13px;" />
+            <span style="flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">{{ opt.label }}</span>
+            <span style="color:#5E7AA8; font-size:11px;">{{ opt.count }}</span>
+          </label>
+        </sc-for>
+      </div>
+    </div>
+
+    <div style="padding: 14px 14px 18px 14px; border-top: 1px solid rgba(255,255,255,0.08); display:flex; flex-direction:column; gap:8px;">
+      <sc-if value="{{ isAdminUnlocked }}" hint-placeholder-val="{{ false }}">
+        <button onClick="{{ exportExcel }}" style="display:flex; align-items:center; gap:8px; background:#132A57; color:#fff; border:1px solid rgba(255,255,255,0.12); border-radius:8px; padding:9px 12px; font-size:12.5px; font-weight:600; cursor:pointer;" style-hover="background:#1B3A72;">
+          <span>⬇</span> Export to Excel
+        </button>
+        <label style="display:flex; align-items:center; gap:8px; background:#132A57; color:#fff; border:1px solid rgba(255,255,255,0.12); border-radius:8px; padding:9px 12px; font-size:12.5px; font-weight:600; cursor:pointer;" style-hover="background:#1B3A72;">
+          <span>⬆</span> Import from Excel
+          <input type="file" accept=".xlsx,.xls,.xlsm,.csv" onChange="{{ importExcel }}" style="display:none;" />
+        </label>
+      </sc-if>
+      <button onClick="{{ resetFilters }}" style="display:flex; align-items:center; justify-content:center; gap:8px; background:transparent; color:#8EA3C7; border:1px solid rgba(255,255,255,0.14); border-radius:8px; padding:8px 12px; font-size:12px; font-weight:600; cursor:pointer;" style-hover="color:#fff; border-color:#C6F135;">
+        Reset Filters
+      </button>
+    </div>
+  </div>
+
+  <!-- MAIN -->
+  <div style="flex:1; min-width:0; display:flex; flex-direction:column;">
+
+    <!-- Top bar -->
+    <div style="display:flex; align-items:center; justify-content:space-between; padding: 16px 28px; background:#fff; border-bottom:1px solid #E4E9F0; position:sticky; top:0; z-index:5;">
+      <div>
+        <div style="font-size:19px; font-weight:800; color:#0B1B3A;">{{ activeSectionLabel }}</div>
+        <div style="font-size:12.5px; color:#6B7A90; margin-top:2px;">{{ activeSectionSub }}</div>
+      </div>
+      <div style="display:flex; align-items:center; gap:14px;">
+        <sc-if value="{{ hasLiveFeed }}" hint-placeholder-val="{{ false }}">
+          <div style="{{ liveBadgeStyle }}" title="{{ liveBadgeTitle }}">
+            <span style="{{ liveDotStyle }}"></span>
+            {{ liveBadgeLabel }}
+          </div>
+        </sc-if>
+        <div style="background:#0B1B3A; border-radius:10px; padding:6px 14px;">
+          <img src="assets/leegra-logo.png" alt="Leegra Marketing" style="height:30px; display:block;" />
+        </div>
+      </div>
+    </div>
+
+    <!-- Cross filter toolbar -->
+    <sc-if value="{{ hasCrossFilters }}" hint-placeholder-val="{{ false }}">
+      <div style="display:flex; gap:10px; flex-wrap:wrap; padding: 14px 28px; background:#fff; border-bottom:1px solid #E4E9F0;">
+        <sc-for list="{{ crossFilters }}" as="cf" hint-placeholder-count="4">
+          <div style="display:flex; flex-direction:column; gap:3px;">
+            <span style="font-size:10px; font-weight:700; color:#8592A6; text-transform:uppercase; letter-spacing:0.4px; white-space:nowrap;">{{ cf.label }}</span>
+            <sc-if value="{{ cf.isSearch }}" hint-placeholder-val="{{ false }}">
+              <input type="text" placeholder="Type a store name…" onInput="{{ cf.onChange }}" value="{{ cf.value }}" style="border:1px solid #DCE3ED; border-radius:7px; padding:6px 10px; font-size:12.5px; font-weight:600; color:#1B2433; background:#F8FAFC; min-width:160px;" />
+            </sc-if>
+            <sc-if value="{{ cf.isDate }}" hint-placeholder-val="{{ false }}">
+              <input type="date" onChange="{{ cf.onChange }}" value="{{ cf.value }}" min="{{ cf.min }}" max="{{ cf.max }}" style="border:1px solid #DCE3ED; border-radius:7px; padding:5px 10px; font-size:12.5px; font-weight:600; color:#1B2433; background:#F8FAFC; min-width:140px;" />
+            </sc-if>
+            <sc-if value="{{ cf.options }}" hint-placeholder-val="{{ true }}">
+              <select onChange="{{ cf.onChange }}" value="{{ cf.value }}" style="border:1px solid #DCE3ED; border-radius:7px; padding:6px 10px; font-size:12.5px; font-weight:600; color:#1B2433; background:#F8FAFC; min-width:140px;">
+                <sc-for list="{{ cf.options }}" as="o" hint-placeholder-count="3">
+                  <option value="{{ o }}">{{ o }}</option>
+                </sc-for>
+              </select>
+            </sc-if>
+          </div>
+        </sc-for>
+      </div>
+    </sc-if>
+
+    <div style="flex:1; padding: 22px 28px 40px 28px; overflow-y:auto;">
+
+      <!-- KPI ROW -->
+      <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap:14px; margin-bottom:20px;">
+        <sc-for list="{{ kpis }}" as="k" hint-placeholder-count="4">
+          <div style="background:#fff; border:1px solid #E4E9F0; border-radius:14px; padding:16px 18px;">
+            <div style="font-size:11px; font-weight:700; color:#8592A6; text-transform:uppercase; letter-spacing:0.4px;">{{ k.label }}</div>
+            <div style="font-size:24px; font-weight:800; color:#0B1B3A; margin-top:6px;">{{ k.value }}</div>
+            <div style="{{ k.deltaStyle }}">{{ k.delta }}</div>
+          </div>
+        </sc-for>
+      </div>
+
+      <!-- SECTION: Weekly Feedback -->
+      <sc-if value="{{ isFeedback }}" hint-placeholder-val="{{ false }}">
+        <div style="display:grid; grid-template-columns: 1fr 1fr 0.9fr; gap:16px; margin-bottom:16px;">
+          <div style="background:#fff; border:1px solid #E4E9F0; border-radius:14px; padding:18px 20px;">
+            <div style="font-size:13px; font-weight:700; color:#0B1B3A; margin-bottom:12px;">Response Rate by Region</div>
+            <sc-for list="{{ feedbackByRegion }}" as="row" hint-placeholder-count="4">
+              <div style="{{ row.rowStyle }}" onClick="{{ row.onClick }}">
+                <div style="display:flex; justify-content:space-between; font-size:12px; color:#3A4658; margin-bottom:4px;"><span>{{ row.name }}</span><span style="font-weight:700;">{{ row.pct }}</span></div>
+                <div style="height:8px; background:#EEF1F6; border-radius:5px; overflow:hidden;"><div style="{{ row.barStyle }}"></div></div>
+              </div>
+            </sc-for>
+          </div>
+          <div style="background:#fff; border:1px solid #E4E9F0; border-radius:14px; padding:18px 20px;">
+            <div style="font-size:13px; font-weight:700; color:#0B1B3A; margin-bottom:12px;">Responses by Category</div>
+            <sc-for list="{{ feedbackByCategory }}" as="row" hint-placeholder-count="4">
+              <div style="{{ row.rowStyle }}" onClick="{{ row.onClick }}">
+                <div style="display:flex; justify-content:space-between; font-size:12px; color:#3A4658; margin-bottom:4px;"><span>{{ row.name }}</span><span style="font-weight:700;">{{ row.count }}</span></div>
+                <div style="height:8px; background:#EEF1F6; border-radius:5px; overflow:hidden;"><div style="{{ row.barStyle }}"></div></div>
+              </div>
+            </sc-for>
+          </div>
+          <div style="background:#fff; border:1px solid #E4E9F0; border-radius:14px; padding:18px 20px; display:flex; flex-direction:column; align-items:center;">
+            <div style="font-size:13px; font-weight:700; color:#0B1B3A; margin-bottom:14px; align-self:flex-start;">Yes vs No</div>
+            <div style="{{ feedbackDonutStyle }}">
+              <div style="position:absolute; inset:20px; background:#fff; border-radius:50%; display:flex; align-items:center; justify-content:center; flex-direction:column;">
+                <div style="font-size:20px; font-weight:800; color:#0B1B3A;">{{ feedbackYesPctLabel }}</div>
+                <div style="font-size:9.5px; color:#8592A6; font-weight:700; text-transform:uppercase; letter-spacing:0.3px;">Available</div>
+              </div>
+            </div>
+            <div style="display:flex; gap:14px; margin-top:16px; font-size:11px; color:#3A4658;">
+              <span><span style="display:inline-block; width:9px; height:9px; border-radius:2px; background:#0A5EEA; margin-right:5px;"></span>Yes ({{ feedbackYesTotal }})</span>
+              <span><span style="display:inline-block; width:9px; height:9px; border-radius:2px; background:#EEF1F6; margin-right:5px;"></span>No ({{ feedbackNoTotal }})</span>
+            </div>
+          </div>
+        </div>
+
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:16px; margin-bottom:16px;">
+          <div style="background:#fff; border:1px solid #E4E9F0; border-radius:14px; padding:18px 20px;">
+            <div style="font-size:13px; font-weight:700; color:#0B1B3A; margin-bottom:12px;">Availability by Blitz Rep</div>
+            <sc-for list="{{ feedbackByRep }}" as="row" hint-placeholder-count="6">
+              <div style="{{ row.rowStyle }}" onClick="{{ row.onClick }}">
+                <div style="display:flex; justify-content:space-between; font-size:12px; color:#3A4658; margin-bottom:4px;"><span>{{ row.name }}</span><span style="font-weight:700;">{{ row.pct }} · {{ row.count }}</span></div>
+                <div style="height:8px; background:#EEF1F6; border-radius:5px; overflow:hidden;"><div style="{{ row.barStyle }}"></div></div>
+              </div>
+            </sc-for>
+          </div>
+          <div style="background:#fff; border:1px solid #E4E9F0; border-radius:14px; padding:18px 20px;">
+            <div style="font-size:13px; font-weight:700; color:#0B1B3A; margin-bottom:12px;">Availability by Question</div>
+            <div style="max-height:280px; overflow-y:auto; padding-right:4px;">
+              <sc-for list="{{ feedbackByQuestion }}" as="row" hint-placeholder-count="6">
+                <div style="{{ row.rowStyle }}" onClick="{{ row.onClick }}">
+                  <div style="display:flex; justify-content:space-between; gap:10px; font-size:11.5px; color:#3A4658; margin-bottom:4px;"><span style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">{{ row.name }}</span><span style="font-weight:700; white-space:nowrap;">{{ row.pct }} · {{ row.count }}</span></div>
+                  <div style="height:8px; background:#EEF1F6; border-radius:5px; overflow:hidden;"><div style="{{ row.barStyle }}"></div></div>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+        </div>
+
+        <div style="font-size:13px; font-weight:700; color:#0B1B3A; margin: 6px 0 12px 0;">Survey Answers</div>
+        <div style="background:#fff; border:1px solid #E4E9F0; border-radius:14px; overflow:hidden; margin-bottom:22px;">
+          <table style="width:100%; border-collapse:collapse; font-size:12.5px;">
+            <thead><tr style="background:#F8FAFC;">
+              <th style="{{ thStyle }}">Date</th><th style="{{ thStyle }}">Region</th><th style="{{ thStyle }}">Category</th><th style="{{ thStyle }}">Blitz Rep</th><th style="{{ thStyle }}">Store</th><th style="{{ thStyle }}">Question</th><th style="{{ thStyle }}">Answer</th>
+            </tr></thead>
+            <tbody>
+              <sc-for list="{{ feedbackAnswers }}" as="row" hint-placeholder-count="10">
+                <tr style="border-top:1px solid #F1F3F7;">
+                  <td style="{{ tdStyle }}">{{ row.date }}</td><td style="{{ tdStyle }}">{{ row.region }}</td><td style="{{ tdStyle }}">{{ row.category }}</td><td style="{{ tdStyle }}">{{ row.rep }}</td><td style="{{ tdStyle }}">{{ row.store }}</td><td style="{{ tdStyle }}">{{ row.question }}</td><td style="{{ row.answerStyle }}">{{ row.answer }}</td>
+                </tr>
+              </sc-for>
+            </tbody>
+          </table>
+          <div style="padding:12px 16px; font-size:11.5px; color:#8592A6; border-top:1px solid #F1F3F7;">Showing {{ feedbackAnswers.length }} of {{ feedbackFilteredCount }} matching responses</div>
+        </div>
+
+        <div style="font-size:13px; font-weight:700; color:#0B1B3A; margin: 6px 0 12px 0;">Store Execution Pictures</div>
+        <div style="background:#fff; border:1px solid #E4E9F0; border-radius:14px; padding:12px 16px; margin-bottom:16px; display:flex; align-items:center; justify-content:space-between;">
+          <div style="font-size:13px; font-weight:700; color:#0B1B3A;">Photo Demo</div>
+          <label style="display:flex; align-items:center; gap:8px; background:#0A5EEA; color:#fff; border-radius:8px; padding:8px 14px; font-size:12.5px; font-weight:700; cursor:pointer;" style-hover="background:#0850C4;">
+            Upload up to 20 photos
+            <input type="file" accept="image/*" multiple="{{ true }}" onChange="{{ handlePhotoUpload }}" style="display:none;" />
+          </label>
+        </div>
+        <sc-if value="{{ photoUploadCount }}" hint-placeholder-val="{{ false }}">
+          <div style="display:grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap:14px;">
+            <sc-for list="{{ photoUploadCards }}" as="p" hint-placeholder-count="4">
+              <div style="background:#fff; border:1px solid #E4E9F0; border-radius:14px; overflow:hidden;">
+                <img src="{{ p.dataUrl }}" style="width:100%; height:140px; object-fit:cover; display:block; background:#F1F3F7;" />
+                <div style="padding:12px 14px;">
+                  <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:8px;">
+                    <span style="font-size:11px; color:#8592A6; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:120px;">{{ p.fileName }}</span>
+                    <span style="{{ p.statusStyle }}">{{ p.statusLabel }}</span>
+                  </div>
+                  <sc-if value="{{ p.showDone }}" hint-placeholder-val="{{ false }}">
+                    <div style="font-size:12.5px; font-weight:700; color:#0B1B3A;">{{ p.matchedStore }}</div>
+                    <div style="font-size:11px; color:#8592A6; margin:4px 0 8px 0;">{{ p.region }} · {{ p.channel }}</div>
+                    <div style="font-size:11px; font-weight:700; color:#0A5EEA;">Assigned → {{ p.rep }}</div>
+                  </sc-if>
+                </div>
+              </div>
+            </sc-for>
+          </div>
+        </sc-if>
+      </sc-if>
+
+      <!-- SECTION: Time and Attendance -->
+      <sc-if value="{{ isAttendance }}" hint-placeholder-val="{{ false }}">
+        <div style="background:#fff; border:1px solid #E4E9F0; border-radius:14px; padding:18px 20px; margin-bottom:16px;">
+          <div style="font-size:13px; font-weight:700; color:#0B1B3A; margin-bottom:12px;">Avg Time in Store by Rep</div>
+          <sc-for list="{{ attendanceByStaff }}" as="row" hint-placeholder-count="7">
+            <div style="margin-bottom:11px;">
+              <div style="display:flex; justify-content:space-between; font-size:12px; color:#3A4658; margin-bottom:4px;"><span>{{ row.name }}</span><span style="font-weight:700;">{{ row.avg }} · {{ row.visits }} visits</span></div>
+              <div style="height:8px; background:#EEF1F6; border-radius:5px; overflow:hidden;"><div style="{{ row.barStyle }}"></div></div>
+            </div>
+          </sc-for>
+        </div>
+        <div style="background:#fff; border:1px solid #E4E9F0; border-radius:14px; overflow:hidden; margin-bottom:16px;">
+          <table style="width:100%; border-collapse:collapse; font-size:12.5px;">
+            <thead><tr style="background:#F8FAFC;">
+              <th style="{{ thStyle }}">Rep</th><th style="{{ thStyle }}">Region</th><th style="{{ thStyle }}">Date</th><th style="{{ thStyle }}">Check In</th><th style="{{ thStyle }}">Check Out</th><th style="{{ thStyle }}">Time Spent</th><th style="{{ thStyle }}">Channel</th><th style="{{ thStyle }}">Store</th>
+            </tr></thead>
+            <tbody>
+              <sc-for list="{{ attendanceRows }}" as="row" hint-placeholder-count="10">
+                <tr style="{{ row.rowStyle }}">
+                  <td style="{{ tdStyle }}">{{ row.name }}</td><td style="{{ tdStyle }}">{{ row.region }}</td><td style="{{ tdStyle }}">{{ row.date }}</td><td style="{{ tdStyle }}">{{ row.checkin }}</td><td style="{{ tdStyle }}">{{ row.checkout }}</td><td style="{{ tdStyle }}">{{ row.spent }}</td><td style="{{ tdStyle }}">{{ row.channel }}</td><td style="{{ tdStyle }}">{{ row.store }}</td>
+                </tr>
+              </sc-for>
+            </tbody>
+          </table>
+          <div style="padding:10px 16px; font-size:11px; color:#8592A6; border-top:1px solid #F1F3F7;">Rows highlighted red where check-out is after 18:00 or time spent is under 15 minutes</div>
+        </div>
+
+        <div style="font-size:13px; font-weight:700; color:#0B1B3A; margin: 6px 0 12px 0;">Visit Behaviour Trends per Blitz Member</div>
+        <div style="background:#fff; border:1px solid #E4E9F0; border-radius:14px; overflow:hidden;">
+          <table style="width:100%; border-collapse:collapse; font-size:12.5px;">
+            <thead><tr style="background:#F8FAFC;">
+              <th style="{{ thStyle }}">Blitz Member</th><th style="{{ thStyleRight }}">Visits</th><th style="{{ thStyleRight }}">Late Check-outs (&gt;18:00)</th><th style="{{ thStyleRight }}">Short Visits (&lt;15min)</th><th style="{{ thStyleRight }}">Flagged %</th>
+            </tr></thead>
+            <tbody>
+              <sc-for list="{{ attendanceTrends }}" as="row" hint-placeholder-count="8">
+                <tr style="border-top:1px solid #F1F3F7;">
+                  <td style="{{ tdStyle }}">{{ row.name }}</td><td style="{{ tdStyleRight }}">{{ row.visits }}</td><td style="{{ tdStyleRight }}">{{ row.lateCheckouts }}</td><td style="{{ tdStyleRight }}">{{ row.shortVisits }}</td><td style="padding:10px 14px; text-align:right; {{ row.flaggedStyle }}">{{ row.flaggedPct }}</td>
+                </tr>
+              </sc-for>
+            </tbody>
+          </table>
+        </div>
+      </sc-if>
+
+      <!-- SECTION: Blitz Call Diary -->
+      <sc-if value="{{ isBlitz }}" hint-placeholder-val="{{ false }}">
+        <div style="background:#FFFBEA; border:1px solid #F5E6A3; border-radius:12px; padding:10px 16px; margin-bottom:16px; font-size:12px; color:#8A6A00;">
+          Real attendance data covers all 9 reps, and all 9 now have a real call diary to compute coverage % against (green badge). Nishay Singh's diary lists a JHB Central/South rotation, but his real visits skew more into JHB North/PTA — the low match rate reflects that route mismatch, not guesswork. Click "Show detail" on any rep to drill into their individual visits.
+        </div>
+        <div style="background:#fff; border:1px solid #E4E9F0; border-radius:14px; padding:6px 8px; margin-bottom:16px;">
+          <table style="width:100%; border-collapse:collapse; font-size:12px;">
+            <thead>
+              <tr style="border-bottom:1px solid #E4E9F0;">
+                <th style="text-align:left; padding:8px 10px; color:#8592A6; font-weight:700; text-transform:uppercase; font-size:10px;">Blitz Rep</th>
+                <th style="text-align:left; padding:8px 10px; color:#8592A6; font-weight:700; text-transform:uppercase; font-size:10px;">Status</th>
+                <th style="text-align:right; padding:8px 10px; color:#8592A6; font-weight:700; text-transform:uppercase; font-size:10px;">Planned</th>
+                <th style="text-align:right; padding:8px 10px; color:#8592A6; font-weight:700; text-transform:uppercase; font-size:10px;">Completed</th>
+                <th style="text-align:right; padding:8px 10px; color:#8592A6; font-weight:700; text-transform:uppercase; font-size:10px;">Rate</th>
+                <th style="text-align:right; padding:8px 10px; color:#8592A6; font-weight:700; text-transform:uppercase; font-size:10px;">Late In</th>
+                <th style="text-align:right; padding:8px 10px; color:#8592A6; font-weight:700; text-transform:uppercase; font-size:10px;">Late Out</th>
+                <th style="text-align:right; padding:8px 10px; color:#8592A6; font-weight:700; text-transform:uppercase; font-size:10px;">&gt;1km</th>
+                <th style="text-align:right; padding:8px 10px;"></th>
+              </tr>
+            </thead>
+            <tbody>
+              <sc-for list="{{ blitzMembers }}" as="m" hint-placeholder-count="9">
+                <tr style="border-bottom:1px solid #F5F6F9;">
+                  <td style="padding:7px 10px; font-weight:700; color:#0B1B3A;">{{ m.name }}<sc-if value="{{ m.hasRole }}" hint-placeholder-val="{{ false }}"><span style="{{ m.roleStyle }}">{{ m.role }}</span></sc-if></td>
+                  <td style="padding:7px 10px;"><span style="{{ m.sourceTagStyle }}">{{ m.sourceTag }}</span></td>
+                  <td style="padding:7px 10px; text-align:right; color:#3A4658;">{{ m.planned }}</td>
+                  <td style="padding:7px 10px; text-align:right; color:#3A4658;">{{ m.completed }}</td>
+                  <td style="padding:7px 10px; text-align:right; {{ m.rateStyle }}">{{ m.rate }}</td>
+                  <td style="padding:7px 10px; text-align:right; color:#8592A6; font-size:11px;">{{ m.flagLateCheckin }}</td>
+                  <td style="padding:7px 10px; text-align:right; color:#8592A6; font-size:11px;">{{ m.flagLateCheckout }}</td>
+                  <td style="padding:7px 10px; text-align:right; color:#8592A6; font-size:11px;">{{ m.flagLocationDrift }}</td>
+                  <td style="padding:7px 10px; text-align:right;">
+                    <button onClick="{{ m.onToggle }}" style="background:#EEF1F6; border:none; border-radius:8px; padding:5px 10px; font-size:10.5px; font-weight:700; color:#0B1B3A; cursor:pointer;">{{ m.toggleLabel }}</button>
+                  </td>
+                </tr>
+              </sc-for>
+            </tbody>
+          </table>
+        </div>
+
+        <sc-if value="{{ expandedBlitzRep }}" hint-placeholder-val="{{ false }}">
+          <div style="background:#fff; border:1px solid #E4E9F0; border-radius:14px; padding:18px 20px; margin-bottom:16px;">
+            <div style="font-size:13px; font-weight:700; color:#0B1B3A; margin-bottom:4px;">{{ expandedBlitzRep }} — Visit Detail</div>
+            <div style="font-size:11px; color:#8592A6; margin-bottom:14px;">Use the Visit Channel / Late Check-in / Late Check-out / Far From Store filters above to narrow this down. Rows with any flag are highlighted.</div>
+            <sc-if value="{{ hasBlitzDetail }}" hint-placeholder-val="{{ false }}">
+              <div style="max-height:420px; overflow:auto;">
+                <table style="width:100%; border-collapse:collapse; font-size:11.5px;">
+                  <thead>
+                    <tr style="border-bottom:1px solid #E4E9F0;">
+                      <th style="text-align:left; padding:7px; color:#8592A6; font-weight:700; text-transform:uppercase; font-size:10px; position:sticky; top:0; background:#fff;">Date</th>
+                      <th style="text-align:left; padding:7px; color:#8592A6; font-weight:700; text-transform:uppercase; font-size:10px; position:sticky; top:0; background:#fff;">Store</th>
+                      <th style="text-align:left; padding:7px; color:#8592A6; font-weight:700; text-transform:uppercase; font-size:10px; position:sticky; top:0; background:#fff;">Channel</th>
+                      <th style="text-align:left; padding:7px; color:#8592A6; font-weight:700; text-transform:uppercase; font-size:10px; position:sticky; top:0; background:#fff;">Start</th>
+                      <th style="text-align:left; padding:7px; color:#8592A6; font-weight:700; text-transform:uppercase; font-size:10px; position:sticky; top:0; background:#fff;">End</th>
+                      <th style="text-align:right; padding:7px; color:#8592A6; font-weight:700; text-transform:uppercase; font-size:10px; position:sticky; top:0; background:#fff;">Duration</th>
+                      <th style="text-align:center; padding:7px; color:#8592A6; font-weight:700; text-transform:uppercase; font-size:10px; position:sticky; top:0; background:#fff;">Late In</th>
+                      <th style="text-align:center; padding:7px; color:#8592A6; font-weight:700; text-transform:uppercase; font-size:10px; position:sticky; top:0; background:#fff;">Late Out</th>
+                      <th style="text-align:center; padding:7px; color:#8592A6; font-weight:700; text-transform:uppercase; font-size:10px; position:sticky; top:0; background:#fff;">&gt;1km</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <sc-for list="{{ blitzDetailRows }}" as="v" hint-placeholder-count="10">
+                      <tr style="border-bottom:1px solid #F5F6F9; {{ v.rowStyle }}">
+                        <td style="padding:6px 7px; color:#3A4658;">{{ v.date }}</td>
+                        <td style="padding:6px 7px; color:#0B1B3A; font-weight:600;">{{ v.store }}</td>
+                        <td style="padding:6px 7px; color:#3A4658;">{{ v.channel }}</td>
+                        <td style="padding:6px 7px; color:#3A4658;">{{ v.start }}</td>
+                        <td style="padding:6px 7px; color:#3A4658;">{{ v.end }}</td>
+                        <td style="padding:6px 7px; text-align:right; color:#3A4658;">{{ v.duration }} min</td>
+                        <td style="padding:6px 7px; text-align:center; color:#C0392B; font-weight:700;">{{ v.lateCheckinLabel }}</td>
+                        <td style="padding:6px 7px; text-align:center; color:#C0392B; font-weight:700;">{{ v.lateCheckoutLabel }}</td>
+                        <td style="padding:6px 7px; text-align:center; color:#C0392B; font-weight:700;">{{ v.locationDriftLabel }}</td>
+                      </tr>
+                    </sc-for>
+                  </tbody>
+                </table>
+              </div>
+            </sc-if>
+          </div>
+        </sc-if>
+
+      </sc-if>
+
+      <!-- SECTION: Blitz Performance (separate slicer) -->
+      <sc-if value="{{ isBlitzPerformance }}" hint-placeholder-val="{{ false }}">
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-bottom:16px;">
+          <div style="background:#fff; border:1px solid #E4E9F0; border-radius:14px; padding:16px 18px;">
+            <div style="font-size:13px; font-weight:700; color:#0B1B3A; margin-bottom:2px;">Current YTD Sales by Rep</div>
+            <div style="font-size:10.5px; color:#8592A6; margin-bottom:10px;">Click a rep to filter the table below</div>
+            <sc-for list="{{ blitzByRepChart }}" as="row" hint-placeholder-count="9">
+              <div style="{{ row.rowWrapStyle }}" onClick="{{ row.onClick }}">
+                <div style="display:flex; justify-content:space-between; font-size:11.5px; margin-bottom:3px;">
+                  <span style="font-weight:700; color:#0B1B3A;">{{ row.name }}</span>
+                  <span><span style="color:#3A4658;">{{ row.curr }}</span> <span style="{{ row.growthStyle }}">{{ row.growthLabel }}</span></span>
+                </div>
+                <div style="height:22px; background:#EEF1F6; border-radius:5px;"><div style="{{ row.barStyle }}"></div></div>
+              </div>
+            </sc-for>
+          </div>
+          <div style="background:#fff; border:1px solid #E4E9F0; border-radius:14px; padding:16px 18px;">
+            <div style="font-size:13px; font-weight:700; color:#0B1B3A; margin-bottom:2px;">Current YTD Sales by Channel</div>
+            <div style="font-size:10.5px; color:#8592A6; margin-bottom:10px;">Click a channel to filter the table below</div>
+            <sc-for list="{{ blitzByChannelChart }}" as="row" hint-placeholder-count="3">
+              <div style="{{ row.rowWrapStyle }}" onClick="{{ row.onClick }}">
+                <div style="display:flex; justify-content:space-between; font-size:11.5px; margin-bottom:3px;">
+                  <span style="font-weight:700; color:#0B1B3A;">{{ row.name }}</span>
+                  <span><span style="color:#3A4658;">{{ row.curr }}</span> <span style="{{ row.growthStyle }}">{{ row.growthLabel }}</span></span>
+                </div>
+                <div style="height:22px; background:#EEF1F6; border-radius:5px;"><div style="{{ row.barStyle }}"></div></div>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+
+        <sc-if value="{{ hasBlitzChannelPerf }}" hint-placeholder-val="{{ false }}">
+          <div style="background:#fff; border:1px solid #E4E9F0; border-radius:14px; overflow:hidden;">
+            <table style="width:100%; border-collapse:collapse; font-size:12px;">
+              <thead>
+                <tr style="border-bottom:1px solid #E4E9F0; background:#F8FAFC;">
+                  <th style="text-align:left; padding:8px; color:#8592A6; font-weight:700; text-transform:uppercase; font-size:10.5px;">Blitz Rep</th>
+                  <th style="text-align:left; padding:8px; color:#8592A6; font-weight:700; text-transform:uppercase; font-size:10.5px;">Channel</th>
+                  <th style="text-align:right; padding:8px; color:#8592A6; font-weight:700; text-transform:uppercase; font-size:10.5px;">Stores</th>
+                  <th style="text-align:right; padding:8px; color:#8592A6; font-weight:700; text-transform:uppercase; font-size:10.5px;">Current YTD</th>
+                  <th style="text-align:right; padding:8px; color:#8592A6; font-weight:700; text-transform:uppercase; font-size:10.5px;">Previous YTD</th>
+                  <th style="text-align:right; padding:8px; color:#8592A6; font-weight:700; text-transform:uppercase; font-size:10.5px;">YoY Growth</th>
+                </tr>
+              </thead>
+              <tbody>
+                <sc-for list="{{ blitzPerformanceByChannel }}" as="row" hint-placeholder-count="8">
+                  <tr style="border-bottom:1px solid #F5F6F9;">
+                    <td style="padding:7px 8px; font-weight:700; color:#0B1B3A;">{{ row.rep }}</td>
+                    <td style="padding:7px 8px; color:#3A4658;">{{ row.channel }}</td>
+                    <td style="padding:7px 8px; text-align:right; color:#3A4658;">{{ row.stores }}</td>
+                    <td style="padding:7px 8px; text-align:right; color:#3A4658;">{{ row.curr }}</td>
+                    <td style="padding:7px 8px; text-align:right; color:#3A4658;">{{ row.prev }}</td>
+                    <td style="padding:7px 8px; text-align:right; {{ row.growthStyle }}">{{ row.growth }}</td>
+                  </tr>
+                </sc-for>
+              </tbody>
+            </table>
+          </div>
+        </sc-if>
+      </sc-if>
+
+      <!-- SECTION: Stock Count & Pricing (new weekly cadence, separate slicer) -->
+      <sc-if value="{{ isStockPricing }}" hint-placeholder-val="{{ false }}">
+        <div style="background:#FFFBEA; border:1px solid #F5E6A3; border-radius:12px; padding:10px 16px; margin-bottom:16px; font-size:12px; color:#8A6A00;">
+          New reporting cadence, running alongside the Weekly Feedback Report. No submissions yet — this starts fresh from rollout; upload the weekly Stock Count/Pricing template to populate this table.
+        </div>
+        <div style="background:#fff; border:1px solid #E4E9F0; border-radius:14px; overflow:auto;">
+          <table style="width:100%; min-width:1400px; border-collapse:collapse; font-size:12px;">
+            <thead><tr style="background:#F8FAFC;">
+              <th style="{{ thStyle }}">Blitz</th><th style="{{ thStyle }}">Channel</th><th style="{{ thStyle }}">Store</th><th style="{{ thStyle }}">Region</th><th style="{{ thStyle }}">Category</th><th style="{{ thStyle }}">SKU</th><th style="{{ thStyleRight }}">Philips RRP</th><th style="{{ thStyleRight }}">Store RRP</th><th style="{{ thStyleRight }}">Promo Price</th><th style="{{ thStyle }}">On Promo</th><th style="{{ thStyle }}">SKU Status</th><th style="{{ thStyle }}">Listed</th><th style="{{ thStyleRight }}">MDQ</th><th style="{{ thStyleRight }}">Total SOH</th><th style="{{ thStyleRight }}">On Shelf</th><th style="{{ thStyleRight }}">Damages</th><th style="{{ thStyleRight }}">Returns</th><th style="{{ thStyle }}">Restock?</th>
+            </tr></thead>
+            <tbody>
+              <sc-for list="{{ stockPricingRows }}" as="row" hint-placeholder-count="8">
+                <tr style="border-top:1px solid #F1F3F7;">
+                  <td style="{{ tdStyle }}">{{ row.blitz }}</td><td style="{{ tdStyle }}">{{ row.channel }}</td><td style="{{ tdStyle }}">{{ row.storeName }}</td><td style="{{ tdStyle }}">{{ row.region }}</td><td style="{{ tdStyle }}">{{ row.category }}</td><td style="{{ tdStyle }}">{{ row.sku }}</td><td style="{{ tdStyleRight }}">{{ row.philipsRRP }}</td><td style="{{ tdStyleRight }}">{{ row.storeRRP }}</td><td style="{{ tdStyleRight }}">{{ row.promoPrice }}</td><td style="{{ tdStyle }}">{{ row.onPromo }}</td><td style="{{ tdStyle }}">{{ row.skuStatus }}</td><td style="{{ tdStyle }}">{{ row.listed }}</td><td style="{{ tdStyleRight }}">{{ row.mdq }}</td><td style="{{ tdStyleRight }}">{{ row.totalSoh }}</td><td style="{{ tdStyleRight }}">{{ row.qtyOnShelf }}</td><td style="{{ tdStyleRight }}">{{ row.boxDamages }}</td><td style="{{ tdStyleRight }}">{{ row.returned }}</td><td style="{{ tdStyle }}">{{ row.additionalStock }}</td>
+                </tr>
+              </sc-for>
+            </tbody>
+          </table>
+          <div style="padding:12px 16px; font-size:11.5px; color:#8592A6; border-top:1px solid #F1F3F7;">Showing {{ stockPricingRows.length }} of {{ stockPricingFilteredCount }} matching rows</div>
+        </div>
+      </sc-if>
+
+      <!-- SECTION: Competitor Feedback (new weekly cadence, separate slicer) -->
+      <sc-if value="{{ isCompetitorFeedback }}" hint-placeholder-val="{{ false }}">
+        <div style="background:#FFFBEA; border:1px solid #F5E6A3; border-radius:12px; padding:10px 16px; margin-bottom:16px; font-size:12px; color:#8A6A00;">
+          New reporting cadence, running alongside the Weekly Feedback Report. No submissions yet — this starts fresh from rollout; upload the weekly Competitor Feedback template to populate this table.
+        </div>
+        <div style="background:#fff; border:1px solid #E4E9F0; border-radius:14px; overflow:auto;">
+          <table style="width:100%; min-width:1200px; border-collapse:collapse; font-size:12px;">
+            <thead><tr style="background:#F8FAFC;">
+              <th style="{{ thStyle }}">Blitz</th><th style="{{ thStyle }}">Channel</th><th style="{{ thStyle }}">Store</th><th style="{{ thStyle }}">Region</th><th style="{{ thStyle }}">Category</th><th style="{{ thStyle }}">Competitor</th><th style="{{ thStyle }}">Competitor SKU</th><th style="{{ thStyle }}">SKU Status</th><th style="{{ thStyleRight }}">Competitor Price</th><th style="{{ thStyle }}">On Promo</th><th style="{{ thStyleRight }}">Total SOH</th><th style="{{ thStyle }}">Philips SKU</th><th style="{{ thStyleRight }}">Philips Price</th>
+            </tr></thead>
+            <tbody>
+              <sc-for list="{{ competitorRows }}" as="row" hint-placeholder-count="8">
+                <tr style="border-top:1px solid #F1F3F7;">
+                  <td style="{{ tdStyle }}">{{ row.blitz }}</td><td style="{{ tdStyle }}">{{ row.channel }}</td><td style="{{ tdStyle }}">{{ row.storeName }}</td><td style="{{ tdStyle }}">{{ row.region }}</td><td style="{{ tdStyle }}">{{ row.category }}</td><td style="{{ tdStyle }}">{{ row.competitor }}</td><td style="{{ tdStyle }}">{{ row.competitorSku }}</td><td style="{{ tdStyle }}">{{ row.skuStatus }}</td><td style="{{ tdStyleRight }}">{{ row.competitorPrice }}</td><td style="{{ tdStyle }}">{{ row.onPromo }}</td><td style="{{ tdStyleRight }}">{{ row.totalSoh }}</td><td style="{{ tdStyle }}">{{ row.philipsSku }}</td><td style="{{ tdStyleRight }}">{{ row.philipsPrice }}</td>
+                </tr>
+              </sc-for>
+            </tbody>
+          </table>
+          <div style="padding:12px 16px; font-size:11.5px; color:#8592A6; border-top:1px solid #F1F3F7;">Showing {{ competitorRows.length }} of {{ competitorFilteredCount }} matching rows</div>
+        </div>
+      </sc-if>
+
+      <!-- SECTION: Execution (Image Report) (new weekly cadence, separate slicer) -->
+      <sc-if value="{{ isExecutionReport }}" hint-placeholder-val="{{ false }}">
+        <div style="background:#FFFBEA; border:1px solid #F5E6A3; border-radius:12px; padding:10px 16px; margin-bottom:16px; font-size:12px; color:#8A6A00;">
+          New reporting cadence, running alongside the Weekly Feedback Report. No submissions yet — this starts fresh from rollout; upload the weekly Execution (Image Report) template to populate this table.
+        </div>
+        <div style="background:#fff; border:1px solid #E4E9F0; border-radius:14px; overflow:auto;">
+          <table style="width:100%; min-width:1000px; border-collapse:collapse; font-size:12px;">
+            <thead><tr style="background:#F8FAFC;">
+              <th style="{{ thStyle }}">Blitz</th><th style="{{ thStyle }}">Channel</th><th style="{{ thStyle }}">Store</th><th style="{{ thStyle }}">Region</th><th style="{{ thStyle }}">Category</th><th style="{{ thStyle }}">Display Area</th><th style="{{ thStyle }}">SKU</th><th style="{{ thStyle }}">Before</th><th style="{{ thStyle }}">After</th>
+            </tr></thead>
+            <tbody>
+              <sc-for list="{{ executionRows }}" as="row" hint-placeholder-count="8">
+                <tr style="border-top:1px solid #F1F3F7;">
+                  <td style="{{ tdStyle }}">{{ row.blitz }}</td><td style="{{ tdStyle }}">{{ row.channel }}</td><td style="{{ tdStyle }}">{{ row.storeName }}</td><td style="{{ tdStyle }}">{{ row.region }}</td><td style="{{ tdStyle }}">{{ row.category }}</td><td style="{{ tdStyle }}">{{ row.displayArea }}</td><td style="{{ tdStyle }}">{{ row.sku }}</td><td style="{{ tdStyle }}">{{ row.beforeImage }}</td><td style="{{ tdStyle }}">{{ row.afterImage }}</td>
+                </tr>
+              </sc-for>
+            </tbody>
+          </table>
+          <div style="padding:12px 16px; font-size:11.5px; color:#8592A6; border-top:1px solid #F1F3F7;">Showing {{ executionRows.length }} of {{ executionFilteredCount }} matching rows</div>
+        </div>
+      </sc-if>
+
+      <!-- SECTION: Sales Value / Volume -->
+      <sc-if value="{{ isSales }}" hint-placeholder-val="{{ false }}">
+        <div style="background:#fff; border:1px solid #E4E9F0; border-radius:14px; padding:18px 20px; margin-bottom:16px;">
+          <div style="font-size:13px; font-weight:700; color:#0B1B3A; margin-bottom:4px;">YoY by Channel</div>
+          <div style="font-size:11px; color:#8592A6; margin-bottom:14px;">Click a channel to drill into its rows in the table below</div>
+          <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap:10px;">
+            <sc-for list="{{ salesByChannel }}" as="row" hint-placeholder-count="6">
+              <div style="{{ row.wrapStyle }}" onClick="{{ row.onClick }}">
+                <div style="display:flex; justify-content:space-between; font-size:12px; font-weight:700; color:#0B1B3A; margin-bottom:6px;"><span>{{ row.name }}</span><span style="{{ row.growthStyle }}">{{ row.growthLabel }}</span></div>
+                <div style="display:flex; gap:4px; align-items:flex-end; height:96px;">
+                  <div style="{{ row.barPrevStyle }}" title="Previous Year"></div>
+                  <div style="{{ row.barCurrStyle }}" title="Current Year"></div>
+                </div>
+                <div style="display:flex; justify-content:space-between; font-size:10px; color:#8592A6; margin-top:4px;"><span>{{ row.prevLabel }}</span><span>{{ row.currLabel }}</span></div>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+        <div style="background:#fff; border:1px solid #E4E9F0; border-radius:14px; overflow:hidden;">
+          <table style="width:100%; border-collapse:collapse; font-size:12.5px;">
+            <thead><tr style="background:#F8FAFC;">
+              <th style="{{ thStyle }}">Month</th><th style="{{ thStyle }}">Store</th><th style="{{ thStyle }}">Channel</th><th style="{{ salesRegionThDisplay }}">Region</th><th style="{{ thStyleRight }}">Previous Year</th><th style="{{ thStyleRight }}">Current Year</th><th style="{{ thStyleRight }}">YoY Diff</th><th style="{{ thStyleRight }}">YoY Growth</th>
+            </tr></thead>
+            <tbody>
+              <sc-for list="{{ salesRows }}" as="row" hint-placeholder-count="12">
+                <tr style="border-top:1px solid #F1F3F7;">
+                  <td style="{{ tdStyle }}">{{ row.month }}</td><td style="{{ tdStyle }}">{{ row.store }}</td><td style="{{ tdStyle }}">{{ row.channel }}</td><td style="{{ salesRegionTdDisplay }}">{{ row.region }}</td><td style="{{ tdStyleRight }}">{{ row.prev }}</td><td style="{{ tdStyleRight }}">{{ row.curr }}</td><td style="{{ row.diffStyle }}">{{ row.diff }}</td><td style="{{ row.growthStyle }}">{{ row.growth }}</td>
+                </tr>
+              </sc-for>
+            </tbody>
+          </table>
+        </div>
+      </sc-if>
+
+      <!-- SECTION: Growth Forecast -->
+      <sc-if value="{{ isGrowth }}" hint-placeholder-val="{{ false }}">
+        <div style="background:#fff; border:1px solid #E4E9F0; border-radius:14px; padding:18px 20px;">
+          <div style="font-size:13px; font-weight:700; color:#0B1B3A; margin-bottom:16px;">FY Value by Category (2025 → 2027 Ambition)</div>
+          <sc-for list="{{ growthRows }}" as="row" hint-placeholder-count="6">
+            <div style="margin-bottom:16px;">
+              <div style="display:flex; justify-content:space-between; font-size:12.5px; font-weight:700; color:#0B1B3A; margin-bottom:6px;"><span>{{ row.category }}</span><span>{{ row.fy27 }}</span></div>
+              <div style="display:flex; gap:4px; align-items:flex-end; height:36px;">
+                <div style="{{ row.bar25 }}" title="FY2025"></div>
+                <div style="{{ row.bar26 }}" title="FY2026"></div>
+                <div style="{{ row.bar27 }}" title="FY2027"></div>
+              </div>
+              <div style="display:flex; justify-content:space-between; font-size:10.5px; color:#8592A6; margin-top:4px;"><span>FY25 {{ row.fy25 }}</span><span>FY26 {{ row.fy26 }}</span><span>FY27 {{ row.fy27 }}</span></div>
+            </div>
+          </sc-for>
+        </div>
+      </sc-if>
+
+      <!-- SECTION: Adhoc Stock -->
+      <sc-if value="{{ isStock }}" hint-placeholder-val="{{ false }}">
+        <div style="background:#fff; border:1px solid #E4E9F0; border-radius:14px; padding:18px 20px; margin-bottom:16px;">
+          <div style="font-size:13px; font-weight:700; color:#0B1B3A; margin-bottom:12px;">Store Completion by Region</div>
+          <sc-for list="{{ stockByRegion }}" as="row" hint-placeholder-count="4">
+            <div style="margin-bottom:11px;">
+              <div style="display:flex; justify-content:space-between; font-size:12px; color:#3A4658; margin-bottom:4px;"><span>{{ row.name }}</span><span style="font-weight:700;">{{ row.countLabel }} · {{ row.pct }}</span></div>
+              <div style="height:8px; background:#EEF1F6; border-radius:5px; overflow:hidden;"><div style="{{ row.barStyle }}"></div></div>
+            </div>
+          </sc-for>
+        </div>
+        <div style="background:#fff; border:1px solid #E4E9F0; border-radius:14px; overflow:auto;">
+          <table style="width:100%; min-width:960px; border-collapse:collapse; font-size:12.5px;">
+            <thead><tr style="background:#F8FAFC;">
+              <th style="{{ thStyle }}">Store</th><th style="{{ thStyle }}">Region</th><th style="{{ thStyle }}">Code</th><th style="{{ thStyle }}">Category</th><th style="{{ thStyle }}">Sub Category</th><th style="{{ thStyle }}">Blitz</th><th style="{{ thStyleRight }}">Latest WK SOH</th><th style="{{ thStyleRight }}">System SOH</th><th style="{{ thStyleRight }}">Physical Count</th><th style="{{ thStyleRight }}">Variance</th>
+            </tr></thead>
+            <tbody>
+              <sc-for list="{{ stockRows }}" as="row" hint-placeholder-count="12">
+                <tr style="border-top:1px solid #F1F3F7;">
+                  <td style="{{ tdStyle }}">{{ row.store }}</td><td style="{{ tdStyle }}">{{ row.region }}</td><td style="{{ tdStyle }}">{{ row.code }}</td><td style="{{ tdStyle }}">{{ row.category }}</td><td style="{{ tdStyle }}">{{ row.subcategory }}</td><td style="{{ tdStyle }}">{{ row.blitz }}</td><td style="{{ tdStyleRight }}">{{ row.soh }}</td><td style="{{ tdStyleRight }}">{{ row.systemSoh }}</td><td style="{{ tdStyleRight }}">{{ row.physicalCount }}</td><td style="{{ row.varianceStyle }}">{{ row.variance }}</td>
+                </tr>
+              </sc-for>
+            </tbody>
+          </table>
+          <div style="padding:12px 16px; font-size:11.5px; color:#8592A6; border-top:1px solid #F1F3F7;">Showing {{ stockRows.length }} of {{ stockFilteredCount }} matching rows</div>
+        </div>
+      </sc-if>
+
+    </div>
+  </div>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+const SECTION_DEFS = [
+  { key: 'feedback', label: 'Weekly Feedback Report' },
+  { key: 'attendance', label: 'Time & Attendance' },
+  { key: 'blitz', label: 'Blitz Call Diary' },
+  { key: 'blitzPerformance', label: 'Blitz Performance' },
+  { key: 'stockPricing', label: 'Stock Count & Pricing' },
+  { key: 'competitorFeedback', label: 'Competitor Feedback' },
+  { key: 'executionReport', label: 'Execution (Image Report)' },
+  { key: 'salesValue', label: 'Sales Per Store Value' },
+  { key: 'salesVolume', label: 'Sales Per Store Volume' },
+  { key: 'growth', label: 'Growth Forecast' },
+  { key: 'stock', label: 'Adhoc Tasks' },
+];
+const BLUE = '#0A5EEA';
+const LIME = '#8FCB1F';
+const REP_NAMES = ['Lindani Khanyile','Mmuluki  Makhurane','Mzwakhe Mokhoane','Nicholas Haripershad','Jose Kelly','Sello Matlou','Enver De Bruyn','Nishay Singh','Kyle Samuels'];
+const REP_REGION = {
+  'Mmuluki  Makhurane': 'Gauteng',
+  'Enver De Bruyn': 'Western Cape',
+  'Jose Kelly': 'Gauteng',
+  'Sello Matlou': 'Gauteng',
+  'Nicholas Haripershad': 'KwaZulu-Natal',
+  'Mzwakhe Mokhoane': 'Gauteng',
+  'Lindani Khanyile': 'KwaZulu-Natal',
+  'Nishay Singh': 'Gauteng',
+  'Kyle Samuels': 'Western Cape',
+};
+const KNOWN_REGIONS = ['Gauteng','Western Cape','Eastern Cape','KwaZulu-Natal','Free State','North West','Mpumalanga','Northern Cape','Limpopo'];
+const UPLOAD_CODE_KEY = 'philipsUploadCode';
+// Quote-aware CSV parse — store names carry commas, so a naive split corrupts rows.
+function parseCsv(text) {
+  const rows = [];
+  let row = [], cell = '', inQuotes = false;
+  const src = String(text).replace(/\r\n?/g, '\n');
+  for (let i = 0; i < src.length; i++) {
+    const ch = src[i];
+    if (inQuotes) {
+      if (ch === '"') {
+        if (src[i + 1] === '"') { cell += '"'; i++; } else inQuotes = false;
+      } else cell += ch;
+    } else if (ch === '"') inQuotes = true;
+    else if (ch === ',') { row.push(cell); cell = ''; }
+    else if (ch === '\n') { row.push(cell); rows.push(row); row = []; cell = ''; }
+    else cell += ch;
+  }
+  if (cell !== '' || row.length) { row.push(cell); rows.push(row); }
+  return rows.map(r => r.map(c => c.trim())).filter(r => r.some(c => c));
+}
+function normStr(s) { return String(s || '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim(); }
+function fileToBase64(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+// Fully static, offline-safe: parses "<Channel> <Store/Area> <Region> <Rep Name>.jpg"
+// (or "... Shared Service.jpg") straight from the filename — no server/API call needed,
+// so this keeps working after a plain Netlify static deploy.
+function parsePhotoFilename(filename) {
+  const base = String(filename).replace(/\.[a-z0-9]+$/i, '').replace(/\s+/g, ' ').trim();
+  let region = null, regionIdx = -1;
+  for (const r of KNOWN_REGIONS) {
+    const idx = base.toLowerCase().indexOf(r.toLowerCase());
+    if (idx !== -1) { region = r; regionIdx = idx; break; }
+  }
+  const before = region ? base.slice(0, regionIdx).trim() : base;
+  const after = region ? base.slice(regionIdx + region.length).trim() : '';
+  const sharedService = /shared\s*service/i.test(after) || /shared\s*service/i.test(base);
+  let rep = 'Unassigned';
+  if (sharedService) rep = 'Shared Service';
+  else if (after) {
+    const normAfter = normStr(after);
+    rep = REP_NAMES.find(n => normStr(n) === normAfter) || after;
+  }
+  const words = before.split(' ').filter(Boolean);
+  const channel = words[0] || 'Unknown';
+  const store = words.slice(1).join(' ') || before || 'Unknown Store';
+  return { store, channel, region: region || 'Unassigned', rep };
+}
+
+function fmtR(n) {
+  const v = Math.round(n || 0);
+  return 'R ' + v.toLocaleString('en-ZA');
+}
+function fmtNum(n) {
+  return Math.round(n || 0).toLocaleString('en-ZA');
+}
+function fmtPct(n) {
+  return (n * 100).toFixed(1) + '%';
+}
+function seedRand(seed) {
+  let s = seed;
+  return function () {
+    s = (s * 9301 + 49297) % 233280;
+    return s / 233280;
+  };
+}
+
+class Component extends DCLogic {
+  state = {
+    loaded: false,
+    data: null,
+    activeSection: 'feedback',
+    subFilters: {}, // key: section -> Set of selected first-column values (empty set = all)
+    crossFilterValues: {}, // key: section -> { region, channel, month, store, category, subcategory }
+    csvFile: null,
+    photoUploads: [],
+    repRoundRobin: {},
+    expandedBlitzRep: null,
+    adminUnlocked: false,
+  };
+
+  toggleBlitzExpand(repName) {
+    this.setState({ expandedBlitzRep: this.state.expandedBlitzRep === repName ? null : repName });
+  }
+
+  componentDidMount() {
+    // Export/Import is Chris-only. A one-time unlock link sets a local flag
+    // that persists on that browser/device — everyone else visiting the
+    // plain URL never sees the unlock param and the buttons stay hidden.
+    const ADMIN_UNLOCK_KEY = 'philipsAdminUnlocked';
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('unlock') === 'leegraph2026') {
+      localStorage.setItem(ADMIN_UNLOCK_KEY, 'true');
+      const url = new URL(window.location.href);
+      url.searchParams.delete('unlock');
+      window.history.replaceState({}, '', url.toString());
+    }
+    this.setState({ adminUnlocked: localStorage.getItem(ADMIN_UNLOCK_KEY) === 'true' });
+
+    this.loadData();
+    // Reps check in through the day, so the live half is re-polled. The
+    // static half never changes between deploys and is fetched once.
+    this.liveTimer = setInterval(() => this.loadLiveFeed(), 90000);
+
+    const demoFiles = [
+      'Checkers Boksburg Gauteng Enver de Bruyn.jpeg',
+      'Dischem Alliens Nek Gauteng Jose Kelly.jpeg',
+      'Kloppers Castle Gate Gauteng Nishay Singh.jpeg',
+      'Dischem GreenAcres Shared Service.jpeg',
+    ];
+    const seeded = demoFiles.map((name, i) => {
+      const { store, channel, region, rep } = parsePhotoFilename(name);
+      const assignedRep = rep === 'Shared Service' ? 'Shared Service' : rep;
+      return {
+        id: 'seed-' + i,
+        fileName: name,
+        dataUrl: 'assets/blitz-photos/' + name,
+        status: 'done',
+        extracted: name,
+        matchedStore: store,
+        region, channel,
+        rep: assignedRep,
+      };
+    });
+    this.setState({ photoUploads: seeded });
+  }
+
+  buildStoreLookup() {
+    if (this._storeLookup) return this._storeLookup;
+    const d = this.state.data || {};
+    const lookup = {}; // normalized store name -> { name, region, channel }
+    (d.feedback || []).forEach(r => {
+      const name = r[5], region = r[2];
+      if (!name) return;
+      const key = normStr(name);
+      lookup[key] = lookup[key] || { name, region: null, channel: null };
+      if (region) lookup[key].region = lookup[key].region || region;
+    });
+    (d.salesValue || []).forEach(r => {
+      const name = r[1], channel = r[2], region = r[3];
+      if (!name) return;
+      const key = normStr(name);
+      lookup[key] = lookup[key] || { name, region: null, channel: null };
+      lookup[key].region = lookup[key].region || region;
+      lookup[key].channel = lookup[key].channel || channel;
+    });
+    (d.attendance || []).forEach(r => {
+      const name = r[7], channel = r[5];
+      if (!name) return;
+      const key = normStr(name);
+      lookup[key] = lookup[key] || { name, region: null, channel: null };
+      lookup[key].channel = lookup[key].channel || channel;
+    });
+    this._storeLookup = lookup;
+    this._storeKeys = Object.keys(lookup);
+    return lookup;
+  }
+
+  matchStore(extractedText) {
+    const lookup = this.buildStoreLookup();
+    const needle = normStr(extractedText);
+    if (!needle) return null;
+    const needleWords = needle.split(' ').filter(w => w.length > 2);
+    let best = null, bestScore = 0;
+    for (const key of this._storeKeys) {
+      let score = 0;
+      if (key === needle) score = 100;
+      else if (needle.includes(key) || key.includes(needle)) score = 60;
+      else {
+        const keyWords = key.split(' ');
+        needleWords.forEach(w => { if (keyWords.includes(w)) score += 8; });
+      }
+      if (score > bestScore) { bestScore = score; best = lookup[key]; }
+    }
+    return bestScore >= 8 ? best : null;
+  }
+
+  assignRep(region) {
+    const candidates = REP_NAMES.filter(n => REP_REGION[n] === region);
+    const pool = candidates.length ? candidates : REP_NAMES;
+    const rr = this.state.repRoundRobin;
+    const idx = (rr[region] || 0) % pool.length;
+    this.setState(s => ({ repRoundRobin: { ...s.repRoundRobin, [region]: idx + 1 } }));
+    return pool[idx];
+  }
+
+  async handlePhotoUpload(e) {
+    const files = Array.from(e.target.files || []).slice(0, 20);
+    if (!files.length) return;
+    const startId = Date.now();
+    const pending = files.map((f, i) => ({ id: startId + i, fileName: f.name, dataUrl: null, status: 'reading' }));
+    this.setState(s => ({ photoUploads: [...pending, ...s.photoUploads] }));
+
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+      const entryId = startId + i;
+      try {
+        const dataUrl = await fileToBase64(file);
+        this.setState(s => ({ photoUploads: s.photoUploads.map(p => p.id === entryId ? { ...p, dataUrl, status: 'analyzing' } : p) }));
+        // Primary path: parse the filename convention "<Channel> <Store> <Region> <Rep Name>.jpg"
+        // (or "... Shared Service.jpg"). Fully static — no API call — so this keeps working
+        // after a plain Netlify deploy with no Claude access.
+        let { store, channel, region, rep } = parsePhotoFilename(file.name);
+        // Optional richer fallback: if this authoring environment has vision access AND the
+        // filename didn't resolve a region, try reading signage in the photo instead.
+        if (region === 'Unassigned' && window.claude && window.claude.complete) {
+          try {
+            const mediaType = file.type || 'image/jpeg';
+            const base64Data = dataUrl.split(',')[1];
+            const result = await window.claude.complete({
+              messages: [{
+                role: 'user',
+                content: [
+                  { type: 'text', text: 'This is a field-merchandising photo from a retail store visit. Read any visible store name or banner signage (e.g. Clicks, Dis-Chem, Checkers, Makro). Reply with ONLY the name, no punctuation. If nothing legible, reply: unknown.' },
+                  { type: 'image', source: { type: 'base64', media_type: mediaType, data: base64Data } },
+                ],
+              }],
+              max_tokens: 60,
+            });
+            const extracted = String(result || '').trim();
+            if (extracted.toLowerCase() !== 'unknown') {
+              const matched = this.matchStore(extracted);
+              if (matched) { store = matched.name; channel = matched.channel || channel; region = matched.region || region; }
+            }
+          } catch (visionErr) { /* filename result still stands */ }
+        }
+        const assignedRep = rep === 'Shared Service' ? 'Shared Service' : (rep !== 'Unassigned' ? rep : (region !== 'Unassigned' ? this.assignRep(region) : 'Unassigned'));
+        this.setState(s => ({
+          photoUploads: s.photoUploads.map(p => p.id === entryId ? {
+            ...p, status: 'done', extracted: file.name,
+            matchedStore: store, region, channel, rep: assignedRep,
+          } : p),
+        }));
+      } catch (err) {
+        this.setState(s => ({ photoUploads: s.photoUploads.map(p => p.id === entryId ? { ...p, status: 'error', extracted: String(err && err.message || err) } : p) }));
+      }
+    }
+  }
+
+  getSubFilterKeyField(section) {
+    // "first vertical line" = first column of each source sheet
+    return {
+      feedback: 0, // SurveyName
+      attendance: 0, // Full Name
+      blitz: 0, // rep name (synthetic)
+      salesValue: 0, // Month
+      salesVolume: 0, // Month
+      growth: 0, // Category
+      stock: 0, // Store Name
+    }[section];
+  }
+
+  getSelectedSet(section) {
+    return this.state.subFilters[section] || null; // null = all selected
+  }
+
+  toggleSubFilterValue(section, allValues, value) {
+    const cur = this.state.subFilters[section];
+    let next;
+    if (!cur) {
+      // start from "all selected", then deselect this one
+      next = new Set(allValues);
+      next.delete(value);
+    } else {
+      next = new Set(cur);
+      if (next.has(value)) next.delete(value); else next.add(value);
+    }
+    this.setState(s => ({ subFilters: { ...s.subFilters, [section]: next } }));
+  }
+
+  setCrossFilter(section, field, value) {
+    this.setState(s => ({
+      crossFilterValues: {
+        ...s.crossFilterValues,
+        [section]: { ...(s.crossFilterValues[section] || {}), [field]: value },
+      },
+    }));
+  }
+
+  resetFilters() {
+    this.setState({ subFilters: {}, crossFilterValues: {} });
+  }
+
+  // Downloads the WHOLE dashboard as one workbook — a sheet per section, named
+  // after that section, in the same column order the importer expects. So the
+  // file that comes out is the file you edit and put straight back in.
+  exportExcel() {
+    const stamp = new Date().toISOString().slice(0, 10);
+    if (typeof XLSX === 'undefined') {
+      const section = this.state.activeSection;
+      const { rows, headers } = this.getExportRows(section);
+      const csv = [headers.join(',')].concat(rows.map(r => r.map(v => {
+        const s = String(v == null ? '' : v);
+        return /[",\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
+      }).join(','))).join('\n');
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = section + '-export.csv';
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+      return;
+    }
+    const wb = XLSX.utils.book_new();
+    for (const def of SECTION_DEFS) {
+      const { rows, headers } = this.getExportRows(def.key);
+      if (!headers.length) continue;
+      const data = [headers].concat(rows.map(r => headers.map((_, i) => {
+        const v = Array.isArray(r) ? r[i] : null;
+        return v == null ? '' : v;
+      })));
+      const ws = XLSX.utils.aoa_to_sheet(data);
+      ws['!cols'] = headers.map(() => ({ wch: 18 }));
+      ws['!freeze'] = { xSplit: 0, ySplit: 1 };
+      XLSX.utils.book_append_sheet(wb, ws, def.label.slice(0, 31));
+    }
+    XLSX.writeFile(wb, 'philips-ph-dashboard-data-' + stamp + '.xlsx');
+  }
+
+  getExportRows(section) {
+    const d = this.state.data || {};
+    const map = {
+      feedback: { headers: ['Survey','Supplier','Region','Staff','Category','Store','Question','Response','Date'], rows: d.feedback || [] },
+      attendance: { headers: ['Name','Date','Check In','Check Out','Time Spent','Channel','Banner','Store'], rows: d.attendance || [] },
+      salesValue: { headers: ['Month','Store','Channel','Region','Previous Year','Current Year','YoY Diff','YoY Growth'], rows: d.salesValue || [] },
+      salesVolume: { headers: ['Month','Store','Channel','Previous Year Units','Current Year Units','YoY Diff','YoY Growth'], rows: d.salesVolume || [] },
+      growth: { headers: ['Category','FY2025','FY2026 Projection','FY2027 Ambition','Growth 25-26','Growth 26-27'], rows: d.growth || [] },
+      stock: { headers: ['Store','Region','Code','Category','Sub Category','Blitz','Latest WK SOH','System SOH','Physical Stock Count'], rows: d.stock || [] },
+      blitz: { headers: ['Rep','Planned Calls','Completed Calls'], rows: [] },
+      stockPricing: { headers: ['Blitz','Channel','Store Code','Store Name','Region','Category','SKU Code','Philips RRP','Store System RRP','Promotional Price','On Promo','SKU Status','Listing','Proof of Delisting','Store System MDQ','Total SOH','QTY on Shelf','QTY Box Damages','QTY Returned','Additional Stock Required'], rows: d.stockPricing || [] },
+      competitorFeedback: { headers: ['Blitz','Channel','Store Code','Store Name','Region','Category','Competitor','Competitor SKU Code','SKU Status','Competitor On-shelf Price','On Promo','Total SOH','Product Image','Philips SKU Code','Philips On-shelf Price'], rows: d.competitorFeedback || [] },
+      executionReport: { headers: ['Blitz','Channel','Store Code','Store Name','Region','Category','Before Image','Display Area','SKU Code','After Image'], rows: d.executionReport || [] },
+    };
+    return map[section] || { headers: [], rows: [] };
+  }
+
+  // Pull the rows for THIS section out of a parsed workbook. If a sheet is
+  // named after the section (as in the Leegra data workbook) that sheet wins;
+  // otherwise the first sheet with content is used, so a one-sheet export
+  // straight out of Excel works too.
+  rowsFromWorkbook(wb, section) {
+    const label = (SECTION_DEFS.find(s => s.key === section) || {}).label || section;
+    const norm = s => String(s || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+    const wanted = norm(label);
+    const named = wb.SheetNames.find(n => norm(n) === wanted)
+      || wb.SheetNames.find(n => wanted.indexOf(norm(n)) === 0 && norm(n).length > 5);
+    const order = named ? [named] : wb.SheetNames;
+    for (const name of order) {
+      const rows = XLSX.utils.sheet_to_json(wb.Sheets[name], { header: 1, blankrows: false, raw: false, defval: '' });
+      const filled = rows.filter(r => r.some(c => String(c).trim() !== ''));
+      if (filled.length) return filled;
+    }
+    return [];
+  }
+
+  importExcel(e) {
+    const file = e.target.files && e.target.files[0];
+    if (!file) return;
+    const section = this.state.activeSection;
+    const input = e.target;
+    // .xlsx / .xls go through SheetJS; anything else is read as CSV text.
+    const isWorkbook = /\.(xlsx|xlsm|xls)$/i.test(file.name);
+    if (isWorkbook && typeof XLSX === 'undefined') {
+      window.alert('The Excel reader has not finished loading — wait a moment and try again, or save the sheet as CSV.');
+      input.value = '';
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = () => {
+      let rows;
+      if (isWorkbook) {
+        try {
+          rows = this.rowsFromWorkbook(XLSX.read(new Uint8Array(reader.result), { type: 'array' }), section);
+        } catch (err) {
+          window.alert('Could not read ' + file.name + ' — ' + err.message);
+          input.value = '';
+          return;
+        }
+      } else {
+        rows = parseCsv(String(reader.result));
+      }
+      // Drop a header row if the first cell repeats the section's first column.
+      const headers = this.getExportRows(section).headers;
+      if (rows.length && headers.length && String(rows[0][0]).trim().toLowerCase() === String(headers[0]).trim().toLowerCase()) rows.shift();
+      if (!rows.length) { window.alert('No data rows found in ' + file.name); input.value = ''; return; }
+
+      const code = this.adminCodeForUpload();
+      if (!code) { input.value = ''; return; }
+
+      this.setState({ uploadBusy: true });
+      fetch('/api/report-history', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ code, tenant: 'PH-201', section, rows, fileName: file.name }),
+      })
+        .then(r => r.json().then(j => ({ ok: r.ok, j })))
+        .then(({ ok, j }) => {
+          this.setState({ uploadBusy: false });
+          if (!ok) {
+            if (j && /admin code/i.test(j.error || '')) sessionStorage.removeItem(UPLOAD_CODE_KEY);
+            window.alert('Upload failed: ' + ((j && j.error) || 'unknown error'));
+            return;
+          }
+          window.alert('Added ' + j.rows_added + ' rows to ' + section + ' history. Existing data was kept — this was appended.');
+          this.loadData();
+        })
+        .catch(() => {
+          this.setState({ uploadBusy: false });
+          window.alert('Upload failed — could not reach the server.');
+        })
+        .then(() => { input.value = ''; });
+    };
+    if (isWorkbook) reader.readAsArrayBuffer(file); else reader.readAsText(file);
+  }
+
+  // The append endpoint needs the monthly admin code. Asked once per browser
+  // session, then remembered so a run of uploads isn't nine prompts.
+  adminCodeForUpload() {
+    let code = sessionStorage.getItem(UPLOAD_CODE_KEY);
+    if (code) return code;
+    code = window.prompt('Admin access code (needed to save this upload):');
+    code = (code || '').trim();
+    if (!code) return null;
+    sessionStorage.setItem(UPLOAD_CODE_KEY, code);
+    return code;
+  }
+
+  selectSection(e) {
+    const key = e.currentTarget.getAttribute('data-key');
+    this.setState({ activeSection: key });
+  }
+
+  componentWillUnmount() {
+    if (this.liveTimer) clearInterval(this.liveTimer);
+  }
+
+  // Three layers, oldest first, all additive:
+  //   1. phillips_data.json  — the original static sidecar (read-only)
+  //   2. /api/report-history  — every history batch uploaded since (append-only)
+  //   3. /api/report-feed     — what reps have logged in the app (re-polled)
+  // Nothing here ever replaces an earlier layer, so uploaded history stays put.
+  loadData() {
+    const EMPTY = { feedback: [], attendance: [], salesValue: [], salesVolume: [], growth: [], stock: [], stockPricing: [], competitorFeedback: [], executionReport: [] };
+    Promise.all([
+      fetch('phillips_data.json').then(r => r.json()).catch(() => EMPTY),
+      fetch('/api/report-history?tenant=PH-201').then(r => (r.ok ? r.json() : null)).catch(() => null),
+    ]).then(([sidecar, history]) => {
+      const sections = (history && history.sections) || {};
+      const base = Object.assign({}, EMPTY, sidecar);
+      for (const key of Object.keys(sections)) {
+        base[key] = [...(base[key] || []), ...sections[key]];
+      }
+      this.baseData = base;
+      this.setState({
+        data: base,
+        loaded: true,
+        historyBatchCount: (history && history.batchCount) || 0,
+      });
+      this.loadLiveFeed();
+    });
+  }
+
+  loadLiveFeed() {
+    fetch('/api/report-feed?tenant=PH-201')
+      .then(r => (r.ok ? r.json() : Promise.reject(new Error('feed ' + r.status))))
+      .then(live => {
+        if (!live || !this.baseData) return;
+        const base = this.baseData;
+        // An app visit that was exported and re-imported as history would
+        // otherwise show twice, so live rows already in the base are skipped.
+        const norm = (x) => String(x == null ? '' : x).replace(/\s+/g, ' ').trim().toLowerCase();
+        const attKey = (r) => [r[0], r[1], r[2], r[7]].map(norm).join('|');
+        const fbKey = (r) => [r[3], r[5], r[6], r[8]].map(norm).join('|');
+        const seenAtt = new Set((base.attendance || []).map(attKey));
+        const seenFb = new Set((base.feedback || []).map(fbKey));
+        const liveAtt = (live.attendance || []).filter(r => !seenAtt.has(attKey(r)));
+        const liveFb = (live.feedback || []).filter(r => !seenFb.has(fbKey(r)));
+        // App check-ins also feed each rep's Blitz Call Diary detail table.
+        const repByNorm = {};
+        for (const n of REP_NAMES) repByNorm[norm(n)] = n;
+        const toMin = (t) => { const [hh, mm] = String(t || '').split(':').map(Number); return (hh || 0) * 60 + (mm || 0); };
+        const blitzDetail = {};
+        for (const [k, rows] of Object.entries(base.blitzVisitDetail || {})) blitzDetail[k] = [...rows];
+        for (const r of liveAtt) {
+          const rep = repByNorm[norm(r[0])] || r[0];
+          const list = blitzDetail[rep] = blitzDetail[rep] || [];
+          if (list.some(v => norm(v.date) === norm(r[1]) && norm(v.store) === norm(r[7]) && norm(v.start) === norm(r[2]))) continue;
+          list.push({
+            date: r[1], store: r[7], channel: r[5], start: r[2], end: r[3] || '—',
+            duration: r[4] ? toMin(r[4]) : 0,
+            lateCheckin: !!r[2] && toMin(r[2]) > 8 * 60,
+            lateCheckout: false, locationDrift: false, source: 'app',
+          });
+        }
+        for (const k of Object.keys(blitzDetail)) blitzDetail[k].sort((a, b) => String(b.date).localeCompare(String(a.date)) || String(b.start).localeCompare(String(a.start)));
+        this.setState({
+          data: Object.assign({}, base, {
+            attendance: [...(base.attendance || []), ...liveAtt],
+            feedback: [...(base.feedback || []), ...liveFb],
+            blitzVisitDetail: blitzDetail,
+          }),
+          liveFeedSeen: true,
+          liveVisitCount: (live.attendance || []).length,
+          liveAnswerCount: (live.feedback || []).length,
+          liveUpdatedAt: live.generatedAt || new Date().toISOString(),
+          liveError: !!live.error,
+        });
+      })
+      .catch(() => this.setState({ liveFeedSeen: true, liveError: true }));
+  }
+
+  renderVals() {
+    const s = this.state;
+    const d = s.data || { feedback: [], attendance: [], salesValue: [], salesVolume: [], growth: [], stock: [], stockPricing: [], competitorFeedback: [], executionReport: [] };
+    d.stockPricing = d.stockPricing || [];
+    d.competitorFeedback = d.competitorFeedback || [];
+    d.executionReport = d.executionReport || [];
+    const active = s.activeSection;
+
+    // ---- counts for sidebar badges ----
+    const counts = {
+      feedback: d.feedback.length,
+      attendance: d.attendance.length,
+      blitz: REP_NAMES.length,
+      blitzPerformance: REP_NAMES.length,
+      stockPricing: d.stockPricing.length,
+      competitorFeedback: d.competitorFeedback.length,
+      executionReport: d.executionReport.length,
+      salesValue: d.salesValue.length,
+      salesVolume: d.salesVolume.length,
+      growth: d.growth.length,
+      stock: d.stock.length,
+    };
+
+    const sections = SECTION_DEFS.map(def => {
+      const isActive = def.key === active;
+      return {
+        key: def.key,
+        label: def.label,
+        count: counts[def.key],
+        buttonStyle: `display:flex; align-items:center; gap:9px; padding:9px 10px; border-radius:9px; cursor:pointer; margin-bottom:3px; font-size:12.5px; font-weight:600; color:${isActive ? '#fff' : '#B7C4D9'}; background:${isActive ? '#173B7A' : 'transparent'};`,
+        dotStyle: `width:6px; height:6px; border-radius:50%; background:${isActive ? LIME : '#3E5786'};`,
+        badgeStyle: `font-size:10px; font-weight:700; color:${isActive ? '#fff' : '#7089AC'}; background:${isActive ? 'rgba(255,255,255,0.15)' : 'rgba(255,255,255,0.06)'}; padding:2px 7px; border-radius:20px;`,
+      };
+    });
+
+    // ---- sub filter panel (first-column values for active section) ----
+    const subFilterSourceMap = {
+      feedback: d.feedback.map(r => r[0]),
+      attendance: d.attendance.map(r => r[0]),
+      blitz: REP_NAMES,
+      blitzPerformance: REP_NAMES,
+      stockPricing: d.stockPricing.map(r => r[0]),
+      competitorFeedback: d.competitorFeedback.map(r => r[0]),
+      executionReport: d.executionReport.map(r => r[0]),
+      salesValue: d.salesValue.map(r => r[0]),
+      salesVolume: d.salesVolume.map(r => r[0]),
+      growth: d.growth.map(r => r[0]),
+      stock: d.stock.map(r => r[0]),
+    };
+    const subFilterLabelMap = {
+      feedback: 'Filter: Survey Name',
+      attendance: 'Filter: Rep Name',
+      blitz: 'Filter: Blitz Member',
+      blitzPerformance: 'Filter: Blitz Member',
+      stockPricing: 'Filter: Blitz Member',
+      competitorFeedback: 'Filter: Blitz Member',
+      executionReport: 'Filter: Blitz Member',
+      salesValue: 'Filter: Month',
+      salesVolume: 'Filter: Month',
+      growth: 'Filter: Category',
+      stock: 'Filter: Store',
+    };
+    const allValsRaw = subFilterSourceMap[active] || [];
+    const countMap = {};
+    allValsRaw.forEach(v => { countMap[v] = (countMap[v] || 0) + 1; });
+    const uniqueVals = Object.keys(countMap).sort();
+    const selectedSet = this.getSelectedSet(active);
+    const subFilterOptions = uniqueVals.slice(0, 400).map(v => ({
+      label: v,
+      count: countMap[v],
+      checked: selectedSet ? selectedSet.has(v) : true,
+      toggle: () => this.toggleSubFilterValue(active, uniqueVals, v),
+    }));
+
+    // ---- helper: apply sub filter to a row-array dataset by first column ----
+    const applySub = (rows) => {
+      if (!selectedSet) return rows;
+      return rows.filter(r => selectedSet.has(r[0]));
+    };
+
+    const cf = s.crossFilterValues[active] || {};
+
+    // ================= FEEDBACK =================
+    let feedbackFiltered = applySub(d.feedback);
+    const fbRegions = ['All', ...new Set(d.feedback.map(r => r[2]))].filter(Boolean);
+    const fbCategories = ['All', ...new Set(d.feedback.map(r => r[4]))].filter(Boolean);
+    const fbQuestions = ['All', ...new Set(d.feedback.map(r => r[6]))].filter(Boolean);
+    const fbReps = ['All', ...new Set(d.feedback.map(r => r[3]))].filter(Boolean);
+    const fbDates = ['All', ...new Set(d.feedback.map(r => r[8]))].filter(Boolean).sort();
+    if (cf.region && cf.region !== 'All') feedbackFiltered = feedbackFiltered.filter(r => r[2] === cf.region);
+    if (cf.category && cf.category !== 'All') feedbackFiltered = feedbackFiltered.filter(r => r[4] === cf.category);
+    if (cf.question && cf.question !== 'All') feedbackFiltered = feedbackFiltered.filter(r => r[6] === cf.question);
+    if (cf.rep && cf.rep !== 'All') feedbackFiltered = feedbackFiltered.filter(r => r[3] === cf.rep);
+    if (cf.date && cf.date !== 'All') feedbackFiltered = feedbackFiltered.filter(r => r[8] === cf.date);
+
+    const feedbackYesTotal = feedbackFiltered.filter(r => String(r[7]).toLowerCase() === 'yes').length;
+    const feedbackNoTotal = feedbackFiltered.length - feedbackYesTotal;
+    const feedbackYesPct = feedbackFiltered.length ? feedbackYesTotal / feedbackFiltered.length : 0;
+    const feedbackDonutStyle = `width:150px; height:150px; border-radius:50%; background: conic-gradient(${BLUE} 0% ${(feedbackYesPct * 100).toFixed(1)}%, #EEF1F6 ${(feedbackYesPct * 100).toFixed(1)}% 100%); position:relative;`;
+
+    const regionAgg = {};
+    feedbackFiltered.forEach(r => {
+      const reg = r[2] || 'Unknown';
+      if (!regionAgg[reg]) regionAgg[reg] = { yes: 0, total: 0 };
+      regionAgg[reg].total++;
+      if (String(r[7]).toLowerCase() === 'yes') regionAgg[reg].yes++;
+    });
+    // Clicking any block below drills the Survey Answers table by setting the
+    // matching cross filter — a second click on the same value clears it.
+    const feedbackByRegion = Object.entries(regionAgg).map(([name, v]) => {
+      const pct = v.total ? v.yes / v.total : 0;
+      const selected = cf.region === name;
+      return {
+        name, pct: fmtPct(pct),
+        barStyle: `height:100%; width:${(pct * 100).toFixed(1)}%; background:${BLUE}; border-radius:5px;`,
+        rowStyle: `cursor:pointer; margin-bottom:11px; padding:4px 6px; border-radius:7px; background:${selected ? '#EEF3FF' : 'transparent'};`,
+        onClick: () => this.setCrossFilter('feedback', 'region', selected ? 'All' : name),
+      };
+    });
+
+    const catAgg = {};
+    feedbackFiltered.forEach(r => { const c = r[4] || 'Unknown'; catAgg[c] = (catAgg[c] || 0) + 1; });
+    const maxCatCount = Math.max(1, ...Object.values(catAgg));
+    const feedbackByCategory = Object.entries(catAgg).sort((a, b) => b[1] - a[1]).map(([name, count]) => {
+      const selected = cf.category === name;
+      return {
+        name,
+        count: fmtNum(count),
+        barStyle: `height:100%; width:${((count / maxCatCount) * 100).toFixed(1)}%; background:${LIME}; border-radius:5px;`,
+        rowStyle: `cursor:pointer; margin-bottom:11px; padding:4px 6px; border-radius:7px; background:${selected ? '#EEF3FF' : 'transparent'};`,
+        onClick: () => this.setCrossFilter('feedback', 'category', selected ? 'All' : name),
+      };
+    });
+
+    const repAgg = {};
+    feedbackFiltered.forEach(r => {
+      const rep = r[3] || 'Unknown';
+      if (!repAgg[rep]) repAgg[rep] = { yes: 0, total: 0 };
+      repAgg[rep].total++;
+      if (String(r[7]).toLowerCase() === 'yes') repAgg[rep].yes++;
+    });
+    const feedbackByRep = Object.entries(repAgg).sort((a, b) => b[1].total - a[1].total).map(([name, v]) => {
+      const pct = v.total ? v.yes / v.total : 0;
+      const selected = cf.rep === name;
+      return {
+        name, pct: fmtPct(pct), count: fmtNum(v.total),
+        barStyle: `height:100%; width:${(pct * 100).toFixed(1)}%; background:${BLUE}; border-radius:5px;`,
+        rowStyle: `cursor:pointer; margin-bottom:11px; padding:4px 6px; border-radius:7px; background:${selected ? '#EEF3FF' : 'transparent'};`,
+        onClick: () => this.setCrossFilter('feedback', 'rep', selected ? 'All' : name),
+      };
+    });
+
+    const qAgg = {};
+    feedbackFiltered.forEach(r => {
+      const q = r[6] || 'Unknown';
+      if (!qAgg[q]) qAgg[q] = { yes: 0, total: 0 };
+      qAgg[q].total++;
+      if (String(r[7]).toLowerCase() === 'yes') qAgg[q].yes++;
+    });
+    const feedbackByQuestion = Object.entries(qAgg).sort((a, b) => b[1].total - a[1].total).slice(0, 14).map(([name, v]) => {
+      const pct = v.total ? v.yes / v.total : 0;
+      const selected = cf.question === name;
+      return {
+        name, pct: fmtPct(pct), count: fmtNum(v.total),
+        barStyle: `height:100%; width:${(pct * 100).toFixed(1)}%; background:${LIME}; border-radius:5px;`,
+        rowStyle: `cursor:pointer; margin-bottom:11px; padding:4px 6px; border-radius:7px; background:${selected ? '#EEF3FF' : 'transparent'};`,
+        onClick: () => this.setCrossFilter('feedback', 'question', selected ? 'All' : name),
+      };
+    });
+
+    const feedbackAnswers = feedbackFiltered.slice(0, 200).map(r => ({
+      date: r[8], region: r[2], category: r[4], rep: r[3], store: r[5], question: r[6], answer: r[7],
+      answerStyle: `padding:10px 14px; font-weight:700; color:${String(r[7]).toLowerCase() === 'yes' ? '#1E8A4C' : '#C0392B'};`,
+    }));
+
+    const feedbackCards = feedbackFiltered.slice(0, 60).map((r, i) => ({
+      slotId: 'fb-photo-' + i,
+      placeholder: 'store photo',
+      store: r[5],
+      staff: r[3],
+      date: r[8],
+      question: r[6],
+      response: r[7],
+      responseStyle: `font-size:10.5px; font-weight:700; padding:3px 9px; border-radius:20px; color:${String(r[7]).toLowerCase() === 'yes' ? '#1E8A4C' : '#C0392B'}; background:${String(r[7]).toLowerCase() === 'yes' ? '#E8F7EE' : '#FDEBE9'};`,
+    }));
+
+    // ================= ATTENDANCE =================
+    let attFiltered = applySub(d.attendance);
+    const attChannels = ['All', ...new Set(d.attendance.map(r => r[5]))].filter(Boolean);
+    const attRegions = ['All', ...new Set(d.attendance.map(r => REP_REGION[r[0]] || 'Unassigned'))].filter(Boolean);
+    const attBlitzMembers = ['All', ...new Set(d.attendance.map(r => r[0]))].filter(Boolean);
+    if (cf.channel && cf.channel !== 'All') attFiltered = attFiltered.filter(r => r[5] === cf.channel);
+    if (cf.region && cf.region !== 'All') attFiltered = attFiltered.filter(r => (REP_REGION[r[0]] || 'Unassigned') === cf.region);
+    if (cf.blitz && cf.blitz !== 'All') attFiltered = attFiltered.filter(r => r[0] === cf.blitz);
+    const toISO = (v) => {
+      if (v == null || v === '') return '';
+      if (typeof v === 'number') { const dt = new Date(Math.round((v - 25569) * 864e5)); return dt.toISOString().slice(0, 10); }
+      const s = String(v).trim();
+      let m = s.match(/^(\d{4})[-\/.](\d{1,2})[-\/.](\d{1,2})/);
+      if (m) return m[1] + '-' + m[2].padStart(2, '0') + '-' + m[3].padStart(2, '0');
+      m = s.match(/^(\d{1,2})[-\/.](\d{1,2})[-\/.](\d{4})/);
+      if (m) return m[3] + '-' + m[2].padStart(2, '0') + '-' + m[1].padStart(2, '0');
+      const dt = new Date(s); if (isNaN(dt)) return '';
+      return dt.getFullYear() + '-' + String(dt.getMonth() + 1).padStart(2, '0') + '-' + String(dt.getDate()).padStart(2, '0');
+    };
+    const inRange = (iso, from, to) => !!iso && (!from || iso >= from) && (!to || iso <= to);
+    const attIsoDates = d.attendance.map(r => toISO(r[1])).filter(Boolean).sort();
+    const attMinDate = attIsoDates[0] || '', attMaxDate = attIsoDates[attIsoDates.length - 1] || '';
+    if (cf.dateFrom || cf.dateTo) attFiltered = attFiltered.filter(r => inRange(toISO(r[1]), cf.dateFrom, cf.dateTo));
+    const attStoreQuery = (cf.storeSearch || '').trim().toLowerCase();
+    if (attStoreQuery) attFiltered = attFiltered.filter(r => String(r[7] || '').toLowerCase().includes(attStoreQuery));
+
+    const timeToMin = (t) => { if (!t) return 0; const [h, m] = String(t).split(':').map(Number); return (h || 0) * 60 + (m || 0); };
+    // Flags used both for the red-highlight rule and the trends drill-down below.
+    const isLateCheckout = (r) => timeToMin(r[3]) > timeToMin('18:00');
+    const isShortVisit = (r) => timeToMin(r[4]) < 15;
+    const staffAgg = {};
+    attFiltered.forEach(r => {
+      const name = r[0];
+      if (!staffAgg[name]) staffAgg[name] = { totalMin: 0, visits: 0 };
+      staffAgg[name].totalMin += timeToMin(r[4]);
+      staffAgg[name].visits++;
+    });
+    const maxAvg = Math.max(1, ...Object.values(staffAgg).map(v => v.visits ? v.totalMin / v.visits : 0));
+    const attendanceByStaff = Object.entries(staffAgg).map(([name, v]) => {
+      const avgMin = v.visits ? v.totalMin / v.visits : 0;
+      return {
+        name, visits: v.visits,
+        avg: Math.floor(avgMin / 60) + 'h ' + Math.round(avgMin % 60) + 'm',
+        barStyle: `height:100%; width:${(avgMin / maxAvg * 100).toFixed(1)}%; background:${BLUE}; border-radius:5px;`,
+      };
+    });
+    const attendanceRows = attFiltered.slice(0, 200).map(r => {
+      const flagged = isLateCheckout(r) || isShortVisit(r);
+      return {
+        name: r[0], date: r[1], checkin: r[2], checkout: r[3], spent: r[4], channel: r[5], store: r[7], region: REP_REGION[r[0]] || 'Unassigned',
+        rowStyle: flagged ? 'border-top:1px solid #F1F3F7; background:#FDECEC;' : 'border-top:1px solid #F1F3F7;',
+      };
+    });
+
+    // ---- Visit behaviour trends per Blitz member (separate drill-down) ----
+    const behaviourAgg = {};
+    attFiltered.forEach(r => {
+      const name = r[0];
+      if (!behaviourAgg[name]) behaviourAgg[name] = { visits: 0, lateCheckouts: 0, shortVisits: 0 };
+      behaviourAgg[name].visits++;
+      if (isLateCheckout(r)) behaviourAgg[name].lateCheckouts++;
+      if (isShortVisit(r)) behaviourAgg[name].shortVisits++;
+    });
+    const attendanceTrends = Object.entries(behaviourAgg).sort((a, b) => (b[1].lateCheckouts + b[1].shortVisits) - (a[1].lateCheckouts + a[1].shortVisits)).map(([name, v]) => {
+      const flaggedPct = v.visits ? (v.lateCheckouts + v.shortVisits) / v.visits : 0;
+      return {
+        name, visits: v.visits, lateCheckouts: v.lateCheckouts, shortVisits: v.shortVisits,
+        flaggedPct: fmtPct(flaggedPct),
+        flaggedStyle: `font-weight:700; color:${flaggedPct > 0.2 ? '#C0392B' : flaggedPct > 0.1 ? '#B8860B' : '#1E8A4C'};`,
+      };
+    });
+
+    // ================= BLITZ =================
+    // Real call diary vs actual 2026 attendance data exists for 7 of 9 reps
+    // (matched by store name, fuzzy-reconciled at a 0.75+ similarity
+    // threshold); Mzwakhe Mokhoane and Nishay Singh have real attendance
+    // flags but no diary yet, so their coverage % stays blank rather than
+    // guessed. Nobody shows synthetic/sample numbers anymore.
+    const blitzReal = d.blitzReal || {};
+    const blitzRoles = d.blitzRoles || {};
+    const blitzVisitDetailAll = d.blitzVisitDetail || {};
+    const expandedBlitzRep = this.state.expandedBlitzRep;
+    const blitzMembers = REP_NAMES.filter(n => !selectedSet || selectedSet.has(n)).map((name, i) => {
+      const real = blitzReal[name];
+      const hasCoverage = real && real.planned != null;
+      const planned = hasCoverage ? real.planned : null;
+      const completed = hasCoverage ? real.completed : null;
+      const totalVisits = real ? real.totalVisits : null;
+      const flags = real ? real.flags : null;
+      const rate = hasCoverage && planned ? completed / planned : null;
+      const role = blitzRoles[name] || null;
+      return {
+        name, planned, completed,
+        role,
+        hasRole: !!role,
+        roleStyle: `font-size:9.5px; font-weight:800; letter-spacing:.03em; text-transform:uppercase; padding:2px 7px; border-radius:999px; background:#E9EEFB; color:#2F4C9B; margin-left:6px;`,
+        isReal: !!real,
+        hasCoverage,
+        sourceTag: hasCoverage ? 'REAL — diary vs attendance' : (real ? 'REAL attendance — no diary yet' : 'NO DATA'),
+        sourceTagStyle: `font-size:9.5px; font-weight:800; letter-spacing:.03em; text-transform:uppercase; padding:2px 7px; border-radius:999px; background:${hasCoverage ? '#E6F6EC' : real ? '#FFF6E0' : '#F1F0FF'}; color:${hasCoverage ? '#1E8A4C' : real ? '#8A6A00' : '#6C4CC4'};`,
+        rate: rate == null ? '—' : fmtPct(rate),
+        rateStyle: `font-size:11px; font-weight:700; color:${rate == null ? '#8592A6' : rate >= 0.8 ? '#1E8A4C' : rate >= 0.6 ? '#B8860B' : '#C0392B'};`,
+        barStyle: `height:100%; width:${rate == null ? 0 : (rate * 100).toFixed(1)}%; background:${rate >= 0.8 ? '#2FA860' : LIME}; border-radius:6px;`,
+        hasFlags: !!flags,
+        totalVisits,
+        flagLateCheckin: flags ? `${flags.lateCheckin}/${totalVisits}` : null,
+        flagLateCheckout: flags ? `${flags.lateCheckout}/${totalVisits}` : null,
+        flagLongDuration: flags ? `${flags.longDuration}/${totalVisits}` : null,
+        flagLocationDrift: flags ? `${flags.locationDrift}/${totalVisits}` : null,
+        isExpanded: expandedBlitzRep === name,
+        toggleLabel: expandedBlitzRep === name ? 'Hide detail ▲' : 'Show detail ▼',
+        onToggle: () => this.toggleBlitzExpand(name),
+      };
+    });
+
+    // ---- Per-visit detail table for whichever rep is expanded ----
+    const blitzDetailChannelOptions = ['All', ...new Set(Object.values(blitzVisitDetailAll).flat().map(v => v.channel))].filter(Boolean);
+    const blitzIsoDates = Object.values(blitzVisitDetailAll).flat().map(v => toISO(v.date)).filter(Boolean).sort();
+    const blitzMinDate = blitzIsoDates[0] || '', blitzMaxDate = blitzIsoDates[blitzIsoDates.length - 1] || '';
+    const blitzDetailMonthOptions = ['All', ...[...new Set(Object.values(blitzVisitDetailAll).flat().map(v => (v.date || '').slice(0, 7)))].filter(Boolean).sort()];
+    let blitzDetailRows = [];
+    if (expandedBlitzRep && blitzVisitDetailAll[expandedBlitzRep]) {
+      blitzDetailRows = blitzVisitDetailAll[expandedBlitzRep];
+      if (cf.blitzDetailChannel && cf.blitzDetailChannel !== 'All') blitzDetailRows = blitzDetailRows.filter(v => v.channel === cf.blitzDetailChannel);
+      if (cf.blitzMonth && cf.blitzMonth !== 'All') blitzDetailRows = blitzDetailRows.filter(v => (v.date || '').slice(0, 7) === cf.blitzMonth);
+      if (cf.blitzDateFrom || cf.blitzDateTo) blitzDetailRows = blitzDetailRows.filter(v => inRange(toISO(v.date), cf.blitzDateFrom, cf.blitzDateTo));
+      if (cf.blitzLateCheckin === 'Yes') blitzDetailRows = blitzDetailRows.filter(v => v.lateCheckin);
+      if (cf.blitzLateCheckout === 'Yes') blitzDetailRows = blitzDetailRows.filter(v => v.lateCheckout);
+      if (cf.blitzLocationDrift === 'Yes') blitzDetailRows = blitzDetailRows.filter(v => v.locationDrift);
+      blitzDetailRows = blitzDetailRows.slice(0, 400).map(v => ({
+        ...v,
+        lateCheckinLabel: v.lateCheckin ? 'Yes' : '—',
+        lateCheckoutLabel: v.lateCheckout ? 'Yes' : '—',
+        locationDriftLabel: v.locationDrift ? 'Yes' : '—',
+        rowStyle: (v.lateCheckin || v.lateCheckout || v.locationDrift) ? 'background:#FFF8F0;' : '',
+      }));
+    }
+    const hasBlitzDetail = blitzDetailRows.length > 0;
+
+    // ================= BLITZ PERFORMANCE (separate tab) =================
+    // Real sales matched to each Blitz rep via the store->rep map built
+    // from the Custom Store List — falls back to nothing (excluded) if a
+    // store isn't in that map, rather than the old region approximation,
+    // so every number here is a genuine store-level match.
+    const storeRepMap = d.storeRepMap || {};
+    // Only ever return an actual Blitz team member — the Custom Store List
+    // also uses catch-all labels like "Outerlying Area" for stores outside
+    // normal rep coverage, which aren't a person and shouldn't show up as one.
+    function repForStore(storeName) {
+      const rep = storeRepMap[storeName];
+      return rep && REP_NAMES.includes(rep) ? rep : null;
+    }
+    let blitzChannelRows = d.salesValue.filter(r => r[0] === 'JUL-YTD');
+    const blitzChannelSelected = cf.channel;
+    const blitzStoreSelected = cf.store;
+    const blitzRepSelected = cf.rep;
+    if (blitzChannelSelected && blitzChannelSelected !== 'All') blitzChannelRows = blitzChannelRows.filter(r => r[2] === blitzChannelSelected);
+    if (blitzStoreSelected && blitzStoreSelected !== 'All') blitzChannelRows = blitzChannelRows.filter(r => r[1] === blitzStoreSelected);
+    const blitzChannelOptions = ['All', ...new Set(d.salesValue.filter(r => r[0] === 'JUL-YTD').map(r => r[2]))].filter(Boolean);
+    const blitzStoreOptions = ['All', ...new Set(d.salesValue.filter(r => r[0] === 'JUL-YTD').map(r => r[1]))].filter(Boolean).slice(0, 500);
+    const blitzRepOptions = ['All', ...REP_NAMES];
+
+    const repChannelAgg = {};
+    blitzChannelRows.forEach(r => {
+      const rep = repForStore(r[1]);
+      if (!rep) return;
+      if (selectedSet && !selectedSet.has(rep)) return;
+      if (blitzRepSelected && blitzRepSelected !== 'All' && rep !== blitzRepSelected) return;
+      const key = rep + '||' + r[2];
+      repChannelAgg[key] = repChannelAgg[key] || { rep, channel: r[2], prev: 0, curr: 0, stores: 0 };
+      repChannelAgg[key].prev += (r[4] || 0);
+      repChannelAgg[key].curr += (r[5] || 0);
+      repChannelAgg[key].stores += 1;
+    });
+    const blitzPerformanceByChannel = Object.values(repChannelAgg).sort((a, b) => b.curr - a.curr).map(v => {
+      const growth = v.prev ? (v.curr - v.prev) / v.prev : 0;
+      return {
+        rep: v.rep, channel: v.channel, stores: v.stores,
+        curr: fmtR(v.curr), prev: fmtR(v.prev),
+        growth: (growth >= 0 ? '+' : '') + fmtPct(growth),
+        growthStyle: `font-weight:700; color:${growth >= 0 ? '#1E8A4C' : '#C0392B'};`,
+      };
+    });
+
+    // ---- compact drill-down charts: by Rep, and by Channel ----
+    const byRepAgg = {};
+    const byChannelAgg = {};
+    Object.values(repChannelAgg).forEach(v => {
+      byRepAgg[v.rep] = byRepAgg[v.rep] || { curr: 0, prev: 0 };
+      byRepAgg[v.rep].curr += v.curr; byRepAgg[v.rep].prev += v.prev;
+      byChannelAgg[v.channel] = byChannelAgg[v.channel] || { curr: 0, prev: 0 };
+      byChannelAgg[v.channel].curr += v.curr; byChannelAgg[v.channel].prev += v.prev;
+    });
+    const maxRepVal = Math.max(1, ...Object.values(byRepAgg).map(v => v.curr));
+    const blitzByRepChart = Object.entries(byRepAgg).sort((a, b) => b[1].curr - a[1].curr).map(([rep, v]) => {
+      const growth = v.prev ? (v.curr - v.prev) / v.prev : 0;
+      return {
+        name: rep, curr: fmtR(v.curr),
+        growthLabel: (growth >= 0 ? '+' : '') + fmtPct(growth),
+        growthStyle: `font-size:10.5px; font-weight:700; color:${growth >= 0 ? '#1E8A4C' : '#C0392B'};`,
+        barStyle: `height:22px; width:${Math.max(3, (v.curr / maxRepVal * 100)).toFixed(1)}%; background:${blitzRepSelected === rep ? BLUE : '#8FB6F2'}; border-radius:5px;`,
+        selected: blitzRepSelected === rep,
+        onClick: () => this.setCrossFilter('blitzPerformance', 'rep', blitzRepSelected === rep ? 'All' : rep),
+        rowWrapStyle: `cursor:pointer; padding:4px 6px; border-radius:8px; background:${blitzRepSelected === rep ? '#EEF3FF' : 'transparent'};`,
+      };
+    });
+    const maxBlitzChannelVal = Math.max(1, ...Object.values(byChannelAgg).map(v => v.curr));
+    const blitzByChannelChart = Object.entries(byChannelAgg).sort((a, b) => b[1].curr - a[1].curr).map(([channel, v]) => {
+      const growth = v.prev ? (v.curr - v.prev) / v.prev : 0;
+      return {
+        name: channel, curr: fmtR(v.curr),
+        growthLabel: (growth >= 0 ? '+' : '') + fmtPct(growth),
+        growthStyle: `font-size:10.5px; font-weight:700; color:${growth >= 0 ? '#1E8A4C' : '#C0392B'};`,
+        barStyle: `height:22px; width:${Math.max(3, (v.curr / maxBlitzChannelVal * 100)).toFixed(1)}%; background:${blitzChannelSelected === channel ? BLUE : LIME}; border-radius:5px;`,
+        selected: blitzChannelSelected === channel,
+        onClick: () => this.setCrossFilter('blitzPerformance', 'channel', blitzChannelSelected === channel ? 'All' : channel),
+        rowWrapStyle: `cursor:pointer; padding:4px 6px; border-radius:8px; background:${blitzChannelSelected === channel ? '#EEF3FF' : 'transparent'};`,
+      };
+    });
+
+    // ================= SALES VALUE / VOLUME =================
+    const isSalesValue = active === 'salesValue';
+    const isSalesVolume = active === 'salesVolume';
+    let salesFiltered = [];
+    let salesRegions = [];
+    if (isSalesValue) {
+      salesFiltered = applySub(d.salesValue);
+      salesRegions = ['All', ...new Set(d.salesValue.map(r => r[3]))].filter(Boolean);
+    } else if (isSalesVolume) {
+      salesFiltered = applySub(d.salesVolume);
+      salesRegions = ['All', ...new Set(d.salesVolume.map(r => r[3]))].filter(Boolean);
+    }
+    if (cf.region && cf.region !== 'All') salesFiltered = salesFiltered.filter(r => r[3] === cf.region);
+    const salesChannels = ['All', ...new Set((isSalesValue ? d.salesValue : d.salesVolume).map(r => r[2]))].filter(Boolean);
+    if (cf.channel && cf.channel !== 'All') salesFiltered = salesFiltered.filter(r => r[2] === cf.channel);
+    const salesStoreQuery = cf.store;
+    if (salesStoreQuery) salesFiltered = salesFiltered.filter(r => r[1] === salesStoreQuery);
+    const salesMonths = ['All', ...new Set((isSalesValue ? d.salesValue : d.salesVolume).map(r => r[0]))].filter(Boolean);
+    if (cf.month && cf.month !== 'All') salesFiltered = salesFiltered.filter(r => r[0] === cf.month);
+    // Sales rows have no rep/blitz column, so "Blitz Member" filters by that
+    // rep's region instead (via REP_REGION) — an approximation, not a
+    // store-level assignment, since that link doesn't exist in the source data.
+    const salesBlitzMembers = ['All', ...REP_NAMES];
+    if (cf.blitz && cf.blitz !== 'All') {
+      const blitzRegion = REP_REGION[cf.blitz];
+      if (blitzRegion) salesFiltered = salesFiltered.filter(r => r[3] === blitzRegion);
+    }
+
+    // ---- YoY by channel (chart) — click a bar to drill into that channel's rows ----
+    const channelAgg = {};
+    salesFiltered.forEach(r => {
+      const ch = r[2] || 'Unknown';
+      if (!channelAgg[ch]) channelAgg[ch] = { prev: 0, curr: 0 };
+      channelAgg[ch].prev += (r[isSalesValue ? 4 : 3] || 0);
+      channelAgg[ch].curr += (r[isSalesValue ? 5 : 4] || 0);
+    });
+    const maxChannelVal = Math.max(1, ...Object.values(channelAgg).map(v => Math.max(v.prev, v.curr)));
+    const salesByChannel = Object.entries(channelAgg).map(([name, v]) => {
+      const growth = v.prev ? (v.curr - v.prev) / v.prev : 0;
+      return {
+        name,
+        prevLabel: isSalesValue ? fmtR(v.prev) : fmtNum(v.prev),
+        currLabel: isSalesValue ? fmtR(v.curr) : fmtNum(v.curr),
+        growthLabel: (growth >= 0 ? '+' : '') + fmtPct(growth),
+        growthStyle: `font-size:11px; font-weight:700; color:${growth >= 0 ? '#1E8A4C' : '#C0392B'};`,
+        barPrevStyle: `flex:1; height:${Math.max(6, (v.prev / maxChannelVal * 90)).toFixed(0)}px; background:#C9D6EA; border-radius:3px 3px 0 0;`,
+        barCurrStyle: `flex:1; height:${Math.max(6, (v.curr / maxChannelVal * 90)).toFixed(0)}px; background:${BLUE}; border-radius:3px 3px 0 0;`,
+        selected: cf.channel === name,
+        onClick: () => this.setCrossFilter(active, 'channel', cf.channel === name ? 'All' : name),
+      };
+    }).map(row => ({ ...row, wrapStyle: `cursor:pointer; padding:6px; border-radius:8px; background:${row.selected ? '#EEF3FF' : 'transparent'};` }));
+
+    const salesRows = salesFiltered.slice(0, 300).map(r => {
+      const [month, store, channel, region, prev, curr, diff, growth] = r;
+      if (isSalesValue) {
+        return {
+          month, store, channel, region,
+          prev: fmtR(prev), curr: fmtR(curr), diff: (diff >= 0 ? '+' : '') + fmtR(diff), growth: (growth >= 0 ? '+' : '') + fmtPct(growth),
+          diffStyle: `padding:10px 14px; text-align:right; font-weight:700; color:${diff >= 0 ? '#1E8A4C' : '#C0392B'};`,
+          growthStyle: `padding:10px 14px; text-align:right; font-weight:700; color:${growth >= 0 ? '#1E8A4C' : '#C0392B'};`,
+        };
+      } else {
+        return {
+          month, store, channel, region,
+          prev: fmtNum(prev), curr: fmtNum(curr), diff: (diff >= 0 ? '+' : '') + fmtNum(diff), growth: (growth >= 0 ? '+' : '') + fmtPct(growth),
+          diffStyle: `padding:10px 14px; text-align:right; font-weight:700; color:${diff >= 0 ? '#1E8A4C' : '#C0392B'};`,
+          growthStyle: `padding:10px 14px; text-align:right; font-weight:700; color:${growth >= 0 ? '#1E8A4C' : '#C0392B'};`,
+        };
+      }
+    });
+
+    // ================= GROWTH FORECAST =================
+    let growthFiltered = applySub(d.growth);
+    const maxFy = Math.max(1, ...d.growth.map(r => r[3] || 0));
+    const growthRows = growthFiltered.map(r => {
+      const [category, fy25, fy26, fy27] = r;
+      return {
+        category, fy25: fmtR(fy25), fy26: fmtR(fy26), fy27: fmtR(fy27),
+        bar25: `flex:1; height:${Math.max(6, (fy25 / maxFy * 36)).toFixed(0)}px; background:#C9D6EA; border-radius:3px 3px 0 0;`,
+        bar26: `flex:1; height:${Math.max(6, (fy26 / maxFy * 36)).toFixed(0)}px; background:#6C9BE8; border-radius:3px 3px 0 0;`,
+        bar27: `flex:1; height:${Math.max(6, (fy27 / maxFy * 36)).toFixed(0)}px; background:${BLUE}; border-radius:3px 3px 0 0;`,
+      };
+    });
+
+    // ================= STOCK (now "Adhoc Tasks" — Checkers Stock Count is the
+    // first task type; every row is tagged with a Task Type so future task
+    // types (not yet in the data) slot into the same slicer without a rebuild) =================
+    let stockFiltered = applySub(d.stock);
+    const stockRegions = ['All', ...new Set(d.stock.map(r => r[1]))].filter(Boolean);
+    const stockCategories = ['All', ...new Set(d.stock.map(r => r[3]))].filter(Boolean);
+    const stockSubcats = ['All', ...new Set(d.stock.map(r => r[4]))].filter(Boolean);
+    const stockBlitzMembers = ['All', ...new Set(d.stock.map(r => r[5]))].filter(Boolean);
+    const stockTaskTypes = ['All', ...new Set(d.stock.map(r => r[9] || 'Checkers Stock Count'))].filter(Boolean);
+    if (cf.region && cf.region !== 'All') stockFiltered = stockFiltered.filter(r => r[1] === cf.region);
+    if (cf.category && cf.category !== 'All') stockFiltered = stockFiltered.filter(r => r[3] === cf.category);
+    if (cf.subcategory && cf.subcategory !== 'All') stockFiltered = stockFiltered.filter(r => r[4] === cf.subcategory);
+    if (cf.blitz && cf.blitz !== 'All') stockFiltered = stockFiltered.filter(r => r[5] === cf.blitz);
+    if (cf.taskType && cf.taskType !== 'All') stockFiltered = stockFiltered.filter(r => (r[9] || 'Checkers Stock Count') === cf.taskType);
+    const stockRows = stockFiltered.slice(0, 300).map(r => {
+      const systemSoh = r[7] || 0;
+      const physicalCount = r[8] || 0;
+      const variance = physicalCount - systemSoh;
+      return {
+        store: r[0], region: r[1], code: r[2], category: r[3], subcategory: r[4], blitz: r[5],
+        soh: fmtNum(r[6]), systemSoh: fmtNum(systemSoh), physicalCount: fmtNum(physicalCount),
+        variance: (variance >= 0 ? '+' : '') + fmtNum(variance),
+        varianceStyle: `padding:10px 14px; text-align:right; font-weight:700; color:${variance === 0 ? '#3A4658' : variance > 0 ? '#1E8A4C' : '#C0392B'};`,
+      };
+    });
+
+    // Store completion vs whole network (category/sub-category filters apply, region filter ignored so every region is comparable)
+    let stockFilteredNoRegion = applySub(d.stock);
+    if (cf.category && cf.category !== 'All') stockFilteredNoRegion = stockFilteredNoRegion.filter(r => r[3] === cf.category);
+    if (cf.subcategory && cf.subcategory !== 'All') stockFilteredNoRegion = stockFilteredNoRegion.filter(r => r[4] === cf.subcategory);
+    const totalStoresAll = new Set(d.stock.map(r => r[0])).size;
+    const completedStoresAll = new Set(stockFilteredNoRegion.map(r => r[0])).size;
+    const storeCompletionPct = totalStoresAll ? completedStoresAll / totalStoresAll : 0;
+    const totalStoresByRegion = {};
+    d.stock.forEach(r => { (totalStoresByRegion[r[1]] = totalStoresByRegion[r[1]] || new Set()).add(r[0]); });
+    const completedStoresByRegion = {};
+    stockFilteredNoRegion.forEach(r => { (completedStoresByRegion[r[1]] = completedStoresByRegion[r[1]] || new Set()).add(r[0]); });
+    const stockByRegion = stockRegions.filter(r => r !== 'All').map(region => {
+      const total = totalStoresByRegion[region] ? totalStoresByRegion[region].size : 0;
+      const completed = completedStoresByRegion[region] ? completedStoresByRegion[region].size : 0;
+      const pct = total ? completed / total : 0;
+      return {
+        name: region,
+        completed,
+        total,
+        countLabel: completed + ' / ' + total,
+        pct: fmtPct(pct),
+        barStyle: 'height:100%; width:' + Math.round(pct * 100) + '%; background:' + BLUE + '; border-radius:5px;',
+      };
+    }).sort((a, b) => a.name.localeCompare(b.name));
+
+    // ================= STOCK COUNT & PRICING (new weekly cadence, runs
+    // alongside the existing Weekly Feedback Report — separate slicer, own
+    // dataset. Row schema mirrors the import template column-for-column:
+    // 0 blitz,1 channel,2 storeCode,3 storeName,4 region,5 category,6 skuCode,
+    // 7 philipsRRP,8 storeSystemRRP,9 promoPrice,10 onPromo,11 skuStatus,
+    // 12 listed,13 proofOfDelisting,14 mdq,15 totalSoh,16 qtyOnShelf,
+    // 17 boxDamages,18 returned,19 additionalStockNeeded =================
+    let stockPricingFiltered = applySub(d.stockPricing);
+    const spChannels = ['All', ...new Set(d.stockPricing.map(r => r[1]))].filter(Boolean);
+    const spRegions = ['All', ...new Set(d.stockPricing.map(r => r[4]))].filter(Boolean);
+    const spCategories = ['All', ...new Set(d.stockPricing.map(r => r[5]))].filter(Boolean);
+    if (cf.channel && cf.channel !== 'All') stockPricingFiltered = stockPricingFiltered.filter(r => r[1] === cf.channel);
+    if (cf.region && cf.region !== 'All') stockPricingFiltered = stockPricingFiltered.filter(r => r[4] === cf.region);
+    if (cf.category && cf.category !== 'All') stockPricingFiltered = stockPricingFiltered.filter(r => r[5] === cf.category);
+    const stockPricingRows = stockPricingFiltered.slice(0, 300).map(r => ({
+      blitz: r[0], channel: r[1], storeCode: r[2], storeName: r[3], region: r[4], category: r[5], sku: r[6],
+      philipsRRP: r[7] != null ? fmtR(r[7]) : '—', storeRRP: r[8] != null ? fmtR(r[8]) : '—', promoPrice: r[9] != null ? fmtR(r[9]) : '—',
+      onPromo: r[10] || '—', skuStatus: r[11] || '—', listed: r[12] || '—', mdq: r[14] != null ? fmtNum(r[14]) : '—',
+      totalSoh: r[15] != null ? fmtNum(r[15]) : '—', qtyOnShelf: r[16] != null ? fmtNum(r[16]) : '—',
+      boxDamages: r[17] != null ? fmtNum(r[17]) : '—', returned: r[18] != null ? fmtNum(r[18]) : '—', additionalStock: r[19] || '—',
+    }));
+
+    // ================= COMPETITOR FEEDBACK =================
+    // 0 blitz,1 channel,2 storeCode,3 storeName,4 region,5 category,6 competitor,
+    // 7 competitorSku,8 skuStatus,9 competitorPrice,10 onPromo,11 totalSoh,
+    // 12 productImage,13 philipsSku,14 philipsPrice
+    let competitorFiltered = applySub(d.competitorFeedback);
+    const cfChannels = ['All', ...new Set(d.competitorFeedback.map(r => r[1]))].filter(Boolean);
+    const cfRegions = ['All', ...new Set(d.competitorFeedback.map(r => r[4]))].filter(Boolean);
+    const cfCategories = ['All', ...new Set(d.competitorFeedback.map(r => r[5]))].filter(Boolean);
+    if (cf.channel && cf.channel !== 'All') competitorFiltered = competitorFiltered.filter(r => r[1] === cf.channel);
+    if (cf.region && cf.region !== 'All') competitorFiltered = competitorFiltered.filter(r => r[4] === cf.region);
+    if (cf.category && cf.category !== 'All') competitorFiltered = competitorFiltered.filter(r => r[5] === cf.category);
+    const competitorRows = competitorFiltered.slice(0, 300).map(r => ({
+      blitz: r[0], channel: r[1], storeCode: r[2], storeName: r[3], region: r[4], category: r[5],
+      competitor: r[6], competitorSku: r[7], skuStatus: r[8] || '—',
+      competitorPrice: r[9] != null ? fmtR(r[9]) : '—', onPromo: r[10] || '—', totalSoh: r[11] != null ? fmtNum(r[11]) : '—',
+      philipsSku: r[13], philipsPrice: r[14] != null ? fmtR(r[14]) : '—',
+    }));
+
+    // ================= EXECUTION (IMAGE REPORT) =================
+    // 0 blitz,1 channel,2 storeCode,3 storeName,4 region,5 category,
+    // 6 beforeImage,7 displayArea,8 skuCode,9 afterImage
+    let executionFiltered = applySub(d.executionReport);
+    const erChannels = ['All', ...new Set(d.executionReport.map(r => r[1]))].filter(Boolean);
+    const erRegions = ['All', ...new Set(d.executionReport.map(r => r[4]))].filter(Boolean);
+    const erAreas = ['All', ...new Set(d.executionReport.map(r => r[7]))].filter(Boolean);
+    if (cf.channel && cf.channel !== 'All') executionFiltered = executionFiltered.filter(r => r[1] === cf.channel);
+    if (cf.region && cf.region !== 'All') executionFiltered = executionFiltered.filter(r => r[4] === cf.region);
+    if (cf.area && cf.area !== 'All') executionFiltered = executionFiltered.filter(r => r[7] === cf.area);
+    const executionRows = executionFiltered.slice(0, 300).map(r => ({
+      blitz: r[0], channel: r[1], storeCode: r[2], storeName: r[3], region: r[4], category: r[5],
+      beforeImage: r[6], displayArea: r[7], sku: r[8], afterImage: r[9],
+      hasBefore: !!r[6], hasAfter: !!r[9],
+    }));
+
+    // ================= CROSS FILTERS PER SECTION =================
+    let crossFilters = [];
+    if (active === 'feedback') {
+      crossFilters = [
+        { label: 'Region', value: cf.region || 'All', options: fbRegions, onChange: (e) => this.setCrossFilter('feedback', 'region', e.target.value) },
+        { label: 'Category', value: cf.category || 'All', options: fbCategories, onChange: (e) => this.setCrossFilter('feedback', 'category', e.target.value) },
+        { label: 'Question', value: cf.question || 'All', options: fbQuestions, onChange: (e) => this.setCrossFilter('feedback', 'question', e.target.value) },
+        { label: 'Blitz Rep', value: cf.rep || 'All', options: fbReps, onChange: (e) => this.setCrossFilter('feedback', 'rep', e.target.value) },
+        { label: 'Date', value: cf.date || 'All', options: fbDates, onChange: (e) => this.setCrossFilter('feedback', 'date', e.target.value) },
+      ];
+    } else if (active === 'attendance') {
+      crossFilters = [
+        { label: 'Region', value: cf.region || 'All', options: attRegions, onChange: (e) => this.setCrossFilter('attendance', 'region', e.target.value) },
+        { label: 'Channel', value: cf.channel || 'All', options: attChannels, onChange: (e) => this.setCrossFilter('attendance', 'channel', e.target.value) },
+        { label: 'Blitz Member', value: cf.blitz || 'All', options: attBlitzMembers, onChange: (e) => this.setCrossFilter('attendance', 'blitz', e.target.value) },
+        { label: 'From Day', value: cf.dateFrom || '', options: null, isDate: true, min: attMinDate, max: attMaxDate, onChange: (e) => this.setCrossFilter('attendance', 'dateFrom', e.target.value) },
+        { label: 'To Day', value: cf.dateTo || '', options: null, isDate: true, min: attMinDate, max: attMaxDate, onChange: (e) => this.setCrossFilter('attendance', 'dateTo', e.target.value) },
+        { label: 'Search Store', value: cf.storeSearch || '', options: null, isSearch: true, onChange: (e) => this.setCrossFilter('attendance', 'storeSearch', e.target.value) },
+      ];
+    } else if (active === 'blitz') {
+      crossFilters = [
+        { label: 'Visit Channel (in detail below)', value: cf.blitzDetailChannel || 'All', options: blitzDetailChannelOptions, onChange: (e) => this.setCrossFilter('blitz', 'blitzDetailChannel', e.target.value) },
+        { label: 'Month (in detail below)', value: cf.blitzMonth || 'All', options: blitzDetailMonthOptions, onChange: (e) => this.setCrossFilter('blitz', 'blitzMonth', e.target.value) },
+        { label: 'From Day (in detail below)', value: cf.blitzDateFrom || '', options: null, isDate: true, min: blitzMinDate, max: blitzMaxDate, onChange: (e) => this.setCrossFilter('blitz', 'blitzDateFrom', e.target.value) },
+        { label: 'To Day (in detail below)', value: cf.blitzDateTo || '', options: null, isDate: true, min: blitzMinDate, max: blitzMaxDate, onChange: (e) => this.setCrossFilter('blitz', 'blitzDateTo', e.target.value) },
+        { label: 'Late Check-in (>8am)', value: cf.blitzLateCheckin || 'All', options: ['All', 'Yes'], onChange: (e) => this.setCrossFilter('blitz', 'blitzLateCheckin', e.target.value) },
+        { label: 'Late Check-out (>17:00)', value: cf.blitzLateCheckout || 'All', options: ['All', 'Yes'], onChange: (e) => this.setCrossFilter('blitz', 'blitzLateCheckout', e.target.value) },
+        { label: 'Far From Store (>1km)', value: cf.blitzLocationDrift || 'All', options: ['All', 'Yes'], onChange: (e) => this.setCrossFilter('blitz', 'blitzLocationDrift', e.target.value) },
+      ];
+    } else if (active === 'blitzPerformance') {
+      crossFilters = [
+        { label: 'Channel', value: cf.channel || 'All', options: blitzChannelOptions, onChange: (e) => this.setCrossFilter('blitzPerformance', 'channel', e.target.value) },
+        { label: 'Store', value: cf.store || 'All', options: blitzStoreOptions, onChange: (e) => this.setCrossFilter('blitzPerformance', 'store', e.target.value) },
+        { label: 'Blitz Rep', value: cf.rep || 'All', options: blitzRepOptions, onChange: (e) => this.setCrossFilter('blitzPerformance', 'rep', e.target.value) },
+      ];
+    } else if (active === 'salesValue') {
+      const stores = ['All', ...new Set(d.salesValue.map(r => r[1]))].filter(Boolean).slice(0, 500);
+      crossFilters = [
+        { label: 'Region', value: cf.region || 'All', options: salesRegions, onChange: (e) => this.setCrossFilter('salesValue', 'region', e.target.value) },
+        { label: 'Channel', value: cf.channel || 'All', options: salesChannels, onChange: (e) => this.setCrossFilter('salesValue', 'channel', e.target.value) },
+        { label: 'Month', value: cf.month || 'All', options: salesMonths, onChange: (e) => this.setCrossFilter('salesValue', 'month', e.target.value) },
+        { label: 'Blitz Member', value: cf.blitz || 'All', options: salesBlitzMembers, onChange: (e) => this.setCrossFilter('salesValue', 'blitz', e.target.value) },
+        { label: 'Store', value: cf.store || 'All', options: stores, onChange: (e) => this.setCrossFilter('salesValue', 'store', e.target.value === 'All' ? null : e.target.value) },
+      ];
+    } else if (active === 'salesVolume') {
+      const stores = ['All', ...new Set(d.salesVolume.map(r => r[1]))].filter(Boolean).slice(0, 500);
+      crossFilters = [
+        { label: 'Region', value: cf.region || 'All', options: salesRegions, onChange: (e) => this.setCrossFilter('salesVolume', 'region', e.target.value) },
+        { label: 'Channel', value: cf.channel || 'All', options: salesChannels, onChange: (e) => this.setCrossFilter('salesVolume', 'channel', e.target.value) },
+        { label: 'Month', value: cf.month || 'All', options: salesMonths, onChange: (e) => this.setCrossFilter('salesVolume', 'month', e.target.value) },
+        { label: 'Blitz Member', value: cf.blitz || 'All', options: salesBlitzMembers, onChange: (e) => this.setCrossFilter('salesVolume', 'blitz', e.target.value) },
+        { label: 'Store', value: cf.store || 'All', options: stores, onChange: (e) => this.setCrossFilter('salesVolume', 'store', e.target.value === 'All' ? null : e.target.value) },
+      ];
+    } else if (active === 'stock') {
+      crossFilters = [
+        { label: 'Task Type', value: cf.taskType || 'All', options: stockTaskTypes, onChange: (e) => this.setCrossFilter('stock', 'taskType', e.target.value) },
+        { label: 'Region', value: cf.region || 'All', options: stockRegions, onChange: (e) => this.setCrossFilter('stock', 'region', e.target.value) },
+        { label: 'Category', value: cf.category || 'All', options: stockCategories, onChange: (e) => this.setCrossFilter('stock', 'category', e.target.value) },
+        { label: 'Sub Category', value: cf.subcategory || 'All', options: stockSubcats, onChange: (e) => this.setCrossFilter('stock', 'subcategory', e.target.value) },
+        { label: 'Blitz Member', value: cf.blitz || 'All', options: stockBlitzMembers, onChange: (e) => this.setCrossFilter('stock', 'blitz', e.target.value) },
+      ];
+    } else if (active === 'stockPricing') {
+      crossFilters = [
+        { label: 'Channel', value: cf.channel || 'All', options: spChannels, onChange: (e) => this.setCrossFilter('stockPricing', 'channel', e.target.value) },
+        { label: 'Region', value: cf.region || 'All', options: spRegions, onChange: (e) => this.setCrossFilter('stockPricing', 'region', e.target.value) },
+        { label: 'Category', value: cf.category || 'All', options: spCategories, onChange: (e) => this.setCrossFilter('stockPricing', 'category', e.target.value) },
+      ];
+    } else if (active === 'competitorFeedback') {
+      crossFilters = [
+        { label: 'Channel', value: cf.channel || 'All', options: cfChannels, onChange: (e) => this.setCrossFilter('competitorFeedback', 'channel', e.target.value) },
+        { label: 'Region', value: cf.region || 'All', options: cfRegions, onChange: (e) => this.setCrossFilter('competitorFeedback', 'region', e.target.value) },
+        { label: 'Category', value: cf.category || 'All', options: cfCategories, onChange: (e) => this.setCrossFilter('competitorFeedback', 'category', e.target.value) },
+      ];
+    } else if (active === 'executionReport') {
+      crossFilters = [
+        { label: 'Channel', value: cf.channel || 'All', options: erChannels, onChange: (e) => this.setCrossFilter('executionReport', 'channel', e.target.value) },
+        { label: 'Region', value: cf.region || 'All', options: erRegions, onChange: (e) => this.setCrossFilter('executionReport', 'region', e.target.value) },
+        { label: 'Display Area', value: cf.area || 'All', options: erAreas, onChange: (e) => this.setCrossFilter('executionReport', 'area', e.target.value) },
+      ];
+    }
+
+    // ================= KPIs per section =================
+    let kpis = [];
+    if (active === 'feedback') {
+      kpis = [
+        { label: 'Total Responses', value: fmtNum(feedbackFiltered.length), delta: '', deltaStyle: '' },
+        { label: 'Availability Rate', value: fmtPct(feedbackYesPct), delta: '', deltaStyle: '' },
+        { label: 'Stores Covered', value: fmtNum(new Set(feedbackFiltered.map(r => r[5])).size), delta: '', deltaStyle: '' },
+        { label: 'Active Reps', value: fmtNum(new Set(feedbackFiltered.map(r => r[3])).size), delta: '', deltaStyle: '' },
+      ];
+    } else if (active === 'attendance') {
+      kpis = [
+        { label: 'Store Visits', value: fmtNum(attFiltered.length), delta: '', deltaStyle: '' },
+        { label: 'Reps Active', value: fmtNum(new Set(attFiltered.map(r => r[0])).size), delta: '', deltaStyle: '' },
+        { label: 'Channels Covered', value: fmtNum(new Set(attFiltered.map(r => r[5])).size), delta: '', deltaStyle: '' },
+      ];
+    } else if (active === 'blitz') {
+      const totalPlanned = blitzMembers.reduce((a, m) => a + (m.planned || 0), 0);
+      const totalCompleted = blitzMembers.reduce((a, m) => a + (m.completed || 0), 0);
+      const realCount = blitzMembers.filter(m => m.isReal).length;
+      const coverageCount = blitzMembers.filter(m => m.hasCoverage).length;
+      kpis = [
+        { label: 'Planned Calls', value: fmtNum(totalPlanned), delta: '', deltaStyle: '' },
+        { label: 'Completed Calls', value: fmtNum(totalCompleted), delta: '', deltaStyle: '' },
+        { label: 'Completion Rate', value: fmtPct(totalPlanned ? totalCompleted / totalPlanned : 0), delta: '', deltaStyle: '' },
+        { label: 'Reps with Attendance Data', value: realCount + ' / ' + blitzMembers.length, delta: '', deltaStyle: '' },
+        { label: 'Reps with Full Coverage %', value: coverageCount + ' / ' + blitzMembers.length, delta: '', deltaStyle: '' },
+      ];
+    } else if (active === 'blitzPerformance') {
+      kpis = [
+        { label: 'Rep-Channel Combos', value: fmtNum(blitzPerformanceByChannel.length), delta: '', deltaStyle: '' },
+        { label: 'Reps Matched to Real Sales', value: fmtNum(blitzByRepChart.length), delta: '', deltaStyle: '' },
+        { label: 'Channels', value: fmtNum(blitzByChannelChart.length), delta: '', deltaStyle: '' },
+      ];
+    } else if (active === 'salesValue' || active === 'salesVolume') {
+      const totalPrev = salesFiltered.reduce((a, r) => a + (r[isSalesValue ? 4 : 3] || 0), 0);
+      const totalCurr = salesFiltered.reduce((a, r) => a + (r[isSalesValue ? 5 : 4] || 0), 0);
+      const growth = totalPrev ? (totalCurr - totalPrev) / totalPrev : 0;
+      kpis = [
+        { label: isSalesValue ? 'Current Yr Value' : 'Current Yr Units', value: isSalesValue ? fmtR(totalCurr) : fmtNum(totalCurr), delta: '', deltaStyle: '' },
+        { label: isSalesValue ? 'Previous Yr Value' : 'Previous Yr Units', value: isSalesValue ? fmtR(totalPrev) : fmtNum(totalPrev), delta: '', deltaStyle: '' },
+        { label: 'YoY Growth', value: (growth >= 0 ? '+' : '') + fmtPct(growth), delta: '', deltaStyle: `font-size:11.5px; font-weight:700; color:${growth >= 0 ? '#1E8A4C' : '#C0392B'}; margin-top:4px;` },
+      ];
+    } else if (active === 'growth') {
+      const totalFy27 = growthFiltered.reduce((a, r) => a + (r[3] || 0), 0);
+      kpis = [
+        { label: 'FY2027 Ambition (Total)', value: fmtR(totalFy27), delta: '', deltaStyle: '' },
+        { label: 'Categories', value: fmtNum(growthFiltered.length), delta: '', deltaStyle: '' },
+      ];
+    } else if (active === 'stock') {
+      const totalSoh = stockFiltered.reduce((a, r) => a + (r[6] || 0), 0);
+      const totalVariance = stockFiltered.reduce((a, r) => a + ((r[8] || 0) - (r[7] || 0)), 0);
+      kpis = [
+        { label: 'SKUs Counted', value: fmtNum(stockFiltered.length), delta: '', deltaStyle: '' },
+        { label: 'Total SOH Units', value: fmtNum(totalSoh), delta: '', deltaStyle: '' },
+        { label: 'Stores', value: fmtNum(new Set(stockFiltered.map(r => r[0])).size), delta: '', deltaStyle: '' },
+        { label: 'Stores Completed', value: completedStoresAll + ' / ' + totalStoresAll, delta: fmtPct(storeCompletionPct) + ' complete', deltaStyle: 'font-size:11.5px; font-weight:700; color:' + BLUE + '; margin-top:4px;' },
+        { label: 'Physical vs System Variance', value: (totalVariance >= 0 ? '+' : '') + fmtNum(totalVariance) + ' units', delta: '', deltaStyle: `font-size:11.5px; font-weight:700; color:${totalVariance === 0 ? '#8592A6' : totalVariance > 0 ? '#1E8A4C' : '#C0392B'}; margin-top:4px;` },
+      ];
+    } else if (active === 'stockPricing') {
+      const additionalStockCount = stockPricingFiltered.filter(r => String(r[19]).toLowerCase() === 'yes').length;
+      const delistedCount = stockPricingFiltered.filter(r => String(r[12]).toLowerCase() === 'no').length;
+      kpis = [
+        { label: 'SKUs Logged', value: fmtNum(stockPricingFiltered.length), delta: '', deltaStyle: '' },
+        { label: 'Stores Covered', value: fmtNum(new Set(stockPricingFiltered.map(r => r[2])).size), delta: '', deltaStyle: '' },
+        { label: 'Flagged Delisted', value: fmtNum(delistedCount), delta: '', deltaStyle: '' },
+        { label: 'Additional Stock Needed', value: fmtNum(additionalStockCount), delta: '', deltaStyle: '' },
+      ];
+    } else if (active === 'competitorFeedback') {
+      kpis = [
+        { label: 'Comparisons Logged', value: fmtNum(competitorFiltered.length), delta: '', deltaStyle: '' },
+        { label: 'Stores Covered', value: fmtNum(new Set(competitorFiltered.map(r => r[2])).size), delta: '', deltaStyle: '' },
+        { label: 'Competitors Tracked', value: fmtNum(new Set(competitorFiltered.map(r => r[6])).size), delta: '', deltaStyle: '' },
+      ];
+    } else if (active === 'executionReport') {
+      kpis = [
+        { label: 'Execution Rows Logged', value: fmtNum(executionFiltered.length), delta: '', deltaStyle: '' },
+        { label: 'Stores Covered', value: fmtNum(new Set(executionFiltered.map(r => r[2])).size), delta: '', deltaStyle: '' },
+        { label: 'Display Areas Tracked', value: fmtNum(new Set(executionFiltered.map(r => r[7])).size), delta: '', deltaStyle: '' },
+      ];
+    }
+
+    const activeLabelMap = Object.fromEntries(SECTION_DEFS.map(x => [x.key, x.label]));
+    const activeSubMap = {
+      feedback: 'Store survey responses & field photo evidence',
+      attendance: 'Field rep check-in / check-out log',
+      blitz: 'Planned vs completed calls per Blitz team member, with per-visit drill-down',
+      blitzPerformance: 'Real Blitz rep sales performance by channel & store',
+      stockPricing: 'Weekly per-SKU stock count & pricing audit',
+      competitorFeedback: 'Weekly per-SKU competitor pricing & stock comparison',
+      executionReport: 'Before/after execution photos per display area',
+      salesValue: 'Store-level value sales, year on year',
+      salesVolume: 'Store-level unit sales, year on year',
+      growth: 'Category value forecast, FY2025–FY2027',
+      stock: 'Ad-hoc stock count vs system on hand',
+    };
+
+    return {
+      sections,
+      subFilterLabel: subFilterLabelMap[active],
+      subFilterOptions,
+      activeSectionLabel: activeLabelMap[active],
+      activeSectionSub: activeSubMap[active],
+      hasCrossFilters: crossFilters.length > 0,
+      crossFilters,
+      kpis,
+      hasLiveFeed: !!s.liveFeedSeen,
+      liveBadgeLabel: s.liveError
+        ? 'App feed unavailable'
+        : (s.liveVisitCount ? `${s.liveVisitCount} live app visits` : 'App feed connected — no visits yet'),
+      liveBadgeTitle: (s.liveUpdatedAt ? `App feed last read ${new Date(s.liveUpdatedAt).toLocaleTimeString()} — ${s.liveAnswerCount || 0} survey answers` : 'Waiting for the first check-in from the field app')
+        + ` · ${s.historyBatchCount || 0} stored history upload(s)`,
+      liveDotStyle: `width:7px; height:7px; border-radius:50%; display:inline-block; background:${s.liveError ? '#C0392B' : (s.liveVisitCount ? '#1E8A4C' : '#B4820A')};`,
+      liveBadgeStyle: s.liveError
+        ? 'display:flex; align-items:center; gap:7px; background:#FDECEC; color:#8E2A20; border:1px solid #F3C9C4; border-radius:999px; padding:5px 12px; font-size:11.5px; font-weight:700;'
+        : (s.liveVisitCount
+          ? 'display:flex; align-items:center; gap:7px; background:#E6F6EC; color:#146B39; border:1px solid #BFE6CD; border-radius:999px; padding:5px 12px; font-size:11.5px; font-weight:700;'
+          : 'display:flex; align-items:center; gap:7px; background:#FFF6E0; color:#8A6A00; border:1px solid #F0DFAE; border-radius:999px; padding:5px 12px; font-size:11.5px; font-weight:700;'),
+      isFeedback: active === 'feedback',
+      isAttendance: active === 'attendance',
+      isBlitz: active === 'blitz',
+      isBlitzPerformance: active === 'blitzPerformance',
+      isAdminUnlocked: !!s.adminUnlocked,
+      isStockPricing: active === 'stockPricing',
+      isCompetitorFeedback: active === 'competitorFeedback',
+      isExecutionReport: active === 'executionReport',
+      isSales: isSalesValue || isSalesVolume,
+      isGrowth: active === 'growth',
+      isStock: active === 'stock',
+      feedbackByRegion,
+      feedbackByCategory,
+      feedbackByRep,
+      feedbackByQuestion,
+      feedbackDonutStyle,
+      feedbackYesPctLabel: fmtPct(feedbackYesPct),
+      feedbackYesTotal: fmtNum(feedbackYesTotal),
+      feedbackNoTotal: fmtNum(feedbackNoTotal),
+      feedbackAnswers,
+      feedbackCards,
+      feedbackFilteredCount: feedbackFiltered.length,
+      attendanceByStaff,
+      attendanceRows,
+      attendanceTrends,
+      blitzMembers,
+      blitzPerformanceByChannel,
+      hasBlitzChannelPerf: blitzPerformanceByChannel.length > 0,
+      blitzByRepChart,
+      blitzByChannelChart,
+      expandedBlitzRep,
+      blitzDetailRows,
+      hasBlitzDetail,
+      stockPricingRows,
+      hasStockPricing: stockPricingRows.length > 0,
+      stockPricingFilteredCount: stockPricingFiltered.length,
+      competitorRows,
+      hasCompetitorRows: competitorRows.length > 0,
+      competitorFilteredCount: competitorFiltered.length,
+      executionRows,
+      hasExecutionRows: executionRows.length > 0,
+      executionFilteredCount: executionFiltered.length,
+      salesRows,
+      salesByChannel,
+      salesFilteredCount: salesFiltered.length,
+      salesRegionThDisplay: 'padding:10px 14px; text-align:left; font-size:10.5px; font-weight:700; color:#8592A6; text-transform:uppercase; letter-spacing:0.3px;',
+      salesRegionTdDisplay: 'padding:10px 14px; color:#3A4658;',
+      growthRows,
+      stockRows,
+      stockByRegion,
+      stockFilteredCount: stockFiltered.length,
+      thStyle: 'padding:10px 14px; text-align:left; font-size:10.5px; font-weight:700; color:#8592A6; text-transform:uppercase; letter-spacing:0.3px;',
+      thStyleRight: 'padding:10px 14px; text-align:right; font-size:10.5px; font-weight:700; color:#8592A6; text-transform:uppercase; letter-spacing:0.3px;',
+      tdStyle: 'padding:10px 14px; color:#3A4658;',
+      tdStyleRight: 'padding:10px 14px; text-align:right; color:#3A4658; font-weight:600;',
+      selectSection: (e) => this.selectSection(e),
+      exportExcel: () => this.exportExcel(),
+      importExcel: (e) => this.importExcel(e),
+      resetFilters: () => this.resetFilters(),
+      handlePhotoUpload: (e) => this.handlePhotoUpload(e),
+      photoUploadCards: (s.photoUploads || []).map(p => {
+        const statusStyle = {
+          reading: 'color:#8592A6; background:#F1F3F7;',
+          analyzing: 'color:#B8860B; background:#FFF6DE;',
+          done: 'color:#1E8A4C; background:#E8F7EE;',
+          error: 'color:#C0392B; background:#FDEBE9;',
+        }[p.status];
+        const statusLabel = { reading: 'Reading…', analyzing: 'Scanning photo…', done: 'Matched', error: 'Error' }[p.status];
+        return {
+          id: p.id,
+          dataUrl: p.dataUrl,
+          fileName: p.fileName,
+          statusLabel,
+          statusStyle: `font-size:10px; font-weight:700; padding:2px 8px; border-radius:20px; ${statusStyle}`,
+          showDone: p.status === 'done',
+          matchedStore: p.matchedStore || 'No confident match',
+          region: p.region,
+          channel: p.channel,
+          rep: p.rep,
+          extracted: p.extracted,
+        };
+      }),
+      photoUploadCount: (s.photoUploads || []).length,
+    };
+  }
+}
+
+</script>
+</body>
+</html>
