@@ -46,8 +46,13 @@ function nameFromEmail(email) {
 }
 
 const pad = (n) => String(n).padStart(2, '0');
-const datePart = (iso) => new Date(iso).toISOString().slice(0, 10);
-const timePart = (iso) => { const d = new Date(iso); return `${pad(d.getUTCHours())}:${pad(d.getUTCMinutes())}`; };
+// Reps work in South Africa (UTC+2, no DST). Stored timestamps are UTC, so
+// shift before formatting — otherwise an 08:30 check-in shows as 06:30 and
+// the dashboard's late-check-in flag never fires.
+const SAST_MS = 2 * 60 * 60 * 1000;
+const local = (iso) => new Date(new Date(iso).getTime() + SAST_MS);
+const datePart = (iso) => local(iso).toISOString().slice(0, 10);
+const timePart = (iso) => { const d = local(iso); return `${pad(d.getUTCHours())}:${pad(d.getUTCMinutes())}`; };
 
 // Time Spent is read by the dashboard with the same HH:MM parser as the
 // clock columns, so it must be "H:MM" — not "45 min".
@@ -120,18 +125,48 @@ exports.handler = async (event) => {
     for (const q of questions) {
       const raw = answers[q.id];
       if (raw === undefined || raw === null || raw === '') continue;
-      const response = raw === true ? 'Yes' : raw === false ? 'No' : String(raw);
-      feedback.push([
+
+      const pushRow = (question, response) => feedback.push([
         v.questionnaireName || meta.survey,
         meta.supplier,
         region,
         rep,
         q.category || q.section || 'General',
         storeName,
-        q.label || q.id,
+        question,
         response,
         date,
       ]);
+
+      // A 'repeat' question (the SKU lines) answers with an ARRAY of row
+      // objects keyed by field id. Stringifying that gave "[object Object]"
+      // on the dashboard, so each row is expanded into one feedback row per
+      // filled field, labelled "<Row N> · <field>".
+      if (Array.isArray(raw)) {
+        const rowLabel = q.rowLabel || 'Row';
+        const fieldLabel = {};
+        for (const f of q.fields || []) fieldLabel[f.id] = f.label || f.id;
+        raw.forEach((row, idx) => {
+          for (const [fieldId, cell] of Object.entries(row || {})) {
+            if (cell === undefined || cell === null || cell === '') continue;
+            const value = cell === true ? 'Yes'
+              : cell === false ? 'No'
+              : (cell && typeof cell === 'object') ? (cell.photoId ? 'Photo captured' : '')
+              : String(cell);
+            if (!value) continue;
+            pushRow(`${rowLabel} ${idx + 1} · ${fieldLabel[fieldId] || fieldId}`, value);
+          }
+        });
+        continue;
+      }
+
+      // A photo answer is { photoId, previewUrl } — record that it exists.
+      if (raw && typeof raw === 'object') {
+        if (raw.photoId) pushRow(q.label || q.id, 'Photo captured');
+        continue;
+      }
+
+      pushRow(q.label || q.id, raw === true ? 'Yes' : raw === false ? 'No' : String(raw));
     }
   }
 
