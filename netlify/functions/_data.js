@@ -48,6 +48,9 @@ const CODE_HOLDERS = [
   // sent a one-time code by email.
   { email: 'nikki@leegra.co.za', name: 'Nikki', tenantCode: 'CIV-088', role: 'leegra_admin' },
   { email: 'gordon@leegra.co.za', name: 'Gordon', tenantCode: 'CIV-088', role: 'leegra_admin' },
+  // Philips PH only, view + export, no uploads. Signs in with his email plus
+  // the monthly client code (ACCESS_CODE_CURRENT) — never the admin code.
+  { email: 'nishay@leegrapulse.co.za', name: 'Nishay Singh', tenantCode: 'PH-201', role: 'client_viewer' },
 ];
 
 function findTenantByCode(code) {
