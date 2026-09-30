@@ -82,7 +82,7 @@ exports.handler = async (event) => {
 
   const users = await getUsers(tenantCode);
   const seeded = [];
-  for (const rep of TEST_REPS) {
+  for (const rep of testReps()) {
     const { useCode, ...fields } = rep;
     const idx = users.findIndex(u => u.email.toLowerCase() === rep.email);
     const record = Object.assign({}, idx >= 0 ? users[idx] : {}, fields, {

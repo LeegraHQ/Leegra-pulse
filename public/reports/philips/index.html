@@ -264,6 +264,34 @@
           <div style="padding:10px 16px; font-size:11px; color:#8592A6; border-top:1px solid #F1F3F7;">Rows highlighted red where check-out is after 18:00 or time spent is under 15 minutes</div>
         </div>
 
+        <sc-if value="{{ diaryHasDays }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex; align-items:baseline; justify-content:space-between; gap:12px; flex-wrap:wrap; margin: 6px 0 12px 0;">
+            <div style="font-size:13px; font-weight:700; color:#0B1B3A;">Calls Completed vs Planned per Day · {{ diaryPeriod }}</div>
+            <div style="font-size:12px; color:#3A4658;">To date: <span style="font-weight:700;">{{ diaryTotals.completed }} / {{ diaryTotals.planned }}</span> · {{ diaryTotals.rate }}</div>
+          </div>
+          <div style="background:#fff; border:1px solid #E4E9F0; border-radius:14px; overflow:hidden; margin-bottom:16px;">
+            <table style="width:100%; border-collapse:collapse; font-size:12.5px;">
+              <thead><tr style="background:#F8FAFC;">
+                <th style="{{ thStyle }}">Date</th><th style="{{ thStyleRight }}">Planned</th><th style="{{ thStyleRight }}">Completed</th><th style="{{ thStyleRight }}">Unplanned visits</th><th style="{{ thStyle }}">Completion</th>
+              </tr></thead>
+              <tbody>
+                <sc-for list="{{ diaryDaily }}" as="row" hint-placeholder-count="10">
+                  <tr style="{{ row.rowStyle }}">
+                    <td style="{{ tdStyle }}">{{ row.date }}</td><td style="{{ tdStyleRight }}">{{ row.planned }}</td><td style="{{ tdStyleRight }}">{{ row.completed }}</td><td style="{{ tdStyleRight }}">{{ row.unplanned }}</td>
+                    <td style="padding:10px 14px; min-width:160px;">
+                      <div style="display:flex; align-items:center; gap:8px;">
+                        <div style="flex:1; height:8px; background:#EEF1F6; border-radius:5px; overflow:hidden;"><div style="{{ row.barStyle }}"></div></div>
+                        <span style="font-weight:700; min-width:58px; text-align:right;">{{ row.rate }}</span>
+                      </div>
+                    </td>
+                  </tr>
+                </sc-for>
+              </tbody>
+            </table>
+            <div style="padding:10px 16px; font-size:11px; color:#8592A6; border-top:1px solid #F1F3F7;">Planned = stores in each Blitz member's call diary for that date (activations and meetings excluded). May – September uses each member's Week 1–4 rotation diary applied to every month; October uses the dated October diaries; Mzwakhe uses the National Trainer diary. Completed = attendance check-ins at a planned store on the same day. Follows the Blitz member, region and date filters.</div>
+          </div>
+        </sc-if>
+
         <div style="font-size:13px; font-weight:700; color:#0B1B3A; margin: 6px 0 12px 0;">Visit Behaviour Trends per Blitz Member</div>
         <div style="background:#fff; border:1px solid #E4E9F0; border-radius:14px; overflow:hidden;">
           <table style="width:100%; border-collapse:collapse; font-size:12.5px;">
@@ -428,17 +456,17 @@
       <!-- SECTION: Stock Count & Pricing (new weekly cadence, separate slicer) -->
       <sc-if value="{{ isStockPricing }}" hint-placeholder-val="{{ false }}">
         <div style="background:#FFFBEA; border:1px solid #F5E6A3; border-radius:12px; padding:10px 16px; margin-bottom:16px; font-size:12px; color:#8A6A00;">
-          New reporting cadence, running alongside the Weekly Feedback Report. No submissions yet — this starts fresh from rollout; upload the weekly Stock Count/Pricing template to populate this table.
+          May – September 2026 rows come from the store surveys, which captured availability and listing only — prices, SOH, MDQ and quantities are blank for those months and can be filled manually. From October, rows come from the Pulse app Stock Count &amp; Pricing survey.
         </div>
         <div style="background:#fff; border:1px solid #E4E9F0; border-radius:14px; overflow:auto;">
           <table style="width:100%; min-width:1400px; border-collapse:collapse; font-size:12px;">
             <thead><tr style="background:#F8FAFC;">
-              <th style="{{ thStyle }}">Blitz</th><th style="{{ thStyle }}">Channel</th><th style="{{ thStyle }}">Store</th><th style="{{ thStyle }}">Region</th><th style="{{ thStyle }}">Category</th><th style="{{ thStyle }}">SKU</th><th style="{{ thStyleRight }}">Philips RRP</th><th style="{{ thStyleRight }}">Store RRP</th><th style="{{ thStyleRight }}">Promo Price</th><th style="{{ thStyle }}">On Promo</th><th style="{{ thStyle }}">SKU Status</th><th style="{{ thStyle }}">Listed</th><th style="{{ thStyleRight }}">MDQ</th><th style="{{ thStyleRight }}">Total SOH</th><th style="{{ thStyleRight }}">On Shelf</th><th style="{{ thStyleRight }}">Damages</th><th style="{{ thStyleRight }}">Returns</th><th style="{{ thStyle }}">Restock?</th>
+              <th style="{{ thStyle }}">Date</th><th style="{{ thStyle }}">Month</th><th style="{{ thStyle }}">Blitz</th><th style="{{ thStyle }}">Channel</th><th style="{{ thStyle }}">Store</th><th style="{{ thStyle }}">Region</th><th style="{{ thStyle }}">Category</th><th style="{{ thStyle }}">SKU</th><th style="{{ thStyle }}">Available</th><th style="{{ thStyleRight }}">Philips RRP</th><th style="{{ thStyleRight }}">Store RRP</th><th style="{{ thStyleRight }}">Promo Price</th><th style="{{ thStyle }}">On Promo</th><th style="{{ thStyle }}">SKU Status</th><th style="{{ thStyle }}">Listed</th><th style="{{ thStyleRight }}">MDQ</th><th style="{{ thStyleRight }}">Total SOH</th><th style="{{ thStyleRight }}">On Shelf</th><th style="{{ thStyleRight }}">Damages</th><th style="{{ thStyleRight }}">Returns</th><th style="{{ thStyle }}">Restock?</th>
             </tr></thead>
             <tbody>
               <sc-for list="{{ stockPricingRows }}" as="row" hint-placeholder-count="8">
                 <tr style="border-top:1px solid #F1F3F7;">
-                  <td style="{{ tdStyle }}">{{ row.blitz }}</td><td style="{{ tdStyle }}">{{ row.channel }}</td><td style="{{ tdStyle }}">{{ row.storeName }}</td><td style="{{ tdStyle }}">{{ row.region }}</td><td style="{{ tdStyle }}">{{ row.category }}</td><td style="{{ tdStyle }}">{{ row.sku }}</td><td style="{{ tdStyleRight }}">{{ row.philipsRRP }}</td><td style="{{ tdStyleRight }}">{{ row.storeRRP }}</td><td style="{{ tdStyleRight }}">{{ row.promoPrice }}</td><td style="{{ tdStyle }}">{{ row.onPromo }}</td><td style="{{ tdStyle }}">{{ row.skuStatus }}</td><td style="{{ tdStyle }}">{{ row.listed }}</td><td style="{{ tdStyleRight }}">{{ row.mdq }}</td><td style="{{ tdStyleRight }}">{{ row.totalSoh }}</td><td style="{{ tdStyleRight }}">{{ row.qtyOnShelf }}</td><td style="{{ tdStyleRight }}">{{ row.boxDamages }}</td><td style="{{ tdStyleRight }}">{{ row.returned }}</td><td style="{{ tdStyle }}">{{ row.additionalStock }}</td>
+                  <td style="{{ tdStyle }}">{{ row.date }}</td><td style="{{ tdStyle }}"><span style="{{ row.sourceStyle }}">{{ row.source }}</span></td><td style="{{ tdStyle }}">{{ row.blitz }}</td><td style="{{ tdStyle }}">{{ row.channel }}</td><td style="{{ tdStyle }}">{{ row.storeName }}</td><td style="{{ tdStyle }}">{{ row.region }}</td><td style="{{ tdStyle }}">{{ row.category }}</td><td style="{{ tdStyle }}">{{ row.sku }}</td><td style="{{ tdStyle }}">{{ row.availability }}</td><td style="{{ tdStyleRight }}">{{ row.philipsRRP }}</td><td style="{{ tdStyleRight }}">{{ row.storeRRP }}</td><td style="{{ tdStyleRight }}">{{ row.promoPrice }}</td><td style="{{ tdStyle }}">{{ row.onPromo }}</td><td style="{{ tdStyle }}">{{ row.skuStatus }}</td><td style="{{ tdStyle }}">{{ row.listed }}</td><td style="{{ tdStyleRight }}">{{ row.mdq }}</td><td style="{{ tdStyleRight }}">{{ row.totalSoh }}</td><td style="{{ tdStyleRight }}">{{ row.qtyOnShelf }}</td><td style="{{ tdStyleRight }}">{{ row.boxDamages }}</td><td style="{{ tdStyleRight }}">{{ row.returned }}</td><td style="{{ tdStyle }}">{{ row.additionalStock }}</td>
                 </tr>
               </sc-for>
             </tbody>
@@ -472,17 +500,17 @@
       <!-- SECTION: Execution (Image Report) (new weekly cadence, separate slicer) -->
       <sc-if value="{{ isExecutionReport }}" hint-placeholder-val="{{ false }}">
         <div style="background:#FFFBEA; border:1px solid #F5E6A3; border-radius:12px; padding:10px 16px; margin-bottom:16px; font-size:12px; color:#8A6A00;">
-          New reporting cadence, running alongside the Weekly Feedback Report. No submissions yet — this starts fresh from rollout; upload the weekly Execution (Image Report) template to populate this table.
+          May – September 2026 rows come from the store surveys (lighting boxes, standout displays, side wings, POSM). Before/After photos for those months will be added from the photo upload. From October, rows come from the Pulse app Execution survey.
         </div>
         <div style="background:#fff; border:1px solid #E4E9F0; border-radius:14px; overflow:auto;">
           <table style="width:100%; min-width:1000px; border-collapse:collapse; font-size:12px;">
             <thead><tr style="background:#F8FAFC;">
-              <th style="{{ thStyle }}">Blitz</th><th style="{{ thStyle }}">Channel</th><th style="{{ thStyle }}">Store</th><th style="{{ thStyle }}">Region</th><th style="{{ thStyle }}">Category</th><th style="{{ thStyle }}">Display Area</th><th style="{{ thStyle }}">SKU</th><th style="{{ thStyle }}">Before</th><th style="{{ thStyle }}">After</th>
+              <th style="{{ thStyle }}">Date</th><th style="{{ thStyle }}">Month</th><th style="{{ thStyle }}">Blitz</th><th style="{{ thStyle }}">Channel</th><th style="{{ thStyle }}">Store</th><th style="{{ thStyle }}">Region</th><th style="{{ thStyle }}">Category</th><th style="{{ thStyle }}">Display Area</th><th style="{{ thStyle }}">Result</th><th style="{{ thStyle }}">SKU</th><th style="{{ thStyle }}">Before</th><th style="{{ thStyle }}">After</th>
             </tr></thead>
             <tbody>
               <sc-for list="{{ executionRows }}" as="row" hint-placeholder-count="8">
                 <tr style="border-top:1px solid #F1F3F7;">
-                  <td style="{{ tdStyle }}">{{ row.blitz }}</td><td style="{{ tdStyle }}">{{ row.channel }}</td><td style="{{ tdStyle }}">{{ row.storeName }}</td><td style="{{ tdStyle }}">{{ row.region }}</td><td style="{{ tdStyle }}">{{ row.category }}</td><td style="{{ tdStyle }}">{{ row.displayArea }}</td><td style="{{ tdStyle }}">{{ row.sku }}</td><td style="{{ tdStyle }}">{{ row.beforeImage }}</td><td style="{{ tdStyle }}">{{ row.afterImage }}</td>
+                  <td style="{{ tdStyle }}">{{ row.date }}</td><td style="{{ tdStyle }}"><span style="{{ row.sourceStyle }}">{{ row.source }}</span></td><td style="{{ tdStyle }}">{{ row.blitz }}</td><td style="{{ tdStyle }}">{{ row.channel }}</td><td style="{{ tdStyle }}">{{ row.storeName }}</td><td style="{{ tdStyle }}">{{ row.region }}</td><td style="{{ tdStyle }}">{{ row.category }}</td><td style="{{ tdStyle }}">{{ row.displayArea }}</td><td style="{{ tdStyle }}">{{ row.result }}</td><td style="{{ tdStyle }}">{{ row.sku }}</td><td style="{{ tdStyle }}">{{ row.beforeImage }}</td><td style="{{ tdStyle }}">{{ row.afterImage }}</td>
                 </tr>
               </sc-for>
             </tbody>
@@ -700,14 +728,18 @@ class Component extends DCLogic {
     // that persists on that browser/device — everyone else visiting the
     // plain URL never sees the unlock param and the buttons stay hidden.
     const ADMIN_UNLOCK_KEY = 'philipsAdminUnlocked';
-    const params = new URLSearchParams(window.location.search);
-    if (params.get('unlock') === 'leegraph2026') {
-      localStorage.setItem(ADMIN_UNLOCK_KEY, 'true');
-      const url = new URL(window.location.href);
-      url.searchParams.delete('unlock');
-      window.history.replaceState({}, '', url.toString());
-    }
-    this.setState({ adminUnlocked: localStorage.getItem(ADMIN_UNLOCK_KEY) === 'true' });
+    // Storage can be blocked (private mode, sandboxed/offline copies) — never let
+    // that stop the data from loading.
+    try {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get('unlock') === 'leegraph2026') {
+        localStorage.setItem(ADMIN_UNLOCK_KEY, 'true');
+        const url = new URL(window.location.href);
+        url.searchParams.delete('unlock');
+        window.history.replaceState({}, '', url.toString());
+      }
+      this.setState({ adminUnlocked: localStorage.getItem(ADMIN_UNLOCK_KEY) === 'true' });
+    } catch (e) { /* storage unavailable */ }
 
     this.loadData();
     // Reps check in through the day, so the live half is re-polled. The
@@ -942,9 +974,9 @@ class Component extends DCLogic {
       growth: { headers: ['Category','FY2025','FY2026 Projection','FY2027 Ambition','Growth 25-26','Growth 26-27'], rows: d.growth || [] },
       stock: { headers: ['Store','Region','Code','Category','Sub Category','Blitz','Latest WK SOH','System SOH','Physical Stock Count'], rows: d.stock || [] },
       blitz: { headers: ['Rep','Planned Calls','Completed Calls'], rows: [] },
-      stockPricing: { headers: ['Blitz','Channel','Store Code','Store Name','Region','Category','SKU Code','Philips RRP','Store System RRP','Promotional Price','On Promo','SKU Status','Listing','Proof of Delisting','Store System MDQ','Total SOH','QTY on Shelf','QTY Box Damages','QTY Returned','Additional Stock Required'], rows: d.stockPricing || [] },
+      stockPricing: { headers: ['Blitz','Channel','Store Code','Store Name','Region','Category','SKU Code','Philips RRP','Store System RRP','Promotional Price','On Promo','SKU Status','Listing','Proof of Delisting','Store System MDQ','Total SOH','QTY on Shelf','QTY Box Damages','QTY Returned','Additional Stock Required','Date','Month','Availability'], rows: d.stockPricing || [] },
       competitorFeedback: { headers: ['Blitz','Channel','Store Code','Store Name','Region','Category','Competitor','Competitor SKU Code','SKU Status','Competitor On-shelf Price','On Promo','Total SOH','Product Image','Philips SKU Code','Philips On-shelf Price'], rows: d.competitorFeedback || [] },
-      executionReport: { headers: ['Blitz','Channel','Store Code','Store Name','Region','Category','Before Image','Display Area','SKU Code','After Image'], rows: d.executionReport || [] },
+      executionReport: { headers: ['Blitz','Channel','Store Code','Store Name','Region','Category','Before Image','Display Area','SKU Code','After Image','Date','Month','Result'], rows: d.executionReport || [] },
     };
     return map[section] || { headers: [], rows: [] };
   }
@@ -1059,11 +1091,25 @@ class Component extends DCLogic {
     Promise.all([
       fetch('phillips_data.json').then(r => r.json()).catch(() => EMPTY),
       fetch('/api/report-history?tenant=PH-201').then(r => (r.ok ? r.json() : null)).catch(() => null),
-    ]).then(([sidecar, history]) => {
+      fetch('call_diary.json').then(r => (r.ok ? r.json() : null)).catch(() => null),
+      fetch('legacy_cadence.json').then(r => (r.ok ? r.json() : null)).catch(() => null),
+    ]).then(([sidecar, history, callDiary, legacy]) => {
+      this.setState({ callDiary });
       const sections = (history && history.sections) || {};
       const base = Object.assign({}, EMPTY, sidecar);
       for (const key of Object.keys(sections)) {
         base[key] = [...(base[key] || []), ...sections[key]];
+      }
+      // Legacy (May–Jul 2026) survey answers mapped into the cadence layout.
+      if (legacy) {
+        base.stockPricing = [...(base.stockPricing || []), ...(legacy.stockPricing || [])];
+        base.executionReport = [...(base.executionReport || []), ...(legacy.executionReport || [])];
+        // Aug–Sep survey answers for the Weekly Feedback Report; skips any row
+        // already in the base data or uploaded history so nothing doubles up.
+        const nf = (x) => String(x == null ? '' : x).replace(/\s+/g, ' ').trim().toLowerCase();
+        const fk = (r) => [r[0], r[3], r[5], r[6], r[8]].map(nf).join('|');
+        const seen = new Set((base.feedback || []).map(fk));
+        base.feedback = [...(base.feedback || []), ...(legacy.feedback || []).filter(r => !seen.has(fk(r)))];
       }
       this.baseData = base;
       this.setState({
@@ -1215,7 +1261,7 @@ class Component extends DCLogic {
     const fbCategories = ['All', ...new Set(d.feedback.map(r => r[4]))].filter(Boolean);
     const fbQuestions = ['All', ...new Set(d.feedback.map(r => r[6]))].filter(Boolean);
     const fbReps = ['All', ...new Set(d.feedback.map(r => r[3]))].filter(Boolean);
-    const fbDates = ['All', ...new Set(d.feedback.map(r => r[8]))].filter(Boolean).sort();
+    const fbDates = ['All', ...[...new Set(d.feedback.map(r => r[8]))].filter(Boolean).sort()];
     if (cf.region && cf.region !== 'All') feedbackFiltered = feedbackFiltered.filter(r => r[2] === cf.region);
     if (cf.category && cf.category !== 'All') feedbackFiltered = feedbackFiltered.filter(r => r[4] === cf.category);
     if (cf.question && cf.question !== 'All') feedbackFiltered = feedbackFiltered.filter(r => r[6] === cf.question);
@@ -1340,6 +1386,23 @@ class Component extends DCLogic {
     if (attStoreQuery) attFiltered = attFiltered.filter(r => String(r[7] || '').toLowerCase().includes(attStoreQuery));
 
     const timeToMin = (t) => { if (!t) return 0; const [h, m] = String(t).split(':').map(Number); return (h || 0) * 60 + (m || 0); };
+    // Column filters matching the attendance table: store pick-list plus
+    // time buckets for check-in, check-out and time spent.
+    const attStores = ['All', ...[...new Set(d.attendance.map(r => r[7]).filter(Boolean))].sort((a, b) => String(a).localeCompare(String(b)))];
+    const CHECKIN_BUCKETS = { 'Before 08:00': [0, 480], '08:00 – 09:00': [480, 540], '09:00 – 12:00': [540, 720], '12:00 – 15:00': [720, 900], 'After 15:00': [900, 1440] };
+    const CHECKOUT_BUCKETS = { 'Before 12:00': [0, 720], '12:00 – 15:00': [720, 900], '15:00 – 18:00': [900, 1080], 'After 18:00': [1081, 1440] };
+    const SPENT_BUCKETS = { 'Under 15 min': [0, 15], '15 – 60 min': [15, 60], '1 – 2 hours': [60, 120], '2 – 4 hours': [120, 240], 'Over 4 hours': [240, 100000] };
+    const inBucket = (t, buckets, key) => {
+      if (!key || key === 'All') return true;
+      if (key === 'Missing') return !t;
+      if (!t) return false;
+      const [lo, hi] = buckets[key]; const m = timeToMin(t);
+      return m >= lo && m < hi;
+    };
+    if (cf.store && cf.store !== 'All') attFiltered = attFiltered.filter(r => r[7] === cf.store);
+    if (cf.checkin && cf.checkin !== 'All') attFiltered = attFiltered.filter(r => inBucket(r[2], CHECKIN_BUCKETS, cf.checkin));
+    if (cf.checkout && cf.checkout !== 'All') attFiltered = attFiltered.filter(r => inBucket(r[3], CHECKOUT_BUCKETS, cf.checkout));
+    if (cf.spent && cf.spent !== 'All') attFiltered = attFiltered.filter(r => inBucket(r[4], SPENT_BUCKETS, cf.spent));
     // Flags used both for the red-highlight rule and the trends drill-down below.
     const isLateCheckout = (r) => timeToMin(r[3]) > timeToMin('18:00');
     const isShortVisit = (r) => timeToMin(r[4]) < 15;
@@ -1384,6 +1447,60 @@ class Component extends DCLogic {
         flaggedStyle: `font-weight:700; color:${flaggedPct > 0.2 ? '#C0392B' : flaggedPct > 0.1 ? '#B8860B' : '#1E8A4C'};`,
       };
     });
+
+    // ============ CALLS PLANNED vs COMPLETED PER DAY (call diary) ============
+    // Planned = stores listed for that date in each rep's uploaded call diary
+    // (activations/meetings excluded). Completed = that rep's attendance rows on
+    // the same date whose store matches a planned store; other visits that day
+    // count as unplanned. Follows the Blitz member / region / date filters.
+    const diaryKey = (n) => normStr(String(n || '').replace(/\s*-\s*[a-z]{0,3}-?\d{2,}\s*$/i, ''));
+    const diaryMatch = (a, b) => {
+      if (!a || !b) return false;
+      if (a === b || a.includes(b) || b.includes(a)) return true;
+      const ta = a.split(' '), tb = new Set(b.split(' '));
+      const common = ta.filter(t => tb.has(t)).length;
+      return common / Math.max(ta.length, tb.size) >= 0.6;
+    };
+    const diaryReps = ((s.callDiary && s.callDiary.reps) || []).filter(r =>
+      (!cf.blitz || cf.blitz === 'All' || r.rep === cf.blitz) &&
+      (!cf.region || cf.region === 'All' || (REP_REGION[r.rep] || 'Unassigned') === cf.region));
+    const todayIso = toISO(new Date());
+    const visitsByRepDate = {};
+    attFiltered.forEach(r => {
+      const k = r[0] + '|' + toISO(r[1]);
+      (visitsByRepDate[k] = visitsByRepDate[k] || []).push(diaryKey(r[7]));
+    });
+    const dayAgg = {};
+    diaryReps.forEach(rep => rep.days.forEach(day => {
+      if (!inRange(day.date, cf.dateFrom, cf.dateTo) && (cf.dateFrom || cf.dateTo)) return;
+      const a = dayAgg[day.date] = dayAgg[day.date] || { planned: 0, completed: 0, unplanned: 0 };
+      const planned = day.stores.map(diaryKey);
+      const visits = (visitsByRepDate[rep.rep + '|' + day.date] || []).slice();
+      a.planned += planned.length;
+      planned.forEach(p => {
+        const i = visits.findIndex(v => diaryMatch(p, v));
+        if (i >= 0) { a.completed++; visits.splice(i, 1); }
+      });
+      a.unplanned += visits.length;
+    }));
+    const diaryDaily = Object.keys(dayAgg).sort().filter(dt => dayAgg[dt].planned || dayAgg[dt].unplanned).map(dt => {
+      const v = dayAgg[dt];
+      const future = dt > todayIso;
+      const rate = v.planned ? v.completed / v.planned : 0;
+      const [y, m, dd] = dt.split('-').map(Number);
+      return {
+        date: new Date(y, m - 1, dd).toLocaleDateString('en-ZA', { weekday: 'short', day: 'numeric', month: 'short' }),
+        planned: v.planned, completed: future ? '—' : v.completed, unplanned: future ? '—' : v.unplanned,
+        rate: future ? 'Upcoming' : fmtPct(rate),
+        rowStyle: `border-top:1px solid #F1F3F7;${future ? ' color:#A4AEBD;' : ''}`,
+        barStyle: `height:100%; width:${future ? 0 : (rate * 100).toFixed(1)}%; background:${rate >= 0.8 ? '#2FA860' : LIME}; border-radius:5px;`,
+      };
+    });
+    const pastDays = Object.keys(dayAgg).filter(dt => dt <= todayIso);
+    const totPlanned = pastDays.reduce((a, dt) => a + dayAgg[dt].planned, 0);
+    const totDone = pastDays.reduce((a, dt) => a + dayAgg[dt].completed, 0);
+    const diaryTotals = { planned: fmtNum(totPlanned), completed: fmtNum(totDone), rate: totPlanned ? fmtPct(totDone / totPlanned) : '—' };
+    const diaryPeriod = (s.callDiary && s.callDiary.period) || '';
 
     // ================= BLITZ =================
     // Real call diary vs actual 2026 attendance data exists for 7 of 9 reps
@@ -1682,12 +1799,20 @@ class Component extends DCLogic {
     if (cf.channel && cf.channel !== 'All') stockPricingFiltered = stockPricingFiltered.filter(r => r[1] === cf.channel);
     if (cf.region && cf.region !== 'All') stockPricingFiltered = stockPricingFiltered.filter(r => r[4] === cf.region);
     if (cf.category && cf.category !== 'All') stockPricingFiltered = stockPricingFiltered.filter(r => r[5] === cf.category);
+    const MONTHS_LONG = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+    const monthOf = (dt) => { const iso = toISO(dt); return iso ? MONTHS_LONG[+iso.slice(5, 7) - 1] + ' ' + iso.slice(0, 4) : ''; };
+    const srcOf = (v, dt) => v || monthOf(dt) || 'Undated';
+    const monthSort = (a, b) => { const k = (x) => { const m = String(x).match(/^(\w+) (\d{4})$/); return m ? m[2] + String(MONTHS_LONG.indexOf(m[1])).padStart(2, '0') : 'z'; }; return k(a) < k(b) ? -1 : 1; };
+    const spSources = ['All', ...[...new Set(d.stockPricing.map(r => srcOf(r[21], r[20])))].sort(monthSort)];
+    if (cf.source && cf.source !== 'All') stockPricingFiltered = stockPricingFiltered.filter(r => srcOf(r[21], r[20]) === cf.source);
     const stockPricingRows = stockPricingFiltered.slice(0, 300).map(r => ({
       blitz: r[0], channel: r[1], storeCode: r[2], storeName: r[3], region: r[4], category: r[5], sku: r[6],
       philipsRRP: r[7] != null ? fmtR(r[7]) : '—', storeRRP: r[8] != null ? fmtR(r[8]) : '—', promoPrice: r[9] != null ? fmtR(r[9]) : '—',
       onPromo: r[10] || '—', skuStatus: r[11] || '—', listed: r[12] || '—', mdq: r[14] != null ? fmtNum(r[14]) : '—',
       totalSoh: r[15] != null ? fmtNum(r[15]) : '—', qtyOnShelf: r[16] != null ? fmtNum(r[16]) : '—',
       boxDamages: r[17] != null ? fmtNum(r[17]) : '—', returned: r[18] != null ? fmtNum(r[18]) : '—', additionalStock: r[19] || '—',
+      date: r[20] || '—', source: srcOf(r[21], r[20]), availability: r[22] || '—',
+      sourceStyle: 'font-size:10px; font-weight:700; padding:2px 7px; border-radius:999px; white-space:nowrap; background:#EEF3FF; color:#0A5EEA;',
     }));
 
     // ================= COMPETITOR FEEDBACK =================
@@ -1718,10 +1843,14 @@ class Component extends DCLogic {
     if (cf.channel && cf.channel !== 'All') executionFiltered = executionFiltered.filter(r => r[1] === cf.channel);
     if (cf.region && cf.region !== 'All') executionFiltered = executionFiltered.filter(r => r[4] === cf.region);
     if (cf.area && cf.area !== 'All') executionFiltered = executionFiltered.filter(r => r[7] === cf.area);
+    const erSources = ['All', ...[...new Set(d.executionReport.map(r => srcOf(r[11], r[10])))].sort(monthSort)];
+    if (cf.source && cf.source !== 'All') executionFiltered = executionFiltered.filter(r => srcOf(r[11], r[10]) === cf.source);
     const executionRows = executionFiltered.slice(0, 300).map(r => ({
       blitz: r[0], channel: r[1], storeCode: r[2], storeName: r[3], region: r[4], category: r[5],
       beforeImage: r[6], displayArea: r[7], sku: r[8], afterImage: r[9],
       hasBefore: !!r[6], hasAfter: !!r[9],
+      date: r[10] || '—', source: srcOf(r[11], r[10]), result: r[12] || '—',
+      sourceStyle: 'font-size:10px; font-weight:700; padding:2px 7px; border-radius:999px; white-space:nowrap; background:#EEF3FF; color:#0A5EEA;',
     }));
 
     // ================= CROSS FILTERS PER SECTION =================
@@ -1736,11 +1865,15 @@ class Component extends DCLogic {
       ];
     } else if (active === 'attendance') {
       crossFilters = [
+        { label: 'Rep', value: cf.blitz || 'All', options: attBlitzMembers, onChange: (e) => this.setCrossFilter('attendance', 'blitz', e.target.value) },
         { label: 'Region', value: cf.region || 'All', options: attRegions, onChange: (e) => this.setCrossFilter('attendance', 'region', e.target.value) },
+        { label: 'Date From', value: cf.dateFrom || '', options: null, isDate: true, min: attMinDate, max: attMaxDate, onChange: (e) => this.setCrossFilter('attendance', 'dateFrom', e.target.value) },
+        { label: 'Date To', value: cf.dateTo || '', options: null, isDate: true, min: attMinDate, max: attMaxDate, onChange: (e) => this.setCrossFilter('attendance', 'dateTo', e.target.value) },
+        { label: 'Check In', value: cf.checkin || 'All', options: ['All', ...Object.keys(CHECKIN_BUCKETS), 'Missing'], onChange: (e) => this.setCrossFilter('attendance', 'checkin', e.target.value) },
+        { label: 'Check Out', value: cf.checkout || 'All', options: ['All', ...Object.keys(CHECKOUT_BUCKETS), 'Missing'], onChange: (e) => this.setCrossFilter('attendance', 'checkout', e.target.value) },
+        { label: 'Time Spent', value: cf.spent || 'All', options: ['All', ...Object.keys(SPENT_BUCKETS)], onChange: (e) => this.setCrossFilter('attendance', 'spent', e.target.value) },
         { label: 'Channel', value: cf.channel || 'All', options: attChannels, onChange: (e) => this.setCrossFilter('attendance', 'channel', e.target.value) },
-        { label: 'Blitz Member', value: cf.blitz || 'All', options: attBlitzMembers, onChange: (e) => this.setCrossFilter('attendance', 'blitz', e.target.value) },
-        { label: 'From Day', value: cf.dateFrom || '', options: null, isDate: true, min: attMinDate, max: attMaxDate, onChange: (e) => this.setCrossFilter('attendance', 'dateFrom', e.target.value) },
-        { label: 'To Day', value: cf.dateTo || '', options: null, isDate: true, min: attMinDate, max: attMaxDate, onChange: (e) => this.setCrossFilter('attendance', 'dateTo', e.target.value) },
+        { label: 'Store', value: cf.store || 'All', options: attStores, onChange: (e) => this.setCrossFilter('attendance', 'store', e.target.value) },
         { label: 'Search Store', value: cf.storeSearch || '', options: null, isSearch: true, onChange: (e) => this.setCrossFilter('attendance', 'storeSearch', e.target.value) },
       ];
     } else if (active === 'blitz') {
@@ -1790,6 +1923,7 @@ class Component extends DCLogic {
         { label: 'Channel', value: cf.channel || 'All', options: spChannels, onChange: (e) => this.setCrossFilter('stockPricing', 'channel', e.target.value) },
         { label: 'Region', value: cf.region || 'All', options: spRegions, onChange: (e) => this.setCrossFilter('stockPricing', 'region', e.target.value) },
         { label: 'Category', value: cf.category || 'All', options: spCategories, onChange: (e) => this.setCrossFilter('stockPricing', 'category', e.target.value) },
+        { label: 'Month', value: cf.source || 'All', options: spSources, onChange: (e) => this.setCrossFilter('stockPricing', 'source', e.target.value) },
       ];
     } else if (active === 'competitorFeedback') {
       crossFilters = [
@@ -1802,6 +1936,7 @@ class Component extends DCLogic {
         { label: 'Channel', value: cf.channel || 'All', options: erChannels, onChange: (e) => this.setCrossFilter('executionReport', 'channel', e.target.value) },
         { label: 'Region', value: cf.region || 'All', options: erRegions, onChange: (e) => this.setCrossFilter('executionReport', 'region', e.target.value) },
         { label: 'Display Area', value: cf.area || 'All', options: erAreas, onChange: (e) => this.setCrossFilter('executionReport', 'area', e.target.value) },
+        { label: 'Month', value: cf.source || 'All', options: erSources, onChange: (e) => this.setCrossFilter('executionReport', 'source', e.target.value) },
       ];
     }
 
@@ -1868,7 +2003,7 @@ class Component extends DCLogic {
       const delistedCount = stockPricingFiltered.filter(r => String(r[12]).toLowerCase() === 'no').length;
       kpis = [
         { label: 'SKUs Logged', value: fmtNum(stockPricingFiltered.length), delta: '', deltaStyle: '' },
-        { label: 'Stores Covered', value: fmtNum(new Set(stockPricingFiltered.map(r => r[2])).size), delta: '', deltaStyle: '' },
+        { label: 'Stores Covered', value: fmtNum(new Set(stockPricingFiltered.map(r => r[2] || r[3])).size), delta: '', deltaStyle: '' },
         { label: 'Flagged Delisted', value: fmtNum(delistedCount), delta: '', deltaStyle: '' },
         { label: 'Additional Stock Needed', value: fmtNum(additionalStockCount), delta: '', deltaStyle: '' },
       ];
@@ -1881,7 +2016,7 @@ class Component extends DCLogic {
     } else if (active === 'executionReport') {
       kpis = [
         { label: 'Execution Rows Logged', value: fmtNum(executionFiltered.length), delta: '', deltaStyle: '' },
-        { label: 'Stores Covered', value: fmtNum(new Set(executionFiltered.map(r => r[2])).size), delta: '', deltaStyle: '' },
+        { label: 'Stores Covered', value: fmtNum(new Set(executionFiltered.map(r => r[2] || r[3])).size), delta: '', deltaStyle: '' },
         { label: 'Display Areas Tracked', value: fmtNum(new Set(executionFiltered.map(r => r[7])).size), delta: '', deltaStyle: '' },
       ];
     }
@@ -1947,6 +2082,10 @@ class Component extends DCLogic {
       attendanceByStaff,
       attendanceRows,
       attendanceTrends,
+      diaryDaily,
+      diaryHasDays: diaryDaily.length > 0,
+      diaryPeriod,
+      diaryTotals,
       blitzMembers,
       blitzPerformanceByChannel,
       hasBlitzChannelPerf: blitzPerformanceByChannel.length > 0,

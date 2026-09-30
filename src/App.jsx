@@ -70,6 +70,76 @@ function writeStored(key, value) {
 // Read once at load, not per render.
 const BOOT = readStored(SESSION_KEY);
 
+// ---- Store coverage helpers (last-visit merge from client report data) ----
+function storeKey(name) {
+  return String(name || '')
+    .replace(/\s*-\s*[a-z]{0,3}\d{2,}\s*$/i, '') // drop trailing " - S204" style store code
+    .toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
+}
+function toIsoDate(v) {
+  if (v == null || v === '') return '';
+  if (typeof v === 'number') return new Date(Math.round((v - 25569) * 864e5)).toISOString().slice(0, 10);
+  const s = String(v).trim();
+  let m = s.match(/^(\d{4})[-\/.](\d{1,2})[-\/.](\d{1,2})/);
+  if (m) return `${m[1]}-${m[2].padStart(2, '0')}-${m[3].padStart(2, '0')}`;
+  m = s.match(/^(\d{1,2})[-\/.](\d{1,2})[-\/.](\d{4})/);
+  if (m) return `${m[3]}-${m[2].padStart(2, '0')}-${m[1].padStart(2, '0')}`;
+  const dt = new Date(s);
+  return isNaN(dt) ? '' : `${dt.getFullYear()}-${String(dt.getMonth() + 1).padStart(2, '0')}-${String(dt.getDate()).padStart(2, '0')}`;
+}
+function daysSinceIso(iso) {
+  const [y, mo, d] = iso.split('-').map(Number);
+  const then = new Date(y, mo - 1, d);
+  const now = new Date(); now.setHours(0, 0, 0, 0);
+  return Math.max(0, Math.round((now - then) / 86400000));
+}
+function humanDays(days) {
+  if (days === null) return 'Never';
+  if (days <= 0) return 'Today';
+  if (days === 1) return 'Yesterday';
+  return `${days} days ago`;
+}
+function daysFromLabel(label) {
+  if (!label || label === 'Never') return null;
+  if (label === 'Today') return 0;
+  if (label === 'Yesterday') return 1;
+  const m = String(label).match(/(\d+)/);
+  return m ? Number(m[1]) : null;
+}
+function formatIso(iso) {
+  const [y, mo, d] = iso.split('-').map(Number);
+  return new Date(y, mo - 1, d).toLocaleDateString('en-ZA', { day: 'numeric', month: 'short', year: 'numeric' });
+}
+// Overlays report-data visits on the server's store list: whichever source has
+// the more recent visit wins, and the row gets a real date + recomputed status.
+function mergeReportVisits(stores, reportVisits) {
+  const keys = reportVisits ? Object.keys(reportVisits) : [];
+  return stores.map(s => {
+    let days = daysFromLabel(s.lastVisit);
+    let out = { ...s, _days: days };
+    if (days !== null) {
+      const dt = new Date(); dt.setDate(dt.getDate() - days);
+      out.lastVisitDate = dt.toLocaleDateString('en-ZA', { day: 'numeric', month: 'short', year: 'numeric' });
+    }
+    if (!keys.length) return out;
+    const k = storeKey(s.name);
+    let hit = reportVisits[k];
+    if (!hit && k.length > 5) {
+      const alt = keys.find(x => x.length > 5 && (x.includes(k) || k.includes(x)));
+      if (alt) hit = reportVisits[alt];
+    }
+    if (!hit) return out;
+    const rDays = daysSinceIso(hit.iso);
+    if (days !== null && days < rDays) return out; // app visit is newer
+    days = rDays;
+    const status = hit.done || s.status === 'Done' ? 'Done' : days <= 14 ? 'On track' : days <= 21 ? 'Pending' : 'Overdue';
+    return { ...s, _days: days, lastVisit: humanDays(days), lastVisitDate: formatIso(hit.iso), status };
+  }).sort((a, b) => {
+    const rank = (x) => (x.status === 'Done' ? -1 : x._days === null ? 1e9 : x._days);
+    return rank(b) - rank(a);
+  });
+}
+
 export default function App() {
   const [screen, setScreen] = useState(BOOT?.session ? (BOOT.screen || 'login') : 'login'); // login | app | dashboard | superadmin
   const [session, setSession] = useState(BOOT?.session || null); // { token, role, client, isSuperAdmin }
@@ -100,6 +170,38 @@ export default function App() {
   const [loginStatus, setLoginStatus] = useState({ users: [], count: 0, loggedInCount: 0 });
   const [loginStatusLoading, setLoginStatusLoading] = useState(false);
   const [loginStatusError, setLoginStatusError] = useState('');
+
+  // Store coverage filters + last-visit dates pulled from the client's full
+  // report data (Philips: Blitz attendance rows), merged over the server's
+  // app-only visit history so stores visited outside the app still show a date.
+  const [storeFilter, setStoreFilter] = useState({ q: '', region: 'All', last: 'All', status: 'All' });
+  const [reportVisits, setReportVisits] = useState(null); // { [normStoreKey]: { iso, done } }
+  const reportClientCode = session?.client?.code;
+  useEffect(() => {
+    setReportVisits(null);
+    if (reportClientCode !== 'PH-201') return;
+    let cancelled = false;
+    const rowsOf = (x) => (x && Array.isArray(x.attendance) ? x.attendance : []);
+    Promise.all([
+      fetch('/reports/philips/phillips_data.json').then(r => (r.ok ? r.json() : null)).catch(() => null),
+      fetch('/api/report-history?tenant=PH-201').then(r => (r.ok ? r.json() : null)).catch(() => null),
+      fetch('/api/report-feed?tenant=PH-201').then(r => (r.ok ? r.json() : null)).catch(() => null),
+    ]).then(([base, history, live]) => {
+      if (cancelled) return;
+      const rows = [...rowsOf(base), ...rowsOf(history && history.sections), ...rowsOf(live)];
+      const map = {};
+      for (const r of rows) {
+        const key = storeKey(r[7]);
+        const iso = toIsoDate(r[1]);
+        if (!key || !iso) continue;
+        const prev = map[key];
+        if (!prev || iso > prev.iso) map[key] = { iso, done: !!r[3] || (prev && prev.done) };
+        else if (r[3]) prev.done = true;
+      }
+      setReportVisits(map);
+    });
+    return () => { cancelled = true; };
+  }, [reportClientCode]);
 
   // Mirror everything needed to resume after a reload. Photo preview URLs are
   // per-page blob URLs, so they are dropped here — the photo itself is already
@@ -591,6 +693,24 @@ export default function App() {
   }
 
   const client = session.client;
+  const coverageStores = mergeReportVisits(client?.stores || [], reportVisits);
+  const regionOptions = ['All', ...[...new Set(coverageStores.map(s => s.region).filter(Boolean))].sort()];
+  const statusOptions = ['All', ...[...new Set(coverageStores.map(s => s.status).filter(Boolean))].sort()];
+  const filteredStores = coverageStores.filter(s => {
+    const f = storeFilter;
+    if (f.q && !String(s.name || '').toLowerCase().includes(f.q.trim().toLowerCase())) return false;
+    if (f.region !== 'All' && s.region !== f.region) return false;
+    if (f.status !== 'All' && s.status !== f.status) return false;
+    if (f.last !== 'All') {
+      const d = s._days;
+      if (f.last === 'never' && d !== null) return false;
+      if (f.last === '7' && !(d !== null && d <= 7)) return false;
+      if (f.last === '30' && !(d !== null && d <= 30)) return false;
+      if (f.last === 'over30' && !(d !== null && d > 30)) return false;
+    }
+    return true;
+  });
+  const setSF = (k) => (e) => { const v = e.target.value; setStoreFilter(f => ({ ...f, [k]: v })); };
 
   if (screen === 'app') {
     const questions = visit?.questionnaire?.questions || [];
@@ -885,16 +1005,36 @@ export default function App() {
           {(dashTab === 'overview' || dashTab === 'stores') && (
             <div>
               <div className="lp-label">Store coverage</div>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 8, alignItems: 'center' }}>
+                <input className="lp-input" style={{ flex: '1 1 160px', minWidth: 0 }} placeholder="Search store" value={storeFilter.q} onChange={setSF('q')} />
+                <select className="lp-input" style={{ width: 'auto' }} value={storeFilter.region} onChange={setSF('region')} aria-label="Region">
+                  {regionOptions.map(o => <option key={o} value={o}>{o === 'All' ? 'All regions' : o}</option>)}
+                </select>
+                <select className="lp-input" style={{ width: 'auto' }} value={storeFilter.last} onChange={setSF('last')} aria-label="Last visited">
+                  <option value="All">Any last visit</option>
+                  <option value="7">Last 7 days</option>
+                  <option value="30">Last 30 days</option>
+                  <option value="over30">Over 30 days ago</option>
+                  <option value="never">Never visited</option>
+                </select>
+                <select className="lp-input" style={{ width: 'auto' }} value={storeFilter.status} onChange={setSF('status')} aria-label="Status">
+                  {statusOptions.map(o => <option key={o} value={o}>{o === 'All' ? 'All statuses' : o}</option>)}
+                </select>
+                <div className="lp-muted" style={{ fontSize: 11 }}>{filteredStores.length} of {coverageStores.length}</div>
+              </div>
               <table className="lp-table">
                 <thead><tr><th>Store</th><th>Region</th><th>Last visit</th><th>Status</th></tr></thead>
                 <tbody>
-                  {client.stores.map(s => {
+                  {filteredStores.map(s => {
                     const statusColor = s.status === 'Pending' ? '#e2a336' : s.status === 'Overdue' ? '#e2544a' : undefined;
                     return (
                       <tr key={s.code}>
                         <td>{s.name}</td>
                         <td>{s.region}</td>
-                        <td>{s.lastVisit}</td>
+                        <td>
+                          {s.lastVisitDate || s.lastVisit}
+                          {s.lastVisitDate && <div className="lp-muted" style={{ fontSize: 11 }}>{s.lastVisit}</div>}
+                        </td>
                         <td>
                           <span
                             className="lp-tag lp-tag-outline"
