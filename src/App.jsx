@@ -868,6 +868,26 @@ export default function App() {
                                   </div>
                                 );
                               }
+                              if (f.type === 'suggest') {
+                                // Dropdown of known SKUs, but the rep can type any code not in the list yet.
+                                const listId = `dl-${q.id}-${f.id}`;
+                                return (
+                                  <div key={f.id} className="lp-row-card">
+                                    <div style={{ flex: 1, fontSize: 13 }}>{f.label}{f.required ? ' *' : ''}</div>
+                                    <input
+                                      className="lp-input"
+                                      style={{ width: 140 }}
+                                      list={listId}
+                                      placeholder="Pick or type"
+                                      value={cell ?? ''}
+                                      onChange={e => handleCellChange(q, idx, f.id, e.target.value.toUpperCase())}
+                                    />
+                                    <datalist id={listId}>
+                                      {(f.options || []).map(opt => <option key={opt} value={opt} />)}
+                                    </datalist>
+                                  </div>
+                                );
+                              }
                               return (
                                 <div key={f.id} className="lp-row-card">
                                   <div style={{ flex: 1, fontSize: 13 }}>{f.label}{f.required ? ' *' : ''}</div>
