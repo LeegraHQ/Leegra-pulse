@@ -762,7 +762,7 @@ export default function App() {
                   onChange={e => setSelectedStoreCode(e.target.value)}
                 >
                   {client.stores.map(s => (
-                    <option key={s.code} value={s.code}>{s.name} ({s.code}) · {s.region}</option>
+                    <option key={s.code} value={s.code}>{s.name}{/^TBC-/.test(s.code) ? '' : ` (${s.code})`}{s.region ? ` · ${s.region}` : ''}</option>
                   ))}
                 </select>
               </label>
@@ -784,7 +784,7 @@ export default function App() {
             <div className="lp-inner-card">
               <div className="lp-kicker">Checked in</div>
               <div className="lp-title">{store.name}</div>
-              <div className="lp-meta">{store.code} · {store.region}</div>
+              <div className="lp-meta">{/^TBC-/.test(store.code) ? 'Store code to follow' : store.code}{store.region ? ` · ${store.region}` : ''}</div>
               <span className="lp-tag lp-tag-accent2">Checked in {visit.checkedInAt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
             </div>
           )}
