@@ -1,7 +1,7 @@
 {
   "tenantCode": "PH-201",
-  "excluded": "Dis-Chem (all spellings)",
-  "storeCount": 510,
+  "excluded": null,
+  "storeCount": "all",
   "questionnaires": [
     {
       "id": "ph_stock_pricing",
@@ -67,13 +67,26 @@
             {
               "id": "category",
               "label": "Category",
-              "type": "text"
+              "type": "choice",
+              "options": [
+                "MCC",
+                "OHC",
+                "Beauty",
+                "MG"
+              ],
+              "required": true
             },
             {
               "id": "sku_code",
               "label": "SKU Code",
-              "type": "text",
-              "required": true
+              "type": "suggest",
+              "required": true,
+              "options": [
+                "SCF080/07",
+                "SCF080/08",
+                "SCF281/03",
+                "SCF395/11"
+              ]
             },
             {
               "id": "philips_rrp",
@@ -148,7 +161,8 @@
           ]
         }
       ],
-      "storeCodes": [
+      "storeCodes": [],
+      "previousStoreCodes": [
         "OFF-EDB",
         "A208",
         "A203",
@@ -689,12 +703,6 @@
           "required": true
         },
         {
-          "id": "store_code",
-          "label": "Store Code",
-          "type": "text",
-          "required": true
-        },
-        {
           "id": "store_name",
           "label": "Store Name",
           "type": "text",
@@ -725,23 +733,38 @@
             {
               "id": "category",
               "label": "Category",
-              "type": "text"
-            },
-            {
-              "id": "display_area",
-              "label": "Display Area",
-              "type": "text"
-            },
-            {
-              "id": "sku_code",
-              "label": "SKU Code",
-              "type": "text",
+              "type": "choice",
+              "options": [
+                "MCC",
+                "OHC",
+                "Beauty",
+                "MG"
+              ],
               "required": true
             },
             {
               "id": "before_image",
               "label": "Before Execution Image",
               "type": "photo",
+              "required": true
+            },
+            {
+              "id": "display_area",
+              "label": "Display Area",
+              "type": "choice",
+              "options": [
+                "Home shelf",
+                "Gondola End",
+                "Entrance Display",
+                "Power Wing",
+                "Cross Merchandising"
+              ],
+              "required": true
+            },
+            {
+              "id": "sku_code",
+              "label": "SKU Code",
+              "type": "text",
               "required": true
             },
             {
@@ -753,7 +776,8 @@
           ]
         }
       ],
-      "storeCodes": [
+      "storeCodes": [],
+      "previousStoreCodes": [
         "OFF-EDB",
         "A208",
         "A203",
@@ -1294,12 +1318,6 @@
           "required": true
         },
         {
-          "id": "store_code",
-          "label": "Store Code",
-          "type": "text",
-          "required": true
-        },
-        {
           "id": "store_name",
           "label": "Store Name",
           "type": "text",
@@ -1330,7 +1348,14 @@
             {
               "id": "category",
               "label": "Category",
-              "type": "text"
+              "type": "choice",
+              "options": [
+                "MCC",
+                "OHC",
+                "Beauty",
+                "MG"
+              ],
+              "required": true
             },
             {
               "id": "competitor",
@@ -1377,7 +1402,13 @@
             {
               "id": "philips_sku",
               "label": "Philips SKU Code",
-              "type": "text"
+              "type": "suggest",
+              "options": [
+                "SCF080/07",
+                "SCF080/08",
+                "SCF281/03",
+                "SCF395/11"
+              ]
             },
             {
               "id": "philips_on_shelf_price",
@@ -1387,7 +1418,8 @@
           ]
         }
       ],
-      "storeCodes": [
+      "storeCodes": [],
+      "previousStoreCodes": [
         "OFF-EDB",
         "A208",
         "A203",
@@ -1900,5 +1932,6 @@
         "DA-105"
       ]
     }
-  ]
+  ],
+  "scope": "All PH-201 stores (storeCodes empty = every store)"
 }

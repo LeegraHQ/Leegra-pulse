@@ -7,8 +7,7 @@
 //
 // - Each rep's storeCodes are REPLACED by their October diary stores; any
 //   OFF-* (off-diary call) code they already had is kept.
-// - Survey scope = existing scope ∪ all allocated stores. Dis-Chem stays
-//   excluded from the surveys unless include_dischem: true is sent.
+// - Surveys are opened to every store (storeCodes cleared = all stores).
 // - Reps not in the October file (e.g. Mzwakhe) are untouched.
 // - Idempotent: re-running just re-applies the same allocation.
 
@@ -46,13 +45,12 @@ exports.handler = async (event) => {
     reps.push({ email: rep.email, name: rep.name, stores: users[idx].storeCodes.length, missing_from_store_list: rep.storeCodes.length - known.length, unmatched_diary_entries: rep.unmatched.length });
   }
 
-  const surveyScope = [...allocated].filter(c => includeDischem || !isDischem(nameByCode[c]));
+  // Surveys run at EVERY store: an empty storeCodes list = all stores.
   const surveys = [];
   for (const q of questionnaires) {
     if (!SURVEY_IDS.includes(q.id)) continue;
     const before = (q.storeCodes || []).length;
-    q.storeCodes = [...new Set([...(q.storeCodes || []), ...surveyScope])];
-    if (includeDischem === false) q.storeCodes = q.storeCodes.filter(c => !isDischem(nameByCode[c]));
+    q.storeCodes = [];
     q.updatedAt = new Date().toISOString();
     surveys.push({ id: q.id, name: q.name, stores_before: before, stores_after: q.storeCodes.length });
   }

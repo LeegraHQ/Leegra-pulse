@@ -7,7 +7,7 @@
 //   Execution (Image Report)         visit_type: execution_image
 //   Competitor Feedback              visit_type: competitor_feedback
 //
-// Each is scoped to the 510 PH-201 stores that are NOT Dis-Chem, and each
+// Each runs at EVERY PH-201 store (empty storeCodes = all stores), and each
 // carries a 'repeat' question so one visit can hold many SKU lines — the
 // shape the client's reporting workbook is in.
 //
@@ -37,13 +37,14 @@ exports.handler = async (event) => {
 
   const loaded = [];
   for (const q of SEED.questionnaires) {
-    const record = { ...q, updatedAt: new Date().toISOString() };
+    const { previousStoreCodes, ...rest } = q;
+    const record = { ...rest, storeCodes: [], updatedAt: new Date().toISOString() };
     byId.set(record.id, record);
     loaded.push({
       id: record.id,
       name: record.name,
       visit_type: record.visitType,
-      stores: record.storeCodes.length,
+      stores: 'all',
       questions: record.questions.length,
       line_fields: (record.questions.find(x => x.type === 'repeat')?.fields || []).length,
     });
