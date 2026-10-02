@@ -16,6 +16,7 @@
     ::-webkit-scrollbar { width: 8px; height: 8px; }
     ::-webkit-scrollbar-thumb { background: #D3DAE4; border-radius: 4px; }
     input[type="checkbox"] { accent-color: #0A5EEA; }
+    @media print { [data-noprint] { display: none !important; } body, body * { overflow: visible !important; height: auto !important; max-height: none !important; } @page { size: A4 landscape; margin: 10mm; } }
   </style>
   <!-- Reads .xlsx / .xls workbooks in the browser so a section can be updated
        straight from Excel; CSV still works and needs no library. -->
@@ -25,7 +26,7 @@
 <div style="font-family: 'Helvetica Neue', Arial, sans-serif; background: #F3F5F8; min-height: 100vh; display: flex; color: #14181F;">
 
   <!-- SIDEBAR -->
-  <div style="width: 260px; min-width: 260px; background: #0B1B3A; display: flex; flex-direction: column; height: 100vh; position: sticky; top: 0;">
+  <div data-noprint="1" style="width: 260px; min-width: 260px; background: #0B1B3A; display: flex; flex-direction: column; height: 100vh; position: sticky; top: 0;">
     <div style="padding: 20px 18px 14px 18px; display: flex; align-items: center; gap: 10px; border-bottom: 1px solid rgba(255,255,255,0.08);">
       <img src="assets/philips-logo.jpg" alt="Philips" style="width: 34px; height: 34px; object-fit: contain; border-radius: 7px; background: #fff;" />
       <div style="display:flex; flex-direction:column; line-height:1.15;">
@@ -61,8 +62,11 @@
         <button onClick="{{ exportExcel }}" style="display:flex; align-items:center; gap:8px; background:#132A57; color:#fff; border:1px solid rgba(255,255,255,0.12); border-radius:8px; padding:9px 12px; font-size:12.5px; font-weight:600; cursor:pointer;" style-hover="background:#1B3A72;">
           <span>⬇</span> Export to Excel
         </button>
+        <button onClick="{{ exportPdf }}" style="display:flex; align-items:center; gap:8px; background:#132A57; color:#fff; border:1px solid rgba(255,255,255,0.12); border-radius:8px; padding:9px 12px; font-size:12.5px; font-weight:600; cursor:pointer;">
+          <span>⬇</span> Export to PDF
+        </button>
         <label style="display:flex; align-items:center; gap:8px; background:#132A57; color:#fff; border:1px solid rgba(255,255,255,0.12); border-radius:8px; padding:9px 12px; font-size:12.5px; font-weight:600; cursor:pointer;" style-hover="background:#1B3A72;">
-          <span>⬆</span> Import from Excel
+          <span>⬆</span> Import Excel / CSV
           <input type="file" accept=".xlsx,.xls,.xlsm,.csv" onChange="{{ importExcel }}" style="display:none;" />
         </label>
       </sc-if>
@@ -261,23 +265,46 @@
               </sc-for>
             </tbody>
           </table>
-          <div style="padding:10px 16px; font-size:11px; color:#8592A6; border-top:1px solid #F1F3F7;">Rows highlighted red where check-out is after 18:00 or time spent is under 15 minutes</div>
+          <div style="display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; padding:10px 16px; border-top:1px solid #F1F3F7;">
+            <div style="display:flex; align-items:center; gap:12px;">
+              <div style="font-size:11.5px; color:#8592A6;">{{ attPg.label }}</div>
+            </div>
+            <div style="display:flex; align-items:center; gap:4px; flex-wrap:wrap;">
+              <button onClick="{{ attPg.prev }}" disabled="{{ attPg.prevDisabled }}" style="{{ attPg.prevStyle }}">‹ Prev</button>
+              <sc-for list="{{ attPg.buttons }}" as="p" hint-placeholder-count="5">
+                <button onClick="{{ p.onClick }}" disabled="{{ p.disabled }}" style="{{ p.style }}">{{ p.label }}</button>
+              </sc-for>
+              <button onClick="{{ attPg.next }}" disabled="{{ attPg.nextDisabled }}" style="{{ attPg.nextStyle }}">Next ›</button>
+            </div>
+          </div>
+          <div style="padding:10px 16px; font-size:11px; color:#8592A6; border-top:1px solid #F1F3F7;">Latest visits first. Rows highlighted red where check-out is after 18:00 or time spent is under 15 minutes</div>
         </div>
 
         <sc-if value="{{ diaryHasDays }}" hint-placeholder-val="{{ false }}">
           <div style="display:flex; align-items:baseline; justify-content:space-between; gap:12px; flex-wrap:wrap; margin: 6px 0 12px 0;">
             <div style="font-size:13px; font-weight:700; color:#0B1B3A;">Calls Completed vs Planned per Day · {{ diaryPeriod }}</div>
-            <div style="font-size:12px; color:#3A4658;">To date: <span style="font-weight:700;">{{ diaryTotals.completed }} / {{ diaryTotals.planned }}</span> · {{ diaryTotals.rate }}</div>
+            <div style="font-size:12px; color:#3A4658;">To date: <span style="font-weight:700;">{{ diaryTotals.completed }} / {{ diaryTotals.planned }}</span> · {{ diaryTotals.rate }} · Off-diary visits: <span style="font-weight:700;">{{ diaryTotals.offPct }}</span></div>
           </div>
           <div style="background:#fff; border:1px solid #E4E9F0; border-radius:14px; overflow:hidden; margin-bottom:16px;">
+            <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap; padding:10px 16px; border-bottom:1px solid #F1F3F7;">
+              <select value="{{ dyMonthValue }}" onChange="{{ dyOnMonth }}" aria-label="Filter month" style="{{ dyMonthStyle }}">
+                <sc-for list="{{ dyMonthOptions }}" as="o" hint-placeholder-count="3"><option value="{{ o.v }}">{{ o.label }}</option></sc-for>
+              </select>
+              <select value="{{ dyStatusValue }}" onChange="{{ dyOnStatus }}" aria-label="Filter completion" style="{{ dyStatusStyle }}">
+                <sc-for list="{{ dyStatusOptions }}" as="o" hint-placeholder-count="3"><option value="{{ o.v }}">{{ o.label }}</option></sc-for>
+              </select>
+              <sc-if value="{{ dyHasFilters }}" hint-placeholder-val="{{ false }}">
+                <button onClick="{{ dyClear }}" style="background:none; border:none; padding:0; font-size:11.5px; font-weight:700; color:#0A5EEA; cursor:pointer;">Clear filters</button>
+              </sc-if>
+            </div>
             <table style="width:100%; border-collapse:collapse; font-size:12.5px;">
               <thead><tr style="background:#F8FAFC;">
-                <th style="{{ thStyle }}">Date</th><th style="{{ thStyleRight }}">Planned</th><th style="{{ thStyleRight }}">Completed</th><th style="{{ thStyleRight }}">Unplanned visits</th><th style="{{ thStyle }}">Completion</th>
+                <th style="{{ thStyle }}">Date</th><th style="{{ thStyleRight }}">Planned</th><th style="{{ thStyleRight }}">Completed</th><th style="{{ thStyleRight }}">Unplanned visits</th><th style="{{ thStyleRight }}">Off-diary %</th><th style="{{ thStyle }}">Completion</th>
               </tr></thead>
               <tbody>
                 <sc-for list="{{ diaryDaily }}" as="row" hint-placeholder-count="10">
                   <tr style="{{ row.rowStyle }}">
-                    <td style="{{ tdStyle }}">{{ row.date }}</td><td style="{{ tdStyleRight }}">{{ row.planned }}</td><td style="{{ tdStyleRight }}">{{ row.completed }}</td><td style="{{ tdStyleRight }}">{{ row.unplanned }}</td>
+                    <td style="{{ tdStyle }}">{{ row.date }}</td><td style="{{ tdStyleRight }}">{{ row.planned }}</td><td style="{{ tdStyleRight }}">{{ row.completed }}</td><td style="{{ tdStyleRight }}">{{ row.unplanned }}</td><td style="{{ tdStyleRight }}">{{ row.offPct }}</td>
                     <td style="padding:10px 14px; min-width:160px;">
                       <div style="display:flex; align-items:center; gap:8px;">
                         <div style="flex:1; height:8px; background:#EEF1F6; border-radius:5px; overflow:hidden;"><div style="{{ row.barStyle }}"></div></div>
@@ -288,7 +315,19 @@
                 </sc-for>
               </tbody>
             </table>
-            <div style="padding:10px 16px; font-size:11px; color:#8592A6; border-top:1px solid #F1F3F7;">Planned = stores in each Blitz member's call diary for that date (activations and meetings excluded). May – September uses each member's Week 1–4 rotation diary applied to every month; October uses the dated October diaries; Mzwakhe uses the National Trainer diary. Completed = attendance check-ins at a planned store on the same day. Follows the Blitz member, region and date filters.</div>
+<div style="display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; padding:10px 16px; border-top:1px solid #F1F3F7;">
+            <div style="display:flex; align-items:center; gap:12px;">
+              <div style="font-size:11.5px; color:#8592A6;">{{ dyPg.label }}</div>
+            </div>
+            <div style="display:flex; align-items:center; gap:4px; flex-wrap:wrap;">
+              <button onClick="{{ dyPg.prev }}" disabled="{{ dyPg.prevDisabled }}" style="{{ dyPg.prevStyle }}">‹ Prev</button>
+              <sc-for list="{{ dyPg.buttons }}" as="p" hint-placeholder-count="5">
+                <button onClick="{{ p.onClick }}" disabled="{{ p.disabled }}" style="{{ p.style }}">{{ p.label }}</button>
+              </sc-for>
+              <button onClick="{{ dyPg.next }}" disabled="{{ dyPg.nextDisabled }}" style="{{ dyPg.nextStyle }}">Next ›</button>
+            </div>
+          </div>
+            <div style="padding:10px 16px; font-size:11px; color:#8592A6; border-top:1px solid #F1F3F7;">Latest day first. Planned = stores in each Blitz member's call diary for that date (activations and meetings excluded). May – September uses each member's Week 1–4 rotation diary applied to every month; October uses the dated October diaries; Mzwakhe uses the National Trainer diary. Completed = attendance check-ins at a planned store on the same day. Off-diary % = visits that day not at a planned store, as a share of all visits. January – September visits come from the attendance report export (check-in/out times, matched to stores by store ID). Follows the Blitz member, region and date filters.</div>
           </div>
         </sc-if>
 
@@ -323,6 +362,7 @@
                 <th style="text-align:right; padding:8px 10px; color:#8592A6; font-weight:700; text-transform:uppercase; font-size:10px;">Planned</th>
                 <th style="text-align:right; padding:8px 10px; color:#8592A6; font-weight:700; text-transform:uppercase; font-size:10px;">Completed</th>
                 <th style="text-align:right; padding:8px 10px; color:#8592A6; font-weight:700; text-transform:uppercase; font-size:10px;">Rate</th>
+                <th style="text-align:right; padding:8px 10px; color:#8592A6; font-weight:700; text-transform:uppercase; font-size:10px;">Off Diary</th>
                 <th style="text-align:right; padding:8px 10px; color:#8592A6; font-weight:700; text-transform:uppercase; font-size:10px;">Late In</th>
                 <th style="text-align:right; padding:8px 10px; color:#8592A6; font-weight:700; text-transform:uppercase; font-size:10px;">Late Out</th>
                 <th style="text-align:right; padding:8px 10px; color:#8592A6; font-weight:700; text-transform:uppercase; font-size:10px;">&gt;1km</th>
@@ -337,6 +377,7 @@
                   <td style="padding:7px 10px; text-align:right; color:#3A4658;">{{ m.planned }}</td>
                   <td style="padding:7px 10px; text-align:right; color:#3A4658;">{{ m.completed }}</td>
                   <td style="padding:7px 10px; text-align:right; {{ m.rateStyle }}">{{ m.rate }}</td>
+                  <td style="padding:7px 10px; text-align:right; white-space:nowrap; {{ m.offDiaryStyle }}">{{ m.offDiary }}</td>
                   <td style="padding:7px 10px; text-align:right; color:#8592A6; font-size:11px;">{{ m.flagLateCheckin }}</td>
                   <td style="padding:7px 10px; text-align:right; color:#8592A6; font-size:11px;">{{ m.flagLateCheckout }}</td>
                   <td style="padding:7px 10px; text-align:right; color:#8592A6; font-size:11px;">{{ m.flagLocationDrift }}</td>
@@ -462,6 +503,15 @@
           <table style="width:100%; min-width:1400px; border-collapse:collapse; font-size:12px;">
             <thead><tr style="background:#F8FAFC;">
               <th style="{{ thStyle }}">Date</th><th style="{{ thStyle }}">Month</th><th style="{{ thStyle }}">Blitz</th><th style="{{ thStyle }}">Channel</th><th style="{{ thStyle }}">Store</th><th style="{{ thStyle }}">Region</th><th style="{{ thStyle }}">Category</th><th style="{{ thStyle }}">SKU</th><th style="{{ thStyle }}">Available</th><th style="{{ thStyleRight }}">Philips RRP</th><th style="{{ thStyleRight }}">Store RRP</th><th style="{{ thStyleRight }}">Promo Price</th><th style="{{ thStyle }}">On Promo</th><th style="{{ thStyle }}">SKU Status</th><th style="{{ thStyle }}">Listed</th><th style="{{ thStyleRight }}">MDQ</th><th style="{{ thStyleRight }}">Total SOH</th><th style="{{ thStyleRight }}">On Shelf</th><th style="{{ thStyleRight }}">Damages</th><th style="{{ thStyleRight }}">Returns</th><th style="{{ thStyle }}">Restock?</th>
+            </tr>
+            <tr style="background:#F8FAFC;">
+              <sc-for list="{{ spT.filters }}" as="f" hint-placeholder-count="21">
+                <th style="padding:0 8px 8px 8px; text-align:left;">
+                  <select value="{{ f.value }}" onChange="{{ f.onChange }}" aria-label="{{ f.label }}" style="{{ f.style }}">
+                    <sc-for list="{{ f.options }}" as="o"><option value="{{ o.v }}">{{ o.label }}</option></sc-for>
+                  </select>
+                </th>
+              </sc-for>
             </tr></thead>
             <tbody>
               <sc-for list="{{ stockPricingRows }}" as="row" hint-placeholder-count="8">
@@ -471,30 +521,105 @@
               </sc-for>
             </tbody>
           </table>
-          <div style="padding:12px 16px; font-size:11.5px; color:#8592A6; border-top:1px solid #F1F3F7;">Showing {{ stockPricingRows.length }} of {{ stockPricingFilteredCount }} matching rows</div>
+          <div style="display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; padding:10px 16px; border-top:1px solid #F1F3F7;">
+            <div style="display:flex; align-items:center; gap:12px;">
+              <div style="font-size:11.5px; color:#8592A6;">{{ spT.label }}</div>
+              <sc-if value="{{ spT.hasFilters }}" hint-placeholder-val="{{ false }}">
+                <button onClick="{{ spT.clear }}" style="background:none; border:none; padding:0; font-size:11.5px; font-weight:700; color:#0A5EEA; cursor:pointer;">Clear column filters</button>
+              </sc-if>
+            </div>
+            <div style="display:flex; align-items:center; gap:4px; flex-wrap:wrap;">
+              <button onClick="{{ spT.prev }}" disabled="{{ spT.prevDisabled }}" style="{{ spT.prevStyle }}">‹ Prev</button>
+              <sc-for list="{{ spT.buttons }}" as="p" hint-placeholder-count="5">
+                <button onClick="{{ p.onClick }}" disabled="{{ p.disabled }}" style="{{ p.style }}">{{ p.label }}</button>
+              </sc-for>
+              <button onClick="{{ spT.next }}" disabled="{{ spT.nextDisabled }}" style="{{ spT.nextStyle }}">Next ›</button>
+            </div>
+          </div>
         </div>
       </sc-if>
 
       <!-- SECTION: Competitor Feedback (new weekly cadence, separate slicer) -->
       <sc-if value="{{ isCompetitorFeedback }}" hint-placeholder-val="{{ false }}">
         <div style="background:#FFFBEA; border:1px solid #F5E6A3; border-radius:12px; padding:10px 16px; margin-bottom:16px; font-size:12px; color:#8A6A00;">
-          New reporting cadence, running alongside the Weekly Feedback Report. No submissions yet — this starts fresh from rollout; upload the weekly Competitor Feedback template to populate this table.
+          National price check per channel: each Philips SKU is listed against its closest competitor SKUs (up to 3). Store-level weekly feedback will add to this table once reps submit it in the app.
         </div>
         <div style="background:#fff; border:1px solid #E4E9F0; border-radius:14px; overflow:auto;">
           <table style="width:100%; min-width:1200px; border-collapse:collapse; font-size:12px;">
             <thead><tr style="background:#F8FAFC;">
-              <th style="{{ thStyle }}">Blitz</th><th style="{{ thStyle }}">Channel</th><th style="{{ thStyle }}">Store</th><th style="{{ thStyle }}">Region</th><th style="{{ thStyle }}">Category</th><th style="{{ thStyle }}">Competitor</th><th style="{{ thStyle }}">Competitor SKU</th><th style="{{ thStyle }}">SKU Status</th><th style="{{ thStyleRight }}">Competitor Price</th><th style="{{ thStyle }}">On Promo</th><th style="{{ thStyleRight }}">Total SOH</th><th style="{{ thStyle }}">Philips SKU</th><th style="{{ thStyleRight }}">Philips Price</th>
+              <th style="{{ thStyle }}">Channel</th><th style="{{ thStyle }}">Category</th><th style="{{ thStyle }}">Philips SKU</th><th style="{{ thStyleRight }}">Philips Price</th><th style="{{ thStyle }}">Competitor</th><th style="{{ thStyle }}">Competitor SKU</th><th style="{{ thStyle }}">Position</th><th style="{{ thStyleRight }}">Competitor Price</th><th style="{{ thStyleRight }}">Philips vs Competitor</th>
+            </tr>
+            <tr style="background:#F8FAFC;">
+              <sc-for list="{{ cfColFilters }}" as="f" hint-placeholder-count="8">
+                <th style="padding:0 8px 8px 8px; text-align:left;">
+                  <select value="{{ f.value }}" onChange="{{ f.onChange }}" aria-label="{{ f.label }}" style="{{ f.style }}">
+                    <sc-for list="{{ f.options }}" as="o"><option value="{{ o.v }}">{{ o.label }}</option></sc-for>
+                  </select>
+                </th>
+              </sc-for>
             </tr></thead>
             <tbody>
               <sc-for list="{{ competitorRows }}" as="row" hint-placeholder-count="8">
                 <tr style="border-top:1px solid #F1F3F7;">
-                  <td style="{{ tdStyle }}">{{ row.blitz }}</td><td style="{{ tdStyle }}">{{ row.channel }}</td><td style="{{ tdStyle }}">{{ row.storeName }}</td><td style="{{ tdStyle }}">{{ row.region }}</td><td style="{{ tdStyle }}">{{ row.category }}</td><td style="{{ tdStyle }}">{{ row.competitor }}</td><td style="{{ tdStyle }}">{{ row.competitorSku }}</td><td style="{{ tdStyle }}">{{ row.skuStatus }}</td><td style="{{ tdStyleRight }}">{{ row.competitorPrice }}</td><td style="{{ tdStyle }}">{{ row.onPromo }}</td><td style="{{ tdStyleRight }}">{{ row.totalSoh }}</td><td style="{{ tdStyle }}">{{ row.philipsSku }}</td><td style="{{ tdStyleRight }}">{{ row.philipsPrice }}</td>
+                  <td style="padding:10px 12px; white-space:nowrap; color:#0B1B3A; font-weight:600;">{{ row.channel }}</td><td style="padding:10px 12px; white-space:nowrap; color:#4A5872;">{{ row.category }}</td><td style="padding:10px 12px; white-space:nowrap; color:#0A5EEA; font-weight:700;">{{ row.philipsSku }}</td><td style="padding:10px 12px; white-space:nowrap; text-align:right; font-weight:700; color:#0B1B3A;">{{ row.philipsPrice }}</td><td style="padding:10px 12px; white-space:nowrap; color:#0B1B3A;">{{ row.competitor }}</td><td style="padding:10px 12px; min-width:220px; color:#0B1B3A;">{{ row.competitorSku }}</td><td style="padding:10px 12px; white-space:nowrap; color:#8592A6;">{{ row.skuStatus }}</td><td style="padding:10px 12px; white-space:nowrap; text-align:right; font-weight:700; color:#0B1B3A;">{{ row.competitorPrice }}</td><td style="padding:10px 12px; white-space:nowrap; text-align:right;"><span style="{{ row.gapStyle }}">{{ row.gap }}</span></td>
                 </tr>
               </sc-for>
             </tbody>
           </table>
-          <div style="padding:12px 16px; font-size:11.5px; color:#8592A6; border-top:1px solid #F1F3F7;">Showing {{ competitorRows.length }} of {{ competitorFilteredCount }} matching rows</div>
+          <div style="display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; padding:10px 16px; border-top:1px solid #F1F3F7;">
+            <div style="display:flex; align-items:center; gap:12px;">
+              <div style="font-size:11.5px; color:#8592A6;">{{ cfRangeLabel }}</div>
+              <sc-if value="{{ cfHasColFilters }}" hint-placeholder-val="{{ false }}">
+                <button onClick="{{ cfClearCols }}" style="background:none; border:none; padding:0; font-size:11.5px; font-weight:700; color:#0A5EEA; cursor:pointer;">Clear column filters</button>
+              </sc-if>
+            </div>
+            <div style="display:flex; align-items:center; gap:4px; flex-wrap:wrap;">
+              <button onClick="{{ cfPrev }}" disabled="{{ cfPrevDisabled }}" style="{{ cfPrevStyle }}">‹ Prev</button>
+              <sc-for list="{{ cfPageButtons }}" as="p" hint-placeholder-count="5">
+                <button onClick="{{ p.onClick }}" disabled="{{ p.disabled }}" style="{{ p.style }}">{{ p.label }}</button>
+              </sc-for>
+              <button onClick="{{ cfNext }}" disabled="{{ cfNextDisabled }}" style="{{ cfNextStyle }}">Next ›</button>
+            </div>
+          </div>
         </div>
+
+        <div style="font-size:13px; font-weight:700; color:#0B1B3A; margin:22px 0 12px 0;">Competitor Activity Photos</div>
+        <div style="background:#fff; border:1px solid #E4E9F0; border-radius:14px; padding:12px 16px; margin-bottom:14px; display:flex; flex-wrap:wrap; gap:10px; align-items:flex-end;">
+          <label style="display:flex; flex-direction:column; gap:4px; flex:1 1 170px; font-size:11px; font-weight:700; color:#5B6B82;">Store / Channel
+            <input value="{{ cpStore }}" onChange="{{ cpOnStore }}" placeholder="e.g. Clicks Boskruin" style="border:1px solid #E4E9F0; border-radius:8px; padding:8px 10px; font-size:12.5px; color:#0B1B3A; font-weight:500;" />
+          </label>
+          <label style="display:flex; flex-direction:column; gap:4px; flex:1 1 170px; font-size:11px; font-weight:700; color:#5B6B82;">Competitor
+            <input value="{{ cpCompetitor }}" onChange="{{ cpOnCompetitor }}" placeholder="e.g. Wahl" style="border:1px solid #E4E9F0; border-radius:8px; padding:8px 10px; font-size:12.5px; color:#0B1B3A; font-weight:500;" />
+          </label>
+          <label style="display:flex; flex-direction:column; gap:4px; flex:2 1 260px; font-size:11px; font-weight:700; color:#5B6B82;">Activity note
+            <input value="{{ cpNote }}" onChange="{{ cpOnNote }}" placeholder="e.g. Gondola end promo, 20% off trimmers" style="border:1px solid #E4E9F0; border-radius:8px; padding:8px 10px; font-size:12.5px; color:#0B1B3A; font-weight:500;" />
+          </label>
+          <label style="display:flex; align-items:center; gap:8px; background:#0A5EEA; color:#fff; border-radius:8px; padding:9px 14px; font-size:12.5px; font-weight:700; cursor:pointer; white-space:nowrap;">
+            Upload photos
+            <input type="file" accept="image/*" multiple="{{ true }}" onChange="{{ cpUpload }}" style="display:none;" />
+          </label>
+        </div>
+        <sc-if value="{{ cpBusy }}" hint-placeholder-val="{{ false }}">
+          <div style="font-size:12px; color:#5B6B82; margin-bottom:12px;">{{ cpBusy }}</div>
+        </sc-if>
+        <sc-if value="{{ cpHasPhotos }}" hint-placeholder-val="{{ false }}">
+          <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(220px, 1fr)); gap:14px;">
+            <sc-for list="{{ cpCards }}" as="p" hint-placeholder-count="4">
+              <div style="background:#fff; border:1px solid #E4E9F0; border-radius:14px; overflow:hidden; display:flex; flex-direction:column;">
+                <a href="{{ p.src }}" target="_blank" rel="noopener" style="display:block;"><img src="{{ p.src }}" loading="lazy" alt="{{ p.alt }}" style="width:100%; height:160px; object-fit:cover; display:block; background:#F1F3F7;" /></a>
+                <div style="padding:10px 12px; display:flex; flex-direction:column; gap:3px;">
+                  <div style="font-size:12.5px; font-weight:700; color:#0B1B3A;">{{ p.competitor }}</div>
+                  <div style="font-size:11.5px; color:#5B6B82;">{{ p.store }}</div>
+                  <div style="font-size:11.5px; color:#0B1B3A; text-wrap:pretty;">{{ p.note }}</div>
+                  <div style="font-size:10.5px; color:#8592A6;">{{ p.date }}</div>
+                </div>
+              </div>
+            </sc-for>
+          </div>
+        </sc-if>
+        <sc-if value="{{ cpEmpty }}" hint-placeholder-val="{{ false }}">
+          <div style="font-size:12px; color:#8592A6;">No competitor activity photos yet.</div>
+        </sc-if>
       </sc-if>
 
       <!-- SECTION: Execution (Image Report) (new weekly cadence, separate slicer) -->
@@ -502,20 +627,102 @@
         <div style="background:#FFFBEA; border:1px solid #F5E6A3; border-radius:12px; padding:10px 16px; margin-bottom:16px; font-size:12px; color:#8A6A00;">
           May – September 2026 rows come from the store surveys (lighting boxes, standout displays, side wings, POSM). Before/After photos for those months will be added from the photo upload. From October, rows come from the Pulse app Execution survey.
         </div>
+        <sc-if value="{{ hasExecPhotos }}" hint-placeholder-val="{{ true }}">
+          <div style="display:flex; align-items:baseline; justify-content:space-between; gap:12px; margin:4px 0 10px 0;">
+            <div style="font-size:13px; font-weight:700; color:#0B1B3A;">Execution Photos</div>
+            <div style="font-size:11.5px; color:#8592A6;">{{ execPhotoCount }} of {{ execPhotoTotal }} photos · matched by date, time and address stamp</div>
+          </div>
+          <div style="display:flex; gap:10px; flex-wrap:wrap; background:#fff; border:1px solid #E4E9F0; border-radius:14px; padding:12px 16px; margin-bottom:14px;">
+            <sc-for list="{{ execPhotoFilters }}" as="f" hint-placeholder-count="4">
+              <label style="display:flex; flex-direction:column; gap:3px; flex:1 1 150px;">
+                <span style="font-size:10px; font-weight:700; color:#8592A6; text-transform:uppercase; letter-spacing:0.4px;">{{ f.label }}</span>
+                <select onChange="{{ f.onChange }}" value="{{ f.value }}" style="border:1px solid #DCE3ED; border-radius:7px; padding:6px 10px; font-size:12.5px; font-weight:600; color:#1B2433; background:#F8FAFC;">
+                  <sc-for list="{{ f.options }}" as="o" hint-placeholder-count="3"><option value="{{ o }}">{{ o }}</option></sc-for>
+                </select>
+              </label>
+            </sc-for>
+          </div>
+          <sc-if value="{{ execNoPhotoMatches }}" hint-placeholder-val="{{ false }}">
+            <div style="font-size:12px; color:#8592A6; margin-bottom:18px;">No photos match these filters.</div>
+          </sc-if>
+          <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(200px, 1fr)); gap:14px; margin-bottom:18px;">
+            <sc-for list="{{ execPhotoCards }}" as="p" hint-placeholder-count="6">
+              <div onClick="{{ p.open }}" style="background:#fff; border:1px solid #E4E9F0; border-radius:14px; overflow:hidden; cursor:pointer; display:flex; flex-direction:column;" style-hover="border-color:#0A5EEA;">
+                <img src="{{ p.file }}" alt="{{ p.storeName }}" loading="lazy" style="width:100%; height:200px; object-fit:cover; display:block; background:#F1F3F7;" />
+                <div style="padding:10px 12px; display:flex; flex-direction:column; gap:4px;">
+                  <div style="display:flex; gap:6px; flex-wrap:wrap;">
+                    <span style="font-size:10px; font-weight:700; padding:2px 7px; border-radius:999px; background:#EEF3FF; color:#0A5EEA;">{{ p.displayArea }}</span>
+                    <span style="font-size:10px; font-weight:700; padding:2px 7px; border-radius:999px; background:#F1F3F7; color:#5B6B82;">{{ p.category }}</span>
+                  </div>
+                  <div style="font-size:12.5px; font-weight:700; color:#0B1B3A;">{{ p.storeName }}</div>
+                  <div style="font-size:11px; color:#5B6B82;">{{ p.codeLabel }} · {{ p.region }}</div>
+                  <div style="font-size:11px; color:#5B6B82;">{{ p.when }} · {{ p.repLabel }}</div>
+                  <sc-if value="{{ p.hasConfirm }}" hint-placeholder-val="{{ false }}">
+                    <div style="font-size:10.5px; font-weight:700; color:#8A6A00;">{{ p.confirmLabel }}</div>
+                  </sc-if>
+                </div>
+              </div>
+            </sc-for>
+          </div>
+          <sc-if value="{{ execHasMorePhotos }}" hint-placeholder-val="{{ false }}">
+            <div style="display:flex; justify-content:center; margin:-4px 0 18px 0;">
+              <button onClick="{{ execShowMore }}" style="border:1px solid #E4E9F0; background:#fff; border-radius:8px; padding:8px 16px; font-size:12px; font-weight:700; color:#0A5EEA; cursor:pointer;">{{ execMoreLabel }}</button>
+            </div>
+          </sc-if>
+        </sc-if>
+        <sc-if value="{{ execOpen }}" hint-placeholder-val="{{ false }}">
+          <div onClick="{{ closeExec }}" style="position:fixed; inset:0; background:rgba(11,27,58,0.82); z-index:1000; display:flex; align-items:center; justify-content:center; padding:24px;">
+            <div onClick="{{ stopProp }}" style="background:#fff; border-radius:14px; overflow:hidden; max-width:900px; width:100%; max-height:100%; display:flex; flex-direction:column;">
+              <img src="{{ execOpenSrc }}" style="width:100%; max-height:75vh; object-fit:contain; background:#0B1B3A; display:block;" />
+              <div style="padding:12px 16px; display:flex; justify-content:space-between; align-items:center; gap:12px;">
+                <div>
+                  <div style="font-size:13px; font-weight:700; color:#0B1B3A;">{{ execOpenTitle }}</div>
+                  <div style="font-size:11.5px; color:#5B6B82;">{{ execOpenMeta }}</div>
+                </div>
+                <button onClick="{{ closeExec }}" style="border:1px solid #E4E9F0; background:#fff; border-radius:8px; padding:7px 12px; font-size:12px; font-weight:700; color:#0B1B3A; cursor:pointer;">Close</button>
+              </div>
+            </div>
+          </div>
+        </sc-if>
+        <div style="font-size:13px; font-weight:700; color:#0B1B3A; margin:4px 0 10px 0;">Execution Rows</div>
+        
         <div style="background:#fff; border:1px solid #E4E9F0; border-radius:14px; overflow:auto;">
           <table style="width:100%; min-width:1000px; border-collapse:collapse; font-size:12px;">
             <thead><tr style="background:#F8FAFC;">
-              <th style="{{ thStyle }}">Date</th><th style="{{ thStyle }}">Month</th><th style="{{ thStyle }}">Blitz</th><th style="{{ thStyle }}">Channel</th><th style="{{ thStyle }}">Store</th><th style="{{ thStyle }}">Region</th><th style="{{ thStyle }}">Category</th><th style="{{ thStyle }}">Display Area</th><th style="{{ thStyle }}">Result</th><th style="{{ thStyle }}">SKU</th><th style="{{ thStyle }}">Before</th><th style="{{ thStyle }}">After</th>
+              <th style="{{ thStyle }}">Date</th><th style="{{ thStyle }}">Month</th><th style="{{ thStyle }}">Blitz</th><th style="{{ thStyle }}">Channel</th><th style="{{ thStyle }}">Store</th><th style="{{ thStyle }}">Region</th><th style="{{ thStyle }}">Category</th><th style="{{ thStyle }}">Display Area</th><th style="{{ thStyle }}">Result</th><th style="{{ thStyle }}">SKU</th>
+            </tr>
+            <tr style="background:#F8FAFC;">
+              <sc-for list="{{ exT.filters }}" as="f" hint-placeholder-count="10">
+                <th style="padding:0 8px 8px 8px; text-align:left;">
+                  <select value="{{ f.value }}" onChange="{{ f.onChange }}" aria-label="{{ f.label }}" style="{{ f.style }}">
+                    <sc-for list="{{ f.options }}" as="o"><option value="{{ o.v }}">{{ o.label }}</option></sc-for>
+                  </select>
+                </th>
+              </sc-for>
             </tr></thead>
             <tbody>
               <sc-for list="{{ executionRows }}" as="row" hint-placeholder-count="8">
                 <tr style="border-top:1px solid #F1F3F7;">
-                  <td style="{{ tdStyle }}">{{ row.date }}</td><td style="{{ tdStyle }}"><span style="{{ row.sourceStyle }}">{{ row.source }}</span></td><td style="{{ tdStyle }}">{{ row.blitz }}</td><td style="{{ tdStyle }}">{{ row.channel }}</td><td style="{{ tdStyle }}">{{ row.storeName }}</td><td style="{{ tdStyle }}">{{ row.region }}</td><td style="{{ tdStyle }}">{{ row.category }}</td><td style="{{ tdStyle }}">{{ row.displayArea }}</td><td style="{{ tdStyle }}">{{ row.result }}</td><td style="{{ tdStyle }}">{{ row.sku }}</td><td style="{{ tdStyle }}">{{ row.beforeImage }}</td><td style="{{ tdStyle }}">{{ row.afterImage }}</td>
+                  <td style="{{ tdStyle }}">{{ row.date }}</td><td style="{{ tdStyle }}"><span style="{{ row.sourceStyle }}">{{ row.source }}</span></td><td style="{{ tdStyle }}">{{ row.blitz }}</td><td style="{{ tdStyle }}">{{ row.channel }}</td><td style="{{ tdStyle }}">{{ row.storeName }}</td><td style="{{ tdStyle }}">{{ row.region }}</td><td style="{{ tdStyle }}">{{ row.category }}</td><td style="{{ tdStyle }}">{{ row.displayArea }}</td><td style="{{ tdStyle }}">{{ row.result }}</td><td style="{{ tdStyle }}">{{ row.sku }}</td>
                 </tr>
               </sc-for>
             </tbody>
           </table>
-          <div style="padding:12px 16px; font-size:11.5px; color:#8592A6; border-top:1px solid #F1F3F7;">Showing {{ executionRows.length }} of {{ executionFilteredCount }} matching rows</div>
+          <div style="display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; padding:10px 16px; border-top:1px solid #F1F3F7;">
+            <div style="display:flex; align-items:center; gap:12px;">
+              <div style="font-size:11.5px; color:#8592A6;">{{ exT.label }}</div>
+              <sc-if value="{{ exT.hasFilters }}" hint-placeholder-val="{{ false }}">
+                <button onClick="{{ exT.clear }}" style="background:none; border:none; padding:0; font-size:11.5px; font-weight:700; color:#0A5EEA; cursor:pointer;">Clear column filters</button>
+              </sc-if>
+            </div>
+            <div style="display:flex; align-items:center; gap:4px; flex-wrap:wrap;">
+              <button onClick="{{ exT.prev }}" disabled="{{ exT.prevDisabled }}" style="{{ exT.prevStyle }}">‹ Prev</button>
+              <sc-for list="{{ exT.buttons }}" as="p" hint-placeholder-count="5">
+                <button onClick="{{ p.onClick }}" disabled="{{ p.disabled }}" style="{{ p.style }}">{{ p.label }}</button>
+              </sc-for>
+              <button onClick="{{ exT.next }}" disabled="{{ exT.nextDisabled }}" style="{{ exT.nextStyle }}">Next ›</button>
+            </div>
+          </div>
         </div>
       </sc-if>
 
@@ -621,6 +828,8 @@ const SECTION_DEFS = [
 const BLUE = '#0A5EEA';
 const LIME = '#8FCB1F';
 const REP_NAMES = ['Lindani Khanyile','Mmuluki  Makhurane','Mzwakhe Mokhoane','Nicholas Haripershad','Jose Kelly','Sello Matlou','Enver De Bruyn','Nishay Singh','Kyle Samuels'];
+// Attendance rows outside Philips PH's channels (PNP, Spar, Tafelberg, Game).
+const NON_PHILIPS_CHANNEL = (r) => /^(pnp|pick n pay|spar|superspar|savemor|tafelberg|game)\b/i.test(String(r[5] || '').trim()) || /^(pnp|pick n pay|spar|superspar|savemor|tafelberg|game)\b/i.test(String(r[6] || '').trim());
 const REP_REGION = {
   'Mmuluki  Makhurane': 'Gauteng',
   'Enver De Bruyn': 'Western Cape',
@@ -714,6 +923,15 @@ class Component extends DCLogic {
     crossFilterValues: {}, // key: section -> { region, channel, month, store, category, subcategory }
     csvFile: null,
     photoUploads: [],
+    cfCol: {},
+    cfPage: 0,
+    attPage: 0,
+    dyPage: 0,
+    dyMonth: 'All',
+    dyStatus: 'All',
+    compPhotos: [],
+    compPhotoForm: { store: '', competitor: '', note: '' },
+    compPhotoBusy: null,
     repRoundRobin: {},
     expandedBlitzRep: null,
     adminUnlocked: false,
@@ -1062,6 +1280,63 @@ class Component extends DCLogic {
 
   // The append endpoint needs the monthly admin code. Asked once per browser
   // session, then remembered so a run of uploads isn't nine prompts.
+  loadCompPhotos() {
+    fetch('/api/report-photos?tenant=PH-201&section=competitor')
+      .then(r => (r.ok ? r.json() : null))
+      .then(j => this.setState({ compPhotos: (j && j.photos) || [] }))
+      .catch(() => {});
+  }
+
+  // Phone photos are often 4–8 MB; scale to 1600px JPEG so each upload stays small.
+  shrinkImage(file, max, quality) {
+    return new Promise((resolve, reject) => {
+      const url = URL.createObjectURL(file);
+      const img = new Image();
+      img.onload = () => {
+        const k = Math.min(1, max / Math.max(img.naturalWidth, img.naturalHeight));
+        const c = document.createElement('canvas');
+        c.width = Math.round(img.naturalWidth * k); c.height = Math.round(img.naturalHeight * k);
+        c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+        URL.revokeObjectURL(url);
+        resolve(c.toDataURL('image/jpeg', quality));
+      };
+      img.onerror = () => { URL.revokeObjectURL(url); reject(new Error('Could not read ' + file.name)); };
+      img.src = url;
+    });
+  }
+
+  async handleCompPhotoUpload(e) {
+    const input = e.target;
+    const files = Array.from(input.files || []).slice(0, 20);
+    if (!files.length) return;
+    const code = this.adminCodeForUpload();
+    if (!code) { input.value = ''; return; }
+    const f = this.state.compPhotoForm || {};
+    let ok = 0, fail = '';
+    for (let i = 0; i < files.length; i++) {
+      this.setState({ compPhotoBusy: 'Uploading ' + (i + 1) + ' of ' + files.length + '…' });
+      try {
+        const dataUrl = await this.shrinkImage(files[i], 1600, 0.82);
+        const r = await fetch('/api/report-photos', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ code, tenant: 'PH-201', section: 'competitor', dataUrl, fileName: files[i].name, store: f.store, competitor: f.competitor, note: f.note }),
+        });
+        const j = await r.json().catch(() => ({}));
+        if (!r.ok) {
+          if (/admin code/i.test(j.error || '')) sessionStorage.removeItem(UPLOAD_CODE_KEY);
+          fail = j.error || ('server error ' + r.status);
+          break;
+        }
+        ok++;
+      } catch (err) { fail = String((err && err.message) || err); break; }
+    }
+    input.value = '';
+    this.setState({ compPhotoBusy: null });
+    if (fail) window.alert('Uploaded ' + ok + ' of ' + files.length + ' photos. Stopped: ' + fail);
+    this.loadCompPhotos();
+  }
+
   adminCodeForUpload() {
     let code = sessionStorage.getItem(UPLOAD_CODE_KEY);
     if (code) return code;
@@ -1087,6 +1362,7 @@ class Component extends DCLogic {
   //   3. /api/report-feed     — what reps have logged in the app (re-polled)
   // Nothing here ever replaces an earlier layer, so uploaded history stays put.
   loadData() {
+    this.loadCompPhotos();
     const EMPTY = { feedback: [], attendance: [], salesValue: [], salesVolume: [], growth: [], stock: [], stockPricing: [], competitorFeedback: [], executionReport: [] };
     Promise.all([
       fetch('phillips_data.json').then(r => r.json()).catch(() => EMPTY),
@@ -1101,9 +1377,61 @@ class Component extends DCLogic {
         base[key] = [...(base[key] || []), ...sections[key]];
       }
       // Legacy (May–Jul 2026) survey answers mapped into the cadence layout.
+      const nfa = (x) => String(x == null ? '' : x).replace(/\s+/g, ' ').trim().toLowerCase();
       if (legacy) {
         base.stockPricing = [...(base.stockPricing || []), ...(legacy.stockPricing || [])];
         base.executionReport = [...(base.executionReport || []), ...(legacy.executionReport || [])];
+        base.competitorFeedback = [...(base.competitorFeedback || []), ...(legacy.competitorFeedback || [])];
+        base.executionPhotos = legacy.executionPhotos || [];
+        base.competitorPhotos = legacy.competitorPhotos || [];
+        // Checkers SOH workbook: newest counts replace older rows for the same store + SKU.
+        if (legacy.checkersStock && legacy.checkersStock.length) {
+          const sk = (r) => nfa(r[0]) + '|' + nfa(r[2]);
+          const fresh = new Set(legacy.checkersStock.map(sk));
+          base.stock = [...(base.stock || []).filter(r => !fresh.has(sk(r))), ...legacy.checkersStock];
+        }
+        // Adhoc Tasks stock count also shows in Stock Count & Pricing, under September 2026.
+        {
+          const REGION_NAME = { 'GAUTENG': 'Gauteng', 'WESTERN CAPE': 'Western Cape', 'KWAZULU-NATAL': 'KwaZulu-Natal', 'KWAZULU NATAL': 'KwaZulu-Natal', 'KZN': 'KwaZulu-Natal', 'NORTH WEST': 'North West', 'FREE STATE': 'Free State', 'EASTERN CAPE': 'Eastern Cape', 'MPUMALANGA': 'Mpumalanga', 'LIMPOPO': 'Limpopo', 'NORTHERN CAPE': 'Northern Cape' };
+          const CATEGORY_NAME = { 'OG': 'Male Grooming', 'SHAVING': 'Male Grooming', 'GROOMING': 'Male Grooming', 'BTY': 'Beauty', 'BEAUTY': 'Beauty', 'HAIR CARE': 'Beauty', 'OHC': 'OHC', 'MCC': 'MCC' };
+          const tcase = (x) => { const k = String(x || '').trim().toUpperCase(); return REGION_NAME[k] || String(x || '').toLowerCase().replace(/(^|[\s-])\w/g, m => m.toUpperCase()); };
+          const catName = (x) => CATEGORY_NAME[String(x || '').trim().toUpperCase()] || x;
+          const numOr = (x) => (x === '' || x == null ? null : Number(x));
+          const fromStock = (base.stock || []).map(r => {
+            const m = /(CH-\d+)\s*$/.exec(r[0] || '');
+            const phys = numOr(r[8]);
+            return [r[5], 'Checkers', m ? m[1] : '', String(r[0] || '').replace(/\s*-\s*CH-\d+\s*$/, ''), tcase(r[1]), catName(r[3]), r[2],
+              null, null, null, '', '', '', null, null, numOr(r[7]), phys, null, null, '', '', 'September 2026',
+              phys == null ? '' : (phys > 0 ? 'Yes' : 'No')];
+          });
+          base.stockPricing = [...(base.stockPricing || []), ...fromStock];
+        }
+        // Jan–Sep check-ins from the attendance report export (times + store IDs).
+        // Skips any visit already in the base data (same rep/date/store, or same
+        // rep/date/check-in time).
+        const isoD = (x) => { const s = String(x || '').trim(); if (/^\d{4}-\d{2}-\d{2}/.test(s)) return s.slice(0, 10); const dt = new Date(s); return isNaN(dt) ? s : dt.getFullYear() + '-' + String(dt.getMonth() + 1).padStart(2, '0') + '-' + String(dt.getDate()).padStart(2, '0'); };
+        const ak = (r) => [r[0], isoD(r[1]), r[7]].map(nfa).join('|');
+        const tk = (r) => (r[2] ? [r[0], isoD(r[1]), r[2]].map(nfa).join('|') : null);
+        const seenA = new Set((base.attendance || []).map(ak));
+        const seenT = new Set((base.attendance || []).map(tk).filter(Boolean));
+        const oldAtt = (legacy.attendance || []).filter(r => !seenA.has(ak(r)) && !(tk(r) && seenT.has(tk(r))));
+        base.attendance = [...(base.attendance || []), ...oldAtt].filter(r => !NON_PHILIPS_CHANNEL(r));
+        const toM = (t) => { const [hh, mm] = String(t || '').split(':').map(Number); return (hh || 0) * 60 + (mm || 0); };
+        const detail = {};
+        for (const [k, rows] of Object.entries(base.blitzVisitDetail || {})) detail[k] = [...rows];
+        for (const r of oldAtt) {
+          const list = detail[r[0]] = detail[r[0]] || [];
+          if (list.some(v => isoD(v.date) === r[1] && (nfa(v.store) === nfa(r[7]) || (r[2] && nfa(v.start) === nfa(r[2]))))) continue;
+          list.push({
+            date: r[1], store: r[7], channel: r[5], start: r[2] || '—', end: r[3] || '—',
+            duration: toM(r[4]),
+            lateCheckin: !!r[2] && toM(r[2]) > 8 * 60,
+            lateCheckout: !!r[3] && toM(r[3]) > 18 * 60,
+            locationDrift: !!r[9], source: 'attendance-report',
+          });
+        }
+        for (const k of Object.keys(detail)) detail[k].sort((a, b) => String(b.date).localeCompare(String(a.date)));
+        base.blitzVisitDetail = detail;
         // Aug–Sep survey answers for the Weekly Feedback Report; skips any row
         // already in the base data or uploaded history so nothing doubles up.
         const nf = (x) => String(x == null ? '' : x).replace(/\s+/g, ' ').trim().toLowerCase();
@@ -1159,7 +1487,7 @@ class Component extends DCLogic {
         for (const k of Object.keys(blitzDetail)) blitzDetail[k].sort((a, b) => String(b.date).localeCompare(String(a.date)) || String(b.start).localeCompare(String(a.start)));
         this.setState({
           data: Object.assign({}, base, {
-            attendance: [...(base.attendance || []), ...liveAtt],
+            attendance: [...(base.attendance || []), ...liveAtt].filter(r => !NON_PHILIPS_CHANNEL(r)),
             feedback: [...(base.feedback || []), ...liveFb],
             blitzVisitDetail: blitzDetail,
           }),
@@ -1422,7 +1750,7 @@ class Component extends DCLogic {
         barStyle: `height:100%; width:${(avgMin / maxAvg * 100).toFixed(1)}%; background:${BLUE}; border-radius:5px;`,
       };
     });
-    const attendanceRows = attFiltered.slice(0, 200).map(r => {
+    const attendanceAll = attFiltered.map((r, i) => [r, toISO(r[1]), i]).sort((a, b) => b[1].localeCompare(a[1]) || String(b[0][2] || '').localeCompare(String(a[0][2] || '')) || a[2] - b[2]).map(x => x[0]).map(r => {
       const flagged = isLateCheckout(r) || isShortVisit(r);
       return {
         name: r[0], date: r[1], checkin: r[2], checkout: r[3], spent: r[4], channel: r[5], store: r[7], region: REP_REGION[r[0]] || 'Unassigned',
@@ -1483,7 +1811,7 @@ class Component extends DCLogic {
       });
       a.unplanned += visits.length;
     }));
-    const diaryDaily = Object.keys(dayAgg).sort().filter(dt => dayAgg[dt].planned || dayAgg[dt].unplanned).map(dt => {
+    const diaryAll = Object.keys(dayAgg).sort((x, y) => ((x > todayIso) - (y > todayIso)) || (x > todayIso ? x.localeCompare(y) : y.localeCompare(x))).filter(dt => dayAgg[dt].planned || dayAgg[dt].unplanned).map(dt => {
       const v = dayAgg[dt];
       const future = dt > todayIso;
       const rate = v.planned ? v.completed / v.planned : 0;
@@ -1491,7 +1819,10 @@ class Component extends DCLogic {
       return {
         date: new Date(y, m - 1, dd).toLocaleDateString('en-ZA', { weekday: 'short', day: 'numeric', month: 'short' }),
         planned: v.planned, completed: future ? '—' : v.completed, unplanned: future ? '—' : v.unplanned,
+        offPct: future || !(v.completed + v.unplanned) ? '—' : fmtPct(v.unplanned / (v.completed + v.unplanned)),
         rate: future ? 'Upcoming' : fmtPct(rate),
+        _month: new Date(y, m - 1, 1).toLocaleDateString('en-ZA', { month: 'long', year: 'numeric' }),
+        _status: future ? 'Upcoming' : !v.planned ? 'No calls planned' : rate >= 1 ? 'Fully completed' : v.completed > 0 ? 'Partly completed' : 'Not completed',
         rowStyle: `border-top:1px solid #F1F3F7;${future ? ' color:#A4AEBD;' : ''}`,
         barStyle: `height:100%; width:${future ? 0 : (rate * 100).toFixed(1)}%; background:${rate >= 0.8 ? '#2FA860' : LIME}; border-radius:5px;`,
       };
@@ -1501,6 +1832,31 @@ class Component extends DCLogic {
     const totDone = pastDays.reduce((a, dt) => a + dayAgg[dt].completed, 0);
     const diaryTotals = { planned: fmtNum(totPlanned), completed: fmtNum(totDone), rate: totPlanned ? fmtPct(totDone / totPlanned) : '—' };
     const diaryPeriod = (s.callDiary && s.callDiary.period) || '';
+    const totOff = pastDays.reduce((a, dt) => a + dayAgg[dt].unplanned, 0);
+    diaryTotals.offPct = (totDone + totOff) ? fmtPct(totOff / (totDone + totOff)) : '—';
+    // Per-rep diary vs all attendance (unfiltered) for the Blitz Call Diary tab.
+    // Off-diary = visits to date that don't match a planned store that day.
+    const repVisitsByDate = {}, repVisitTotals = {};
+    d.attendance.forEach(r => {
+      const iso = toISO(r[1]);
+      if (!iso || iso > todayIso) return;
+      (repVisitsByDate[r[0] + '|' + iso] = repVisitsByDate[r[0] + '|' + iso] || []).push(diaryKey(r[7]));
+      repVisitTotals[r[0]] = (repVisitTotals[r[0]] || 0) + 1;
+    });
+    const repDiaryStats = {};
+    ((s.callDiary && s.callDiary.reps) || []).forEach(rep => {
+      const st = repDiaryStats[rep.rep] = { planned: 0, completed: 0, visits: repVisitTotals[rep.rep] || 0, off: 0 };
+      rep.days.forEach(day => {
+        if (day.date > todayIso) return;
+        const visits = (repVisitsByDate[rep.rep + '|' + day.date] || []).slice();
+        st.planned += day.stores.length;
+        day.stores.map(diaryKey).forEach(p => {
+          const i = visits.findIndex(v => diaryMatch(p, v));
+          if (i >= 0) { st.completed++; visits.splice(i, 1); }
+        });
+      });
+      st.off = Math.max(0, st.visits - st.completed);
+    });
 
     // ================= BLITZ =================
     // Real call diary vs actual 2026 attendance data exists for 7 of 9 reps
@@ -1514,9 +1870,12 @@ class Component extends DCLogic {
     const expandedBlitzRep = this.state.expandedBlitzRep;
     const blitzMembers = REP_NAMES.filter(n => !selectedSet || selectedSet.has(n)).map((name, i) => {
       const real = blitzReal[name];
-      const hasCoverage = real && real.planned != null;
-      const planned = hasCoverage ? real.planned : null;
-      const completed = hasCoverage ? real.completed : null;
+      const ds = repDiaryStats[name];
+      const useDs = !!(ds && ds.planned);
+      const hasCoverage = useDs || !!(real && real.planned != null);
+      const planned = useDs ? ds.planned : (hasCoverage ? real.planned : null);
+      const completed = useDs ? ds.completed : (hasCoverage ? real.completed : null);
+      const offPct = ds && ds.visits ? ds.off / ds.visits : null;
       const totalVisits = real ? real.totalVisits : null;
       const flags = real ? real.flags : null;
       const rate = hasCoverage && planned ? completed / planned : null;
@@ -1531,6 +1890,10 @@ class Component extends DCLogic {
         sourceTag: hasCoverage ? 'REAL — diary vs attendance' : (real ? 'REAL attendance — no diary yet' : 'NO DATA'),
         sourceTagStyle: `font-size:9.5px; font-weight:800; letter-spacing:.03em; text-transform:uppercase; padding:2px 7px; border-radius:999px; background:${hasCoverage ? '#E6F6EC' : real ? '#FFF6E0' : '#F1F0FF'}; color:${hasCoverage ? '#1E8A4C' : real ? '#8A6A00' : '#6C4CC4'};`,
         rate: rate == null ? '—' : fmtPct(rate),
+        offDiary: offPct == null ? '—' : `${fmtPct(offPct)} (${ds.off}/${ds.visits})`,
+        offDiaryCount: offPct == null ? 0 : ds.off,
+        offDiaryVisits: offPct == null ? 0 : ds.visits,
+        offDiaryStyle: `font-size:11px; font-weight:700; color:${offPct == null ? '#8592A6' : offPct <= 0.2 ? '#1E8A4C' : offPct <= 0.4 ? '#B8860B' : '#C0392B'};`,
         rateStyle: `font-size:11px; font-weight:700; color:${rate == null ? '#8592A6' : rate >= 0.8 ? '#1E8A4C' : rate >= 0.6 ? '#B8860B' : '#C0392B'};`,
         barStyle: `height:100%; width:${rate == null ? 0 : (rate * 100).toFixed(1)}%; background:${rate >= 0.8 ? '#2FA860' : LIME}; border-radius:6px;`,
         hasFlags: !!flags,
@@ -1805,7 +2168,36 @@ class Component extends DCLogic {
     const monthSort = (a, b) => { const k = (x) => { const m = String(x).match(/^(\w+) (\d{4})$/); return m ? m[2] + String(MONTHS_LONG.indexOf(m[1])).padStart(2, '0') : 'z'; }; return k(a) < k(b) ? -1 : 1; };
     const spSources = ['All', ...[...new Set(d.stockPricing.map(r => srcOf(r[21], r[20])))].sort(monthSort)];
     if (cf.source && cf.source !== 'All') stockPricingFiltered = stockPricingFiltered.filter(r => srcOf(r[21], r[20]) === cf.source);
-    const stockPricingRows = stockPricingFiltered.slice(0, 300).map(r => ({
+    const mkColTable = (rows, cols, fKey, pKey) => {
+      const BL = '(Blank)';
+      const val = (r, c) => { const v = c.get(r); return v == null || String(v).trim() === '' ? BL : String(v).trim(); };
+      const F = s[fKey] || {}; const on = (k) => F[k] && F[k] !== 'All';
+      const filtered = rows.filter(r => cols.every(c => !on(c.k) || val(r, c) === F[c.k]));
+      const selBase = 'width:100%; min-width:80px; max-width:180px; border-radius:6px; padding:4px 6px; font-size:11px; font-weight:500; background:#fff; cursor:pointer;';
+      const filters = cols.map(c => {
+        const pool = cols.some(c2 => c2.k !== c.k && on(c2.k)) ? rows.filter(r => cols.every(c2 => c2.k === c.k || !on(c2.k) || val(r, c2) === F[c2.k])) : rows;
+        const vals = [...new Set(pool.map(r => val(r, c)))].sort((a, b) => { const x = parseFloat(a), y = parseFloat(b); return !isNaN(x) && !isNaN(y) && a !== BL && b !== BL && !c.text ? x - y : a.localeCompare(b); });
+        return { label: 'Filter ' + c.label, value: F[c.k] || 'All',
+          options: [{ v: 'All', label: 'All' }, ...vals.map(v => ({ v, label: c.money && v !== BL ? fmtR(+v) : v }))],
+          style: selBase + (on(c.k) ? 'border:1px solid #0A5EEA; color:#0A5EEA;' : 'border:1px solid #E4E9F0; color:#0B1B3A;'),
+          onChange: (e) => { const v = e.target.value; this.setState(st => ({ [fKey]: { ...(st[fKey] || {}), [c.k]: v }, [pKey]: 0 })); } };
+      });
+      const btn = (cur, dis) => `min-width:30px; border-radius:6px; padding:5px 9px; font-size:11.5px; font-weight:700; cursor:${dis ? 'default' : 'pointer'}; opacity:${dis && !cur ? 0.4 : 1}; border:1px solid ${cur ? '#0A5EEA' : '#E4E9F0'}; background:${cur ? '#0A5EEA' : '#fff'}; color:${cur ? '#fff' : '#0B1B3A'};`;
+      const total = filtered.length, pages = Math.max(1, Math.ceil(total / 30)), page = Math.min(s[pKey] || 0, pages - 1);
+      const go = (p) => this.setState({ [pKey]: Math.max(0, Math.min(pages - 1, p)) });
+      const lo = Math.max(0, Math.min(page - 3, pages - 7)), buttons = [];
+      for (let p = lo; p < Math.min(pages, lo + 7); p++) buttons.push({ label: String(p + 1), disabled: p === page, style: btn(p === page, p === page), onClick: () => go(p) });
+      const start = page * 30;
+      return { filtered, filters, pageRows: filtered.slice(start, start + 30), buttons,
+        label: total ? `Rows ${start + 1}–${Math.min(start + 30, total)} of ${total.toLocaleString()} · Page ${page + 1} of ${pages}` : 'No rows match these filters',
+        hasFilters: cols.some(c => on(c.k)), clear: () => this.setState({ [fKey]: {}, [pKey]: 0 }),
+        prev: () => go(page - 1), prevDisabled: page === 0, prevStyle: btn(false, page === 0),
+        next: () => go(page + 1), nextDisabled: page >= pages - 1, nextStyle: btn(false, page >= pages - 1) };
+    };
+    const SP_COLS = [['date', 'Date', r => r[20], 1], ['month', 'Month', r => srcOf(r[21], r[20]), 1], ['blitz', 'Blitz', r => r[0]], ['channel', 'Channel', r => r[1]], ['store', 'Store', r => r[3]], ['region', 'Region', r => r[4]], ['category', 'Category', r => r[5]], ['sku', 'SKU', r => r[6], 1], ['avail', 'Available', r => r[22]], ['prrp', 'Philips RRP', r => r[7], 0, 1], ['srrp', 'Store RRP', r => r[8], 0, 1], ['promo', 'Promo Price', r => r[9], 0, 1], ['onpromo', 'On Promo', r => r[10]], ['status', 'SKU Status', r => r[11]], ['listed', 'Listed', r => r[12]], ['mdq', 'MDQ', r => r[14]], ['soh', 'Total SOH', r => r[15]], ['shelf', 'On Shelf', r => r[16]], ['dmg', 'Damages', r => r[17]], ['ret', 'Returns', r => r[18]], ['restock', 'Restock?', r => r[19]]].map(([k, label, get, text, money]) => ({ k, label, get, text: !!text, money: !!money }));
+    const spT = mkColTable(stockPricingFiltered, SP_COLS, 'spCol', 'spPage');
+    stockPricingFiltered = spT.filtered;
+    const stockPricingRows = spT.pageRows.map(r => ({
       blitz: r[0], channel: r[1], storeCode: r[2], storeName: r[3], region: r[4], category: r[5], sku: r[6],
       philipsRRP: r[7] != null ? fmtR(r[7]) : '—', storeRRP: r[8] != null ? fmtR(r[8]) : '—', promoPrice: r[9] != null ? fmtR(r[9]) : '—',
       onPromo: r[10] || '—', skuStatus: r[11] || '—', listed: r[12] || '—', mdq: r[14] != null ? fmtNum(r[14]) : '—',
@@ -1826,12 +2218,106 @@ class Component extends DCLogic {
     if (cf.channel && cf.channel !== 'All') competitorFiltered = competitorFiltered.filter(r => r[1] === cf.channel);
     if (cf.region && cf.region !== 'All') competitorFiltered = competitorFiltered.filter(r => r[4] === cf.region);
     if (cf.category && cf.category !== 'All') competitorFiltered = competitorFiltered.filter(r => r[5] === cf.category);
-    const competitorRows = competitorFiltered.slice(0, 300).map(r => ({
+    // Per-column filters: each dropdown lists the values left after the other column filters.
+    const CF_COLS = [[1, 'Channel'], [5, 'Category'], [13, 'Philips SKU'], [14, 'Philips Price'], [6, 'Competitor'], [7, 'Competitor SKU'], [8, 'Position'], [9, 'Competitor Price']];
+    const CF_BLANK = '(Blank)';
+    const cfVal = (r, i) => (r[i] == null || String(r[i]).trim() === '' ? CF_BLANK : String(r[i]).trim());
+    const colF = s.cfCol || {};
+    const colOn = (i) => colF[i] && colF[i] !== 'All';
+    const cfPreCol = competitorFiltered;
+    competitorFiltered = cfPreCol.filter(r => CF_COLS.every(([i]) => !colOn(i) || cfVal(r, i) === colF[i]));
+    const cfSelBase = 'width:100%; min-width:80px; max-width:180px; border-radius:6px; padding:4px 6px; font-size:11px; font-weight:500; background:#fff; cursor:pointer;';
+    const cfColFilters = CF_COLS.map(([i, label]) => {
+      const pool = cfPreCol.filter(r => CF_COLS.every(([j]) => j === i || !colOn(j) || cfVal(r, j) === colF[j]));
+      const vals = [...new Set(pool.map(r => cfVal(r, i)))].sort((a, b) => {
+        const x = parseFloat(a), y = parseFloat(b);
+        return !isNaN(x) && !isNaN(y) && a !== CF_BLANK && b !== CF_BLANK ? x - y : a.localeCompare(b);
+      });
+      const money = i === 9 || i === 14;
+      return {
+        label: 'Filter ' + label,
+        value: colF[i] || 'All',
+        options: [{ v: 'All', label: 'All' }, ...vals.map(v => ({ v, label: money && v !== CF_BLANK ? fmtR(+v) : v }))],
+        style: cfSelBase + (colOn(i) ? 'border:1px solid #0A5EEA; color:#0A5EEA;' : 'border:1px solid #E4E9F0; color:#0B1B3A;'),
+        onChange: (e) => { const v = e.target.value; this.setState(st => ({ cfCol: { ...(st.cfCol || {}), [i]: v }, cfPage: 0 })); },
+      };
+    });
+    const CF_PAGE = 30;
+    const cfPages = Math.max(1, Math.ceil(competitorFiltered.length / CF_PAGE));
+    const cfPage = Math.min(s.cfPage || 0, cfPages - 1);
+    const cfGo = (p) => this.setState({ cfPage: Math.max(0, Math.min(cfPages - 1, p)) });
+    const cfBtn = (on, disabled) => `min-width:30px; border-radius:6px; padding:5px 9px; font-size:11.5px; font-weight:700; cursor:${disabled ? 'default' : 'pointer'}; opacity:${disabled && !on ? 0.4 : 1}; border:1px solid ${on ? '#0A5EEA' : '#E4E9F0'}; background:${on ? '#0A5EEA' : '#fff'}; color:${on ? '#fff' : '#0B1B3A'};`;
+    const mkPager = (key, total) => {
+      const pages = Math.max(1, Math.ceil(total / 30));
+      const page = Math.min(s[key] || 0, pages - 1);
+      const go = (p) => this.setState({ [key]: Math.max(0, Math.min(pages - 1, p)) });
+      const lo = Math.max(0, Math.min(page - 3, pages - 7));
+      const buttons = [];
+      for (let p = lo; p < Math.min(pages, lo + 7); p++) buttons.push({ label: String(p + 1), disabled: p === page, style: cfBtn(p === page, p === page), onClick: () => go(p) });
+      const start = page * 30;
+      return { start, buttons,
+        label: total ? `Rows ${start + 1}–${Math.min(start + 30, total)} of ${total} · Page ${page + 1} of ${pages}` : 'No rows match these filters',
+        prev: () => go(page - 1), prevDisabled: page === 0, prevStyle: cfBtn(false, page === 0),
+        next: () => go(page + 1), nextDisabled: page >= pages - 1, nextStyle: cfBtn(false, page >= pages - 1) };
+    };
+    const attPg = mkPager('attPage', attendanceAll.length);
+    const attendanceRows = attendanceAll.slice(attPg.start, attPg.start + 30);
+    const dySel = (on) => 'border-radius:6px; padding:5px 8px; font-size:11.5px; font-weight:500; background:#fff; cursor:pointer; ' + (on ? 'border:1px solid #0A5EEA; color:#0A5EEA;' : 'border:1px solid #E4E9F0; color:#0B1B3A;');
+    const dyMonth = s.dyMonth || 'All', dyStatus = s.dyStatus || 'All';
+    const dyMonths = [...new Set(diaryAll.map(r => r._month))];
+    const diaryFiltered = diaryAll.filter(r => (dyMonth === 'All' || r._month === dyMonth) && (dyStatus === 'All' || r._status === dyStatus));
+    const dyPg = mkPager('dyPage', diaryFiltered.length);
+    const diaryDaily = diaryFiltered.slice(dyPg.start, dyPg.start + 30);
+    const pgUi = {
+      attPg, dyPg,
+      dyMonthValue: dyMonth, dyMonthOptions: ['All', ...dyMonths].map(v => ({ v, label: v === 'All' ? 'All months' : v })), dyMonthStyle: dySel(dyMonth !== 'All'),
+      dyStatusValue: dyStatus, dyStatusOptions: ['All', 'Fully completed', 'Partly completed', 'Not completed', 'Upcoming'].map(v => ({ v, label: v === 'All' ? 'All statuses' : v })), dyStatusStyle: dySel(dyStatus !== 'All'),
+      dyOnMonth: (e) => this.setState({ dyMonth: e.target.value, dyPage: 0 }),
+      dyOnStatus: (e) => this.setState({ dyStatus: e.target.value, dyPage: 0 }),
+      dyHasFilters: dyMonth !== 'All' || dyStatus !== 'All',
+      dyClear: () => this.setState({ dyMonth: 'All', dyStatus: 'All', dyPage: 0 }),
+    };
+    const cfLo = Math.max(0, Math.min(cfPage - 3, cfPages - 7));
+    const cfPageButtons = [];
+    for (let p = cfLo; p < Math.min(cfPages, cfLo + 7); p++) cfPageButtons.push({ label: String(p + 1), disabled: p === cfPage, style: cfBtn(p === cfPage, p === cfPage), onClick: () => cfGo(p) });
+    const cfStart = cfPage * CF_PAGE;
+    const competitorRows = competitorFiltered.slice(cfStart, cfStart + CF_PAGE).map(r => ({
       blitz: r[0], channel: r[1], storeCode: r[2], storeName: r[3], region: r[4], category: r[5],
       competitor: r[6], competitorSku: r[7], skuStatus: r[8] || '—',
-      competitorPrice: r[9] != null ? fmtR(r[9]) : '—', onPromo: r[10] || '—', totalSoh: r[11] != null ? fmtNum(r[11]) : '—',
-      philipsSku: r[13], philipsPrice: r[14] != null ? fmtR(r[14]) : '—',
+      competitorPrice: r[9] != null && r[9] !== '' ? fmtR(r[9]) : '—', onPromo: r[10] || '—', totalSoh: r[11] != null && r[11] !== '' ? fmtNum(r[11]) : '—',
+      philipsSku: r[13], philipsPrice: r[14] != null && r[14] !== '' ? fmtR(r[14]) : '—',
+      ...(() => { const p = +r[14], c = +r[9]; if (!p || !c) return { gap: '—', gapStyle: 'color:#8592A6;' };
+        const d = p - c, pct = Math.round(Math.abs(d) / c * 100);
+        if (d === 0) return { gap: 'Same price', gapStyle: 'color:#4A5872; font-weight:600;' };
+        return d > 0 ? { gap: fmtR(d) + ' higher (' + pct + '%)', gapStyle: 'display:inline-block; padding:3px 8px; border-radius:999px; background:#FDECEC; color:#B42318; font-weight:700; font-size:11px;' }
+                     : { gap: fmtR(-d) + ' lower (' + pct + '%)', gapStyle: 'display:inline-block; padding:3px 8px; border-radius:999px; background:#E7F6EE; color:#067647; font-weight:700; font-size:11px;' }; })(),
     }));
+    const cfUi = {
+      cfColFilters, cfPageButtons,
+      cfHasColFilters: CF_COLS.some(([i]) => colOn(i)),
+      cfClearCols: () => this.setState({ cfCol: {}, cfPage: 0 }),
+      cfRangeLabel: competitorFiltered.length ? `Rows ${cfStart + 1}–${Math.min(cfStart + CF_PAGE, competitorFiltered.length)} of ${competitorFiltered.length} · Page ${cfPage + 1} of ${cfPages}` : 'No matching rows',
+      cfPrev: () => cfGo(cfPage - 1), cfPrevDisabled: cfPage === 0, cfPrevStyle: cfBtn(false, cfPage === 0),
+      cfNext: () => cfGo(cfPage + 1), cfNextDisabled: cfPage >= cfPages - 1, cfNextStyle: cfBtn(false, cfPage >= cfPages - 1),
+      cpStore: (s.compPhotoForm || {}).store || '',
+      cpCompetitor: (s.compPhotoForm || {}).competitor || '',
+      cpNote: (s.compPhotoForm || {}).note || '',
+      cpOnStore: (e) => { const v = e.target.value; this.setState(st => ({ compPhotoForm: { ...st.compPhotoForm, store: v } })); },
+      cpOnCompetitor: (e) => { const v = e.target.value; this.setState(st => ({ compPhotoForm: { ...st.compPhotoForm, competitor: v } })); },
+      cpOnNote: (e) => { const v = e.target.value; this.setState(st => ({ compPhotoForm: { ...st.compPhotoForm, note: v } })); },
+      cpUpload: (e) => this.handleCompPhotoUpload(e),
+      cpBusy: s.compPhotoBusy || null,
+      cpHasPhotos: ((d.competitorPhotos || []).length + (s.compPhotos || []).length) > 0,
+      cpEmpty: !((d.competitorPhotos || []).length + (s.compPhotos || []).length) && !s.compPhotoBusy,
+      cpCards: [...(s.compPhotos || []), ...(d.competitorPhotos || [])].map(p => ({
+        src: p.file || ('/api/report-photos?tenant=PH-201&id=' + encodeURIComponent(p.id)),
+        alt: [p.competitor, p.store].filter(Boolean).join(' at ') || 'Competitor activity photo',
+        competitor: p.competitor || 'Competitor not specified',
+        store: p.store || '—',
+        note: p.note || '',
+        date: p.date ? p.date : p.uploadedAt ? new Date(p.uploadedAt).toLocaleDateString('en-ZA', { day: 'numeric', month: 'short', year: 'numeric' }) : '',
+      })),
+    };
 
     // ================= EXECUTION (IMAGE REPORT) =================
     // 0 blitz,1 channel,2 storeCode,3 storeName,4 region,5 category,
@@ -1840,14 +2326,61 @@ class Component extends DCLogic {
     const erChannels = ['All', ...new Set(d.executionReport.map(r => r[1]))].filter(Boolean);
     const erRegions = ['All', ...new Set(d.executionReport.map(r => r[4]))].filter(Boolean);
     const erAreas = ['All', ...new Set(d.executionReport.map(r => r[7]))].filter(Boolean);
-    if (cf.channel && cf.channel !== 'All') executionFiltered = executionFiltered.filter(r => r[1] === cf.channel);
-    if (cf.region && cf.region !== 'All') executionFiltered = executionFiltered.filter(r => r[4] === cf.region);
-    if (cf.area && cf.area !== 'All') executionFiltered = executionFiltered.filter(r => r[7] === cf.area);
+    const tf = s.execTF || {};
+    const uniq = (arr) => ['All', ...[...new Set(arr.filter(Boolean))].sort()];
+    const setTF = (k) => (e) => { const v = e.target.value; this.setState(st => ({ execTF: { ...(st.execTF || {}), [k]: v } })); };
+    const tfCols = { blitz: 0, channel: 1, store: 3, region: 4, category: 5, area: 7, result: 12 };
+    for (const [k, i] of Object.entries(tfCols)) if (tf[k] && tf[k] !== 'All') executionFiltered = executionFiltered.filter(r => r[i] === tf[k]);
     const erSources = ['All', ...[...new Set(d.executionReport.map(r => srcOf(r[11], r[10])))].sort(monthSort)];
-    if (cf.source && cf.source !== 'All') executionFiltered = executionFiltered.filter(r => srcOf(r[11], r[10]) === cf.source);
-    const executionRows = executionFiltered.slice(0, 300).map(r => ({
+    if (tf.month && tf.month !== 'All') executionFiltered = executionFiltered.filter(r => srcOf(r[11], r[10]) === tf.month);
+    const ER = d.executionReport;
+    const execTableFilters = [
+      { label: 'Blitz', key: 'blitz', options: uniq(ER.map(r => r[0])) },
+      { label: 'Channel', key: 'channel', options: uniq(ER.map(r => r[1])) },
+      { label: 'Store', key: 'store', options: uniq(ER.map(r => r[3])) },
+      { label: 'Region', key: 'region', options: uniq(ER.map(r => r[4])) },
+      { label: 'Category', key: 'category', options: uniq(ER.map(r => r[5])) },
+      { label: 'Display Area', key: 'area', options: uniq(ER.map(r => r[7])) },
+      { label: 'Result', key: 'result', options: uniq(ER.map(r => r[12])) },
+      { label: 'Month', key: 'month', options: erSources },
+    ].map(f => ({ ...f, value: tf[f.key] || 'All', onChange: setTF(f.key) }));
+    const fmtDay = (iso) => { if (!iso) return 'Date TBC'; const [y, m, dd] = String(iso).split('-'); return +dd + ' ' + ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][+m - 1] + ' ' + y; };
+    const allPhotos = (d.executionPhotos || []);
+    const pf = s.execPF || {};
+    const setPF = (k) => (e) => { const v = e.target.value; this.setState(st => ({ execShow: 12, execPF: { ...(st.execPF || {}), [k]: v } })); };
+    let execPhotos = allPhotos;
+    const repOf = (p) => p.type === 'Training' ? 'Trainer: ' + (p.trainer || 'TBC') : p.rep || ((!p.storeName || p.storeName === 'TBC') ? 'TBC' : 'Rep to confirm');
+    if (pf.channel && pf.channel !== 'All') execPhotos = execPhotos.filter(p => (p.channel || 'TBC') === pf.channel);
+    if (pf.blitz && pf.blitz !== 'All') execPhotos = execPhotos.filter(p => repOf(p) === pf.blitz);
+    if (pf.date && pf.date !== 'All') execPhotos = execPhotos.filter(p => fmtDay(p.date) === pf.date);
+    if (pf.ptype && pf.ptype !== 'All') execPhotos = execPhotos.filter(p => (p.type || 'Execution') === pf.ptype);
+    if (pf.trainer && pf.trainer !== 'All') execPhotos = execPhotos.filter(p => p.type === 'Training' && (p.trainer || 'TBC') === pf.trainer);
+    if (pf.area && pf.area !== 'All') execPhotos = execPhotos.filter(p => p.displayArea === pf.area);
+    const statusOf = (p) => (!p.storeName || p.storeName === 'TBC') ? 'TBC' : (p.confirm ? 'To confirm' : 'Matched');
+    if (pf.status && pf.status !== 'All') execPhotos = execPhotos.filter(p => statusOf(p) === pf.status);
+    const execPhotoFilters = [
+      { label: 'Photo Type', key: 'ptype', options: ['All', 'Execution', 'Training'] },
+      { label: 'Trainer', key: 'trainer', options: uniq(allPhotos.filter(p => p.type === 'Training').map(p => p.trainer || 'TBC')) },
+      { label: 'Match Status', key: 'status', options: ['All', 'Matched', 'To confirm', 'TBC'] },
+      { label: 'Channel', key: 'channel', options: uniq(allPhotos.map(p => p.channel || 'TBC')) },
+      { label: 'Blitz', key: 'blitz', options: uniq(allPhotos.map(repOf)) },
+      { label: 'Date', key: 'date', options: ['All', ...[...new Set([...allPhotos].sort((a, b) => (b.date || '0').localeCompare(a.date || '0')).map(p => fmtDay(p.date)))]] },
+      { label: 'Display Type', key: 'area', options: uniq(allPhotos.map(p => p.displayArea)) },
+    ].map(f => ({ ...f, value: pf[f.key] || 'All', onChange: setPF(f.key) }));
+    const _fmtDayOld = (iso) => { const [y, m, dd] = String(iso).split('-'); return +dd + ' ' + ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][+m - 1] + ' ' + y; };
+    const execPhotoCards = [...execPhotos].sort((a, b) => (b.date + b.time).localeCompare(a.date + a.time)).map(p => ({
+      ...p, storeName: p.storeName || 'TBC', channel: p.channel || 'TBC', region: p.region || 'TBC', displayArea: p.displayArea || 'TBC', category: p.category || 'TBC',
+      when: fmtDay(p.date) + (p.time ? ' · ' + p.time : ''), codeLabel: p.storeCode || 'No code', repLabel: repOf(p),
+      hasConfirm: statusOf(p) !== 'Matched' || p.type === 'Training', confirmLabel: p.type === 'Training' ? ('Training by ' + (p.trainer || 'TBC') + (statusOf(p) === 'TBC' ? ' · store TBC' : '') + (p.date ? '' : ' · no date stamp')) : statusOf(p) === 'TBC' ? 'TBC — no store found in photo' : 'Confirm: ' + p.confirm,
+      open: () => this.setState({ execOpen: p }),
+    }));
+    const eo = s.execOpen;
+    const EX_COLS = [['date', 'Date', r => r[10], 1], ['month', 'Month', r => srcOf(r[11], r[10]), 1], ['blitz', 'Blitz', r => r[0]], ['channel', 'Channel', r => r[1]], ['store', 'Store', r => r[3]], ['region', 'Region', r => r[4]], ['category', 'Category', r => r[5]], ['area', 'Display Area', r => r[7]], ['result', 'Result', r => r[12]], ['sku', 'SKU', r => r[8], 1]].map(([k, label, get, text]) => ({ k, label, get, text: !!text }));
+    const exT = mkColTable(executionFiltered, EX_COLS, 'exCol', 'exPage');
+    executionFiltered = exT.filtered;
+    const executionRows = exT.pageRows.map(r => ({
       blitz: r[0], channel: r[1], storeCode: r[2], storeName: r[3], region: r[4], category: r[5],
-      beforeImage: r[6], displayArea: r[7], sku: r[8], afterImage: r[9],
+      beforeImage: r[6], displayArea: r[7], sku: r[8], afterImage: String(r[9] || '').startsWith('assets/execution/') ? 'Photo ✓' : r[9],
       hasBefore: !!r[6], hasAfter: !!r[9],
       date: r[10] || '—', source: srcOf(r[11], r[10]), result: r[12] || '—',
       sourceStyle: 'font-size:10px; font-weight:700; padding:2px 7px; border-radius:999px; white-space:nowrap; background:#EEF3FF; color:#0A5EEA;',
@@ -1932,12 +2465,7 @@ class Component extends DCLogic {
         { label: 'Category', value: cf.category || 'All', options: cfCategories, onChange: (e) => this.setCrossFilter('competitorFeedback', 'category', e.target.value) },
       ];
     } else if (active === 'executionReport') {
-      crossFilters = [
-        { label: 'Channel', value: cf.channel || 'All', options: erChannels, onChange: (e) => this.setCrossFilter('executionReport', 'channel', e.target.value) },
-        { label: 'Region', value: cf.region || 'All', options: erRegions, onChange: (e) => this.setCrossFilter('executionReport', 'region', e.target.value) },
-        { label: 'Display Area', value: cf.area || 'All', options: erAreas, onChange: (e) => this.setCrossFilter('executionReport', 'area', e.target.value) },
-        { label: 'Month', value: cf.source || 'All', options: erSources, onChange: (e) => this.setCrossFilter('executionReport', 'source', e.target.value) },
-      ];
+      crossFilters = [];
     }
 
     // ================= KPIs per section =================
@@ -1964,6 +2492,7 @@ class Component extends DCLogic {
         { label: 'Planned Calls', value: fmtNum(totalPlanned), delta: '', deltaStyle: '' },
         { label: 'Completed Calls', value: fmtNum(totalCompleted), delta: '', deltaStyle: '' },
         { label: 'Completion Rate', value: fmtPct(totalPlanned ? totalCompleted / totalPlanned : 0), delta: '', deltaStyle: '' },
+        { label: 'Off-Diary Visits', value: (() => { const o = blitzMembers.reduce((a, m) => a + m.offDiaryCount, 0), v = blitzMembers.reduce((a, m) => a + m.offDiaryVisits, 0); return v ? fmtPct(o / v) : '—'; })(), delta: '', deltaStyle: '' },
         { label: 'Reps with Attendance Data', value: realCount + ' / ' + blitzMembers.length, delta: '', deltaStyle: '' },
         { label: 'Reps with Full Coverage %', value: coverageCount + ' / ' + blitzMembers.length, delta: '', deltaStyle: '' },
       ];
@@ -2010,7 +2539,7 @@ class Component extends DCLogic {
     } else if (active === 'competitorFeedback') {
       kpis = [
         { label: 'Comparisons Logged', value: fmtNum(competitorFiltered.length), delta: '', deltaStyle: '' },
-        { label: 'Stores Covered', value: fmtNum(new Set(competitorFiltered.map(r => r[2])).size), delta: '', deltaStyle: '' },
+        { label: 'Stores Covered', value: fmtNum(new Set(competitorFiltered.map(r => r[2] || r[3])).size), delta: '', deltaStyle: '' },
         { label: 'Competitors Tracked', value: fmtNum(new Set(competitorFiltered.map(r => r[6])).size), delta: '', deltaStyle: '' },
       ];
     } else if (active === 'executionReport') {
@@ -2018,6 +2547,7 @@ class Component extends DCLogic {
         { label: 'Execution Rows Logged', value: fmtNum(executionFiltered.length), delta: '', deltaStyle: '' },
         { label: 'Stores Covered', value: fmtNum(new Set(executionFiltered.map(r => r[2] || r[3])).size), delta: '', deltaStyle: '' },
         { label: 'Display Areas Tracked', value: fmtNum(new Set(executionFiltered.map(r => r[7])).size), delta: '', deltaStyle: '' },
+        { label: 'Photos Matched', value: fmtNum(execPhotoCards.length), delta: '', deltaStyle: '' },
       ];
     }
 
@@ -2037,6 +2567,7 @@ class Component extends DCLogic {
     };
 
     return {
+      ...cfUi,
       sections,
       subFilterLabel: subFilterLabelMap[active],
       subFilterOptions,
@@ -2083,7 +2614,8 @@ class Component extends DCLogic {
       attendanceRows,
       attendanceTrends,
       diaryDaily,
-      diaryHasDays: diaryDaily.length > 0,
+      diaryHasDays: diaryAll.length > 0,
+      ...pgUi,
       diaryPeriod,
       diaryTotals,
       blitzMembers,
@@ -2101,8 +2633,26 @@ class Component extends DCLogic {
       hasCompetitorRows: competitorRows.length > 0,
       competitorFilteredCount: competitorFiltered.length,
       executionRows,
+      execPhotoCards: execPhotoCards.slice(0, s.execShow || 12),
+      execHasMorePhotos: execPhotoCards.length > (s.execShow || 12),
+      execMoreLabel: 'Show more photos (' + Math.min(execPhotoCards.length, s.execShow || 12) + ' of ' + execPhotoCards.length + ')',
+      execShowMore: () => this.setState(st => ({ execShow: (st.execShow || 12) + 12 })),
+      execPhotoFilters,
+      execTableFilters,
+      execHasPhotoMatches: execPhotoCards.length > 0,
+      execNoPhotoMatches: allPhotos.length > 0 && execPhotoCards.length === 0,
+      execPhotoTotal: allPhotos.length,
+      hasExecPhotos: allPhotos.length > 0,
+      execPhotoCount: execPhotoCards.length,
+      execOpen: !!eo,
+      execOpenSrc: eo ? eo.file : '',
+      execOpenTitle: eo ? eo.storeName + ' · ' + eo.displayArea : '',
+      execOpenMeta: eo ? fmtDay(eo.date) + (eo.time ? ' ' + eo.time : '') + ' · ' + (eo.storeCode || 'No code') + ' · ' + (eo.type === 'Training' ? 'Trainer: ' + (eo.trainer || 'TBC') : (eo.rep || 'Rep to confirm')) + (eo.address ? ' · ' + eo.address : '') : '',
+      closeExec: () => this.setState({ execOpen: null }),
+      stopProp: (e) => e.stopPropagation(),
       hasExecutionRows: executionRows.length > 0,
       executionFilteredCount: executionFiltered.length,
+      spT, exT,
       salesRows,
       salesByChannel,
       salesFilteredCount: salesFiltered.length,
@@ -2118,6 +2668,7 @@ class Component extends DCLogic {
       tdStyleRight: 'padding:10px 14px; text-align:right; color:#3A4658; font-weight:600;',
       selectSection: (e) => this.selectSection(e),
       exportExcel: () => this.exportExcel(),
+      exportPdf: () => { const t = document.title; document.title = 'Philips PH Dashboard - ' + (this.state.activeSection || '') + ' - ' + new Date().toISOString().slice(0,10); window.print(); setTimeout(() => { document.title = t; }, 500); },
       importExcel: (e) => this.importExcel(e),
       resetFilters: () => this.resetFilters(),
       handlePhotoUpload: (e) => this.handlePhotoUpload(e),
