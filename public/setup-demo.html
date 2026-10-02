@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Philips – demo account setup</title>
+</head>
+<body style="font-family: Helvetica, Arial, sans-serif; background:#F3F5F8; margin:0; padding:40px 16px; color:#14181F;">
+  <div style="max-width:520px; margin:0 auto; background:#fff; border-radius:12px; padding:28px; box-shadow:0 1px 3px rgba(0,0,0,0.08);">
+    <h1 style="font-size:20px; margin:0 0 6px;">Philips demo account setup</h1>
+    <p style="font-size:14px; color:#5A6475; margin:0 0 20px;">Step 1 makes sure the Fleet demo login exists. Step 2 gives it every Philips store and re-applies the October allocation.</p>
+    <label style="font-size:13px; font-weight:600;">Admin code</label>
+    <input id="code" type="password" style="display:block; width:100%; box-sizing:border-box; padding:10px; margin:6px 0 18px; border:1px solid #D3DAE4; border-radius:8px; font-size:14px;">
+    <div style="display:flex; gap:10px; flex-wrap:wrap;">
+      <button id="b1" style="background:#0A5EEA; color:#fff; border:0; border-radius:8px; padding:10px 16px; font-size:14px; font-weight:600; cursor:pointer;">1. Create Fleet demo login</button>
+      <button id="b2" style="background:#0B1B3A; color:#fff; border:0; border-radius:8px; padding:10px 16px; font-size:14px; font-weight:600; cursor:pointer;">2. Give Fleet all stores</button>
+    </div>
+    <pre id="out" style="margin-top:20px; background:#F3F5F8; border-radius:8px; padding:12px; font-size:12px; white-space:pre-wrap; max-height:360px; overflow:auto;">Result will show here.</pre>
+  </div>
+<script>
+async function run(path) {
+  const out = document.getElementById('out');
+  out.textContent = 'Running…';
+  try {
+    const res = await fetch(path, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ code: document.getElementById('code').value.trim() }) });
+    const txt = await res.text();
+    let shown = txt; try { shown = JSON.stringify(JSON.parse(txt), null, 2); } catch (e) {}
+    out.textContent = 'HTTP ' + res.status + '\n' + shown;
+  } catch (e) { out.textContent = 'Error: ' + e.message; }
+}
+document.getElementById('b1').onclick = () => run('/api/admin-seed-test-rep');
+document.getElementById('b2').onclick = () => run('/api/admin-seed-philips-allocation');
+</script>
+</body>
+</html>
