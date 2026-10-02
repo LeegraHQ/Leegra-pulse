@@ -88,6 +88,11 @@ async function saveTenantSettings(tenantCode, settings) {
   await store.setJSON(tenantCode, settings);
 }
 
+// Jan–Sep 2026 Philips check-ins from the attendance report export, matched to
+// store codes by store ID. They only feed Last visit / Status on the store
+// list (see computeDashboard) — not completed counts or the leaderboard.
+const PH_SURVEY_HISTORY = require('../_philips-visit-history.json');
+
 async function getImportedVisits(tenantCode) {
   const store = blobsStore(`visits-history-${tenantCode}`);
   const { blobs } = await store.list();
@@ -114,7 +119,8 @@ async function getAllVisits(tenantCode) {
     checkin_at: v.checkin_at,
     checkout_at: v.checkout_at || null,
   }));
-  return [...imported, ...normalizedLive];
+  const extra = tenantCode === 'PH-201' ? PH_SURVEY_HISTORY : [];
+  return [...imported, ...normalizedLive, ...extra];
 }
 
 async function saveLiveVisit(tenantCode, visit) {
@@ -219,8 +225,11 @@ function computeDashboard(stores, visits) {
     if (!v.store_code) continue;
     const prev = lastVisitByStore[v.store_code];
     if (!prev || new Date(v.checkin_at) > new Date(prev)) lastVisitByStore[v.store_code] = v.checkin_at;
-    if (v.checkout_at) everCompletedStore.add(v.store_code);
+    if (v.checkout_at && v.source !== 'survey-report') everCompletedStore.add(v.store_code);
   }
+  // Survey-report history sets Last visit / Status only; counts stay app-only.
+  visits = visits.filter(v => v.source !== 'survey-report');
+  const lastAppVisitStores = new Set(visits.map(v => v.store_code).filter(Boolean));
 
   // A store that's had a completed visit stays "Done" — the recency decay
   // below (On track -> Pending -> Overdue) is only meaningful for a
@@ -242,7 +251,7 @@ function computeDashboard(stores, visits) {
     .map(({ _days, ...s }) => s);
 
   const totalStores = stores.length;
-  const visitedStoreCount = Object.keys(lastVisitByStore).length;
+  const visitedStoreCount = lastAppVisitStores.size;
   const completedVisits = visits.filter(v => v.checkout_at).length;
 
   const byRep = {};

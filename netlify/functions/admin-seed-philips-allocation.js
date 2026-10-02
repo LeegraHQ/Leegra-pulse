@@ -64,6 +64,21 @@ exports.handler = async (event) => {
     reps.push({ email: rep.email, name: rep.name, stores: users[idx].storeCodes.length, missing_from_store_list: rep.storeCodes.filter(c => !nameByCode[c]).length, unmatched_diary_entries: rep.unmatched.length });
   }
 
+  // Demo Blitz account (TEST_REP_EMAIL — the Fleet demo login) gets EVERY
+  // store, so a demo can check in anywhere and run all three surveys. The
+  // address stays in the env var: Netlify's secret scanner fails a build that
+  // has it as a literal.
+  const demoEmail = (process.env.TEST_REP_EMAIL || '').trim().toLowerCase();
+  let demo = { email: demoEmail || null, error: demoEmail ? null : 'TEST_REP_EMAIL not set' };
+  if (demoEmail) {
+    const di = users.findIndex(u => (u.email || '').toLowerCase() === demoEmail);
+    if (di < 0) demo.error = 'demo user not found on tenant — run admin-seed-test-rep first';
+    else {
+      users[di] = { ...users[di], storeCodes: stores.map(s => s.code), allocationSource: 'Demo: all stores', updatedAt: new Date().toISOString() };
+      demo = { email: demoEmail, stores: users[di].storeCodes.length };
+    }
+  }
+
   // Surveys run at EVERY store: an empty storeCodes list = all stores.
   const surveys = [];
   for (const q of questionnaires) {
@@ -83,6 +98,6 @@ exports.handler = async (event) => {
   return {
     statusCode: 200,
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ ok: true, tenant_code: tenantCode, period: ALLOC.period, stores_added_without_code: storesAdded, stores_total: stores.length, include_dischem: includeDischem, reps, surveys, surveys_missing: SURVEY_IDS.filter(id => !surveys.some(s => s.id === id)) }),
+    body: JSON.stringify({ ok: true, tenant_code: tenantCode, period: ALLOC.period, stores_added_without_code: storesAdded, stores_total: stores.length, include_dischem: includeDischem, reps, demo_account: demo, surveys, surveys_missing: SURVEY_IDS.filter(id => !surveys.some(s => s.id === id)) }),
   };
 };

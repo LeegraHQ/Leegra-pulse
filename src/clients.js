@@ -144,7 +144,7 @@ export const CLIENTS = [
 export const TENANT_DIRECTORY = CLIENTS.map(c => ({ code: c.code, name: c.name, logo: c.logo }));
 
 export const TRAINING_MATERIALS = [
-  { id: 'm1', title: 'Shelf Standards 101', type: 'Video', meta: '8 min' },
-  { id: 'm2', title: 'Q3 Product Launch briefing', type: 'PDF', meta: '6 pages' },
-  { id: 'm3', title: 'POS Placement Basics', type: 'Video', meta: '5 min' },
+  { id: 'm1', title: 'MCC 2026', type: 'PowerPoint', meta: 'Mother & Child Care', url: '/learning/MCC-2026.pptx' },
+  { id: 'm2', title: 'Male Grooming 2026', type: 'PowerPoint', meta: 'Male Grooming', url: '/learning/Male-Grooming-2026.pptx' },
+  { id: 'm3', title: 'Haircare 2026', type: 'PowerPoint', meta: 'Haircare', url: '/learning/Haircare-2026.pptx' },
 ];

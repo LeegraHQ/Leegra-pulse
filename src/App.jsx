@@ -1089,15 +1089,14 @@ export default function App() {
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
               <div className="lp-label" style={{ marginBottom: 0 }}>Leegra Learning — training material</div>
-              <button className="lp-btn" style={{ marginLeft: 'auto', fontSize: 12, color: 'var(--accent)' }}>+ Upload material</button>
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8 }}>
               {TRAINING_MATERIALS.map(m => (
-                <div key={m.id} className="lp-inner-card">
+                <a key={m.id} className="lp-inner-card" href={m.url} download style={{ textDecoration: 'none', color: 'inherit', display: 'block' }}>
                   <div className="lp-title" style={{ fontSize: 14 }}>{m.title}</div>
                   <div className="lp-meta">{m.type} · {m.meta}</div>
-                  <div className="lp-tag lp-tag-accent2">Assigned to all reps</div>
-                </div>
+                  <div className="lp-tag lp-tag-accent2">Download</div>
+                </a>
               ))}
             </div>
           </div>

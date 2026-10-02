@@ -67,7 +67,11 @@ exports.handler = async (event) => {
   }
 
   const tenantCode = SEED.tenantCode;
-  const storeCodes = (SEED.questionnaires[0]?.storeCodes || []);
+  // Surveys are now open to all stores (storeCodes empty), so fall back to the
+  // old explicit list; admin-seed-philips-allocation then widens the demo
+  // account to every store on the tenant.
+  const q0 = SEED.questionnaires[0] || {};
+  const storeCodes = (q0.storeCodes && q0.storeCodes.length ? q0.storeCodes : (q0.previousStoreCodes || []));
   if (!storeCodes.length) {
     return { statusCode: 500, body: JSON.stringify({ error: 'Survey seed carries no store list' }) };
   }
