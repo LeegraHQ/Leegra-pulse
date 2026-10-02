@@ -1371,6 +1371,24 @@ class Component extends DCLogic {
       fetch('legacy_cadence.json').then(r => (r.ok ? r.json() : null)).catch(() => null),
     ]).then(([sidecar, history, callDiary, legacy]) => {
       this.setState({ callDiary });
+      // Philips channel price list (Pricing per channel workbook): fills Philips
+      // RRP where a stock row has none. Keyed by channel, then SKU — exact code
+      // first, then the code without its /xx suffix.
+      {
+        const pp = (legacy && legacy.philipsPrices) || {};
+        const idx = {};
+        for (const ch of Object.keys(pp)) {
+          const m = {};
+          for (const [sku, p] of Object.entries(pp[ch])) { m[sku] = p; const base = sku.split('/')[0]; if (!(base in m)) m[base] = p; }
+          idx[ch] = m;
+        }
+        const chKey = (c) => { const k = String(c || '').toLowerCase().replace(/[^a-z]/g, ''); return k === 'babierus' ? 'babiesrus' : k; };
+        this.philipsPriceFor = (channel, sku) => {
+          const m = idx[chKey(channel)]; if (!m || !sku) return null;
+          const s = String(sku).toUpperCase().trim().replace(/\s+/g, '/');
+          return m[s] ?? m[s.split('/')[0]] ?? null;
+        };
+      }
       const sections = (history && history.sections) || {};
       const base = Object.assign({}, EMPTY, sidecar);
       for (const key of Object.keys(sections)) {
@@ -2199,7 +2217,7 @@ class Component extends DCLogic {
     stockPricingFiltered = spT.filtered;
     const stockPricingRows = spT.pageRows.map(r => ({
       blitz: r[0], channel: r[1], storeCode: r[2], storeName: r[3], region: r[4], category: r[5], sku: r[6],
-      philipsRRP: r[7] != null ? fmtR(r[7]) : '—', storeRRP: r[8] != null ? fmtR(r[8]) : '—', promoPrice: r[9] != null ? fmtR(r[9]) : '—',
+      philipsRRP: r[7] != null ? fmtR(r[7]) : (this.philipsPriceFor && this.philipsPriceFor(r[1], r[6]) != null ? fmtR(this.philipsPriceFor(r[1], r[6])) : '—'), storeRRP: r[8] != null ? fmtR(r[8]) : '—', promoPrice: r[9] != null ? fmtR(r[9]) : '—',
       onPromo: r[10] || '—', skuStatus: r[11] || '—', listed: r[12] || '—', mdq: r[14] != null ? fmtNum(r[14]) : '—',
       totalSoh: r[15] != null ? fmtNum(r[15]) : '—', qtyOnShelf: r[16] != null ? fmtNum(r[16]) : '—',
       boxDamages: r[17] != null ? fmtNum(r[17]) : '—', returned: r[18] != null ? fmtNum(r[18]) : '—', additionalStock: r[19] || '—',
