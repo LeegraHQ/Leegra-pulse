@@ -423,15 +423,13 @@ export default function App() {
     const doneNow = [...new Set([...callSurveysDone, visitType].filter(Boolean))];
     const remaining = CALL_SURVEYS.filter(v => !doneNow.includes(v));
     try {
-      // Re-send the auto-filled header answers before checking out, so a dropped
-      // or overwritten background save can never block the submit.
+      // One write carries every answer + the auto-filled store/rep details;
+      // the server also fills those itself, so they can't block the submit.
       if (visit) {
         const store = session.client.stores.find(s => s.code === selectedStoreCode) || session.client.stores[0];
-        const auto = { ...autoAnswers(visit.questionnaire?.questions || [], store, session.client, surveyLists) };
-        for (const [qid, val] of Object.entries(auto)) await submitAnswer(session.token, visit.id, qid, answers[qid] || val);
-        for (const [qid, val] of Object.entries(answers)) if (Array.isArray(val)) await submitAnswer(session.token, visit.id, qid, val);
+        const auto = autoAnswers(visit.questionnaire?.questions || [], store, session.client, surveyLists);
+        await checkOut(session.token, visit.id, { ...auto, ...answers });
       }
-      if (visit) await checkOut(session.token, visit.id);
       if (remaining.length) {
         setVisit(null);
         setAnswers({});

@@ -101,12 +101,14 @@ export async function checkIn(token, storeId, visitType) {
   return res.json();
 }
 
-export async function checkOut(token, visitId) {
+export async function checkOut(token, visitId, answers) {
   if (USE_MOCK) return { checkout_at: new Date().toISOString() };
+  // Strip local-only photo preview URLs; the server keeps the stored photoId.
+  const clean = answers ? JSON.parse(JSON.stringify(answers, (k, v) => (k === 'previewUrl' ? undefined : v))) : undefined;
   const res = await fetch(`${API_BASE}/visits-checkout`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-    body: JSON.stringify({ visit_id: visitId }),
+    body: JSON.stringify({ visit_id: visitId, answers: clean }),
   });
   const data = await res.json();
   if (!res.ok) throw new Error(data.missing ? `Answer required: ${data.missing.join(', ')}` : (data.error || 'Could not check out'));
