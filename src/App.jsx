@@ -71,7 +71,7 @@ function autoAnswers(questions, store, client, lists) {
     blitz: repDisplayName(client),
     rep_name: repDisplayName(client),
     channel: storeChannel(store, lists),
-    store_code: /^TBC-/.test(store?.code || '') ? '' : (store?.code || ''),
+    store_code: store?.code || '',
     store_name: store?.name || '',
     region: store?.region || '',
   };
@@ -423,6 +423,14 @@ export default function App() {
     const doneNow = [...new Set([...callSurveysDone, visitType].filter(Boolean))];
     const remaining = CALL_SURVEYS.filter(v => !doneNow.includes(v));
     try {
+      // Re-send the auto-filled header answers before checking out, so a dropped
+      // or overwritten background save can never block the submit.
+      if (visit) {
+        const store = session.client.stores.find(s => s.code === selectedStoreCode) || session.client.stores[0];
+        const auto = { ...autoAnswers(visit.questionnaire?.questions || [], store, session.client, surveyLists) };
+        for (const [qid, val] of Object.entries(auto)) await submitAnswer(session.token, visit.id, qid, answers[qid] || val);
+        for (const [qid, val] of Object.entries(answers)) if (Array.isArray(val)) await submitAnswer(session.token, visit.id, qid, val);
+      }
       if (visit) await checkOut(session.token, visit.id);
       if (remaining.length) {
         setVisit(null);
@@ -469,7 +477,8 @@ export default function App() {
       setVisit({ id: v.id, checkedInAt: new Date(v.checkin_at), questionnaire: v.questionnaire });
       const auto = autoAnswers(v.questionnaire?.questions || [], store, session.client, surveyLists);
       setAnswers(auto);
-      Object.entries(auto).forEach(([qid, val]) => submitAnswer(session.token, v.id, qid, val).catch(() => {}));
+      // One at a time: parallel answer writes to the same visit overwrite each other.
+      (async () => { for (const [qid, val] of Object.entries(auto)) { try { await submitAnswer(session.token, v.id, qid, val); } catch { /* re-sent on submit */ } } })();
       setVisitError('');
       setCallDone('');
     } else {
