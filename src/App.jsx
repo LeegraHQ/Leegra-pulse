@@ -38,6 +38,8 @@ const VISIT_SURVEYS = [
   { value: 'competitor_feedback', label: 'Competitor Feedback' },
   { value: 'snag_report', label: 'Snag Report' },
 ];
+// A store call stays open until these three are submitted; Snag Report is optional.
+const CALL_SURVEYS = ['stock_pricing', 'execution_image', 'competitor_feedback'];
 
 // --- session persistence -------------------------------------------------
 // The signed token has no server-side expiry, so the ONLY thing that used to
@@ -158,6 +160,7 @@ export default function App() {
   const [answers, setAnswers] = useState(() => BOOT?.answers || {}); // { [questionId]: answer }
   const [visitError, setVisitError] = useState('');
   const [callDone, setCallDone] = useState(''); // store name of the call just ended, shown on the store picker
+  const [callSurveysDone, setCallSurveysDone] = useState(() => BOOT?.callSurveysDone || []); // surveys submitted in the open store call
   const [training, setTraining] = useState({ m1: false, m2: false, m3: false });
 
   const [visitLog, setVisitLog] = useState([]);
@@ -234,8 +237,9 @@ export default function App() {
       answers: strippedAnswers,
       selectedStoreCode,
       visitType,
+      callSurveysDone,
     });
-  }, [session, screen, visit, answers, selectedStoreCode, visitType]);
+  }, [session, screen, visit, answers, selectedStoreCode, visitType, callSurveysDone]);
 
   async function handleRequestCode(e) {
     e.preventDefault();
@@ -345,16 +349,29 @@ export default function App() {
     setVisit(null);
     setAnswers({});
     setCallDone('');
+    setCallSurveysDone([]);
   }
 
-  // End the call: check out, then drop the rep back on store selection with a
-  // confirmation, session intact, ready to pick the next store.
+  // Submit one survey. The rep stays at the same store with the next survey
+  // pre-selected until all three are in; only then does the call close and
+  // the store picker unlock.
   async function handleEndCall() {
     const storeName = (session.client.stores.find(s => s.code === selectedStoreCode) || session.client.stores[0])?.name || 'this store';
+    const doneNow = [...new Set([...callSurveysDone, visitType].filter(Boolean))];
+    const remaining = CALL_SURVEYS.filter(v => !doneNow.includes(v));
     try {
       if (visit) await checkOut(session.token, visit.id);
-      handleExitStore();
-      setCallDone(storeName);
+      if (remaining.length) {
+        setVisit(null);
+        setAnswers({});
+        setVisitError('');
+        setCallDone('');
+        setCallSurveysDone(doneNow);
+        setVisitType(remaining[0]);
+      } else {
+        handleExitStore();
+        setCallDone(storeName);
+      }
     } catch (err) {
       setVisitError(err.message);
     }
@@ -378,6 +395,7 @@ export default function App() {
     setVisitError('');
     setVisitType('');
     setSelectedStoreCode('');
+    setCallSurveysDone([]);
   }
 
   async function handleToggleCheckin() {
@@ -754,11 +772,26 @@ export default function App() {
                   <div style={{ flex: 1, fontSize: 13 }}>Call at {callDone} completed and submitted. Choose your next store.</div>
                 </div>
               )}
+              {callSurveysDone.length > 0 && (
+                <div className="lp-inner-card">
+                  <div className="lp-kicker">Call in progress · {callSurveysDone.filter(v => CALL_SURVEYS.includes(v)).length} of {CALL_SURVEYS.length} surveys done</div>
+                  <div className="lp-title">{store.name}</div>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 6 }}>
+                    {CALL_SURVEYS.map(v => (
+                      <span key={v} className={callSurveysDone.includes(v) ? 'lp-tag lp-tag-accent2' : 'lp-tag lp-tag-outline'}>
+                        {callSurveysDone.includes(v) ? '✓ ' : ''}{VISIT_SURVEYS.find(s => s.value === v).label}
+                      </span>
+                    ))}
+                  </div>
+                  <div className="lp-muted" style={{ fontSize: 12, marginTop: 6 }}>Complete the remaining surveys to finish this call.</div>
+                </div>
+              )}
               <label className="lp-field">
                 Store
                 <select
                   className="lp-input"
                   value={store.code}
+                  disabled={callSurveysDone.length > 0}
                   onChange={e => setSelectedStoreCode(e.target.value)}
                 >
                   {client.stores.map(s => (
@@ -775,7 +808,7 @@ export default function App() {
                 >
                   <option value="" disabled>Choose a survey…</option>
                   {VISIT_SURVEYS.map(s => (
-                    <option key={s.value} value={s.value}>{s.label}</option>
+                    <option key={s.value} value={s.value} disabled={callSurveysDone.includes(s.value)}>{callSurveysDone.includes(s.value) ? '✓ ' : ''}{s.label}</option>
                   ))}
                 </select>
               </label>
@@ -791,8 +824,11 @@ export default function App() {
 
           {!visit && (
             <button className="lp-btn lp-btn-primary lp-block" disabled={!visitType} onClick={handleToggleCheckin}>
-              {visitType ? (callDone ? 'Start new call — verify GPS' : 'Check in — verify GPS') : 'Choose a store and survey to start a call'}
+              {visitType ? (callSurveysDone.length ? 'Start next survey' : callDone ? 'Start new call — verify GPS' : 'Check in — verify GPS') : 'Choose a store and survey to start a call'}
             </button>
+          )}
+          {!visit && callSurveysDone.length > 0 && (
+            <button className="lp-btn lp-btn-ghost lp-block" onClick={() => { if (window.confirm('Leave this store without completing all 3 surveys?')) handleExitStore(); }}>Leave store early</button>
           )}
 
           {visit && (
@@ -965,7 +1001,9 @@ export default function App() {
                 })}
               </div>
               {visitError && <div className="lp-error">{visitError}</div>}
-              <button className="lp-btn lp-btn-primary lp-block" onClick={handleEndCall}>End call</button>
+              <button className="lp-btn lp-btn-primary lp-block" onClick={handleEndCall}>
+                {CALL_SURVEYS.filter(v => ![...callSurveysDone, visitType].includes(v)).length ? 'Submit survey & continue' : 'Submit & end call'}
+              </button>
             </>
           )}
 

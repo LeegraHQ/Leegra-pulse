@@ -136,6 +136,15 @@ exports.handler = async (event) => {
   const fixedCode = identity.kind === 'tenant_user' ? identity.userRecord.fixedCode : null;
   const isFixedCodeLogin = fixedCode && submittedCode === fixedCode;
 
+  // Field reps sign in with their personal code only — never the emailed OTP.
+  const isFieldRep = identity.kind === 'tenant_user' && (identity.userRecord.role || 'field_rep') === 'field_rep';
+  if (isFieldRep && !isTestRepLogin && !isFixedCodeLogin && !isStaffSharedCodeLogin) {
+    const error = fixedCode
+      ? 'That is not your personal code. Check the code Leegra sent you.'
+      : 'No personal code set for this account yet. Ask Leegra for your code.';
+    return { statusCode: 401, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ error }) };
+  }
+
   if (!isTestRepLogin && !isFixedCodeLogin && !isHolderCodeLogin && !isStaffSharedCodeLogin) {
     const otp = await getOtp(normalizedEmail);
     if (!otp || otp.code !== submittedCode || Date.now() > otp.expiresAt) {

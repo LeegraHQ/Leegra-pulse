@@ -283,7 +283,7 @@
         <sc-if value="{{ diaryHasDays }}" hint-placeholder-val="{{ false }}">
           <div style="display:flex; align-items:baseline; justify-content:space-between; gap:12px; flex-wrap:wrap; margin: 6px 0 12px 0;">
             <div style="font-size:13px; font-weight:700; color:#0B1B3A;">Calls Completed vs Planned per Day · {{ diaryPeriod }}</div>
-            <div style="font-size:12px; color:#3A4658;">To date: <span style="font-weight:700;">{{ diaryTotals.completed }} / {{ diaryTotals.planned }}</span> · {{ diaryTotals.rate }} · Off-diary visits: <span style="font-weight:700;">{{ diaryTotals.offPct }}</span></div>
+            <div style="font-size:12px; color:#3A4658;">{{ diaryTotals.scope }}: <span style="font-weight:700;">{{ diaryTotals.completed }} / {{ diaryTotals.planned }}</span> · {{ diaryTotals.rate }} · Off-diary visits: <span style="font-weight:700;">{{ diaryTotals.offPct }}</span></div>
           </div>
           <div style="background:#fff; border:1px solid #E4E9F0; border-radius:14px; overflow:hidden; margin-bottom:16px;">
             <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap; padding:10px 16px; border-bottom:1px solid #F1F3F7;">
@@ -927,7 +927,7 @@ class Component extends DCLogic {
     cfPage: 0,
     attPage: 0,
     dyPage: 0,
-    dyMonth: 'All',
+    dyMonth: null,
     dyStatus: 'All',
     compPhotos: [],
     compPhotoForm: { store: '', competitor: '', note: '' },
@@ -1811,6 +1811,12 @@ class Component extends DCLogic {
       (!cf.blitz || cf.blitz === 'All' || r.rep === cf.blitz) &&
       (!cf.region || cf.region === 'All' || (REP_REGION[r.rep] || 'Unassigned') === cf.region));
     const todayIso = toISO(new Date());
+    // Completion % is scoped to one month (current month by default), not the whole year.
+    const curYm = todayIso.slice(0, 7);
+    const ymLabel = (ym) => { const [y, m] = ym.split('-').map(Number); return new Date(y, m - 1, 1).toLocaleDateString('en-ZA', { month: 'long', year: 'numeric' }); };
+    const dyMonthSel = s.dyMonth || ymLabel(curYm);
+    const blitzYm = (s.crossFilterValues.blitz || {}).blitzMonth || curYm;
+    const inBlitzScope = (iso) => blitzYm === 'All' || iso.slice(0, 7) === blitzYm;
     const visitsByRepDate = {};
     attFiltered.forEach(r => {
       const k = r[0] + '|' + toISO(r[1]);
@@ -1845,10 +1851,10 @@ class Component extends DCLogic {
         barStyle: `height:100%; width:${future ? 0 : (rate * 100).toFixed(1)}%; background:${rate >= 0.8 ? '#2FA860' : LIME}; border-radius:5px;`,
       };
     });
-    const pastDays = Object.keys(dayAgg).filter(dt => dt <= todayIso);
+    const pastDays = Object.keys(dayAgg).filter(dt => dt <= todayIso && (dyMonthSel === 'All' || ymLabel(dt.slice(0, 7)) === dyMonthSel));
     const totPlanned = pastDays.reduce((a, dt) => a + dayAgg[dt].planned, 0);
     const totDone = pastDays.reduce((a, dt) => a + dayAgg[dt].completed, 0);
-    const diaryTotals = { planned: fmtNum(totPlanned), completed: fmtNum(totDone), rate: totPlanned ? fmtPct(totDone / totPlanned) : '—' };
+    const diaryTotals = { planned: fmtNum(totPlanned), completed: fmtNum(totDone), rate: totPlanned ? fmtPct(totDone / totPlanned) : '—', scope: dyMonthSel === 'All' ? 'All months to date' : dyMonthSel + ' to date' };
     const diaryPeriod = (s.callDiary && s.callDiary.period) || '';
     const totOff = pastDays.reduce((a, dt) => a + dayAgg[dt].unplanned, 0);
     diaryTotals.offPct = (totDone + totOff) ? fmtPct(totOff / (totDone + totOff)) : '—';
@@ -1857,7 +1863,7 @@ class Component extends DCLogic {
     const repVisitsByDate = {}, repVisitTotals = {};
     d.attendance.forEach(r => {
       const iso = toISO(r[1]);
-      if (!iso || iso > todayIso) return;
+      if (!iso || iso > todayIso || !inBlitzScope(iso)) return;
       (repVisitsByDate[r[0] + '|' + iso] = repVisitsByDate[r[0] + '|' + iso] || []).push(diaryKey(r[7]));
       repVisitTotals[r[0]] = (repVisitTotals[r[0]] || 0) + 1;
     });
@@ -1865,7 +1871,7 @@ class Component extends DCLogic {
     ((s.callDiary && s.callDiary.reps) || []).forEach(rep => {
       const st = repDiaryStats[rep.rep] = { planned: 0, completed: 0, visits: repVisitTotals[rep.rep] || 0, off: 0 };
       rep.days.forEach(day => {
-        if (day.date > todayIso) return;
+        if (day.date > todayIso || !inBlitzScope(day.date)) return;
         const visits = (repVisitsByDate[rep.rep + '|' + day.date] || []).slice();
         st.planned += day.stores.length;
         day.stores.map(diaryKey).forEach(p => {
@@ -1935,7 +1941,7 @@ class Component extends DCLogic {
     if (expandedBlitzRep && blitzVisitDetailAll[expandedBlitzRep]) {
       blitzDetailRows = blitzVisitDetailAll[expandedBlitzRep];
       if (cf.blitzDetailChannel && cf.blitzDetailChannel !== 'All') blitzDetailRows = blitzDetailRows.filter(v => v.channel === cf.blitzDetailChannel);
-      if (cf.blitzMonth && cf.blitzMonth !== 'All') blitzDetailRows = blitzDetailRows.filter(v => (v.date || '').slice(0, 7) === cf.blitzMonth);
+      if (blitzYm !== 'All') blitzDetailRows = blitzDetailRows.filter(v => (v.date || '').slice(0, 7) === blitzYm);
       if (cf.blitzDateFrom || cf.blitzDateTo) blitzDetailRows = blitzDetailRows.filter(v => inRange(toISO(v.date), cf.blitzDateFrom, cf.blitzDateTo));
       if (cf.blitzLateCheckin === 'Yes') blitzDetailRows = blitzDetailRows.filter(v => v.lateCheckin);
       if (cf.blitzLateCheckout === 'Yes') blitzDetailRows = blitzDetailRows.filter(v => v.lateCheckout);
@@ -2281,19 +2287,19 @@ class Component extends DCLogic {
     const attPg = mkPager('attPage', attendanceAll.length);
     const attendanceRows = attendanceAll.slice(attPg.start, attPg.start + 30);
     const dySel = (on) => 'border-radius:6px; padding:5px 8px; font-size:11.5px; font-weight:500; background:#fff; cursor:pointer; ' + (on ? 'border:1px solid #0A5EEA; color:#0A5EEA;' : 'border:1px solid #E4E9F0; color:#0B1B3A;');
-    const dyMonth = s.dyMonth || 'All', dyStatus = s.dyStatus || 'All';
+    const dyMonth = dyMonthSel, dyStatus = s.dyStatus || 'All';
     const dyMonths = [...new Set(diaryAll.map(r => r._month))];
     const diaryFiltered = diaryAll.filter(r => (dyMonth === 'All' || r._month === dyMonth) && (dyStatus === 'All' || r._status === dyStatus));
     const dyPg = mkPager('dyPage', diaryFiltered.length);
     const diaryDaily = diaryFiltered.slice(dyPg.start, dyPg.start + 30);
     const pgUi = {
       attPg, dyPg,
-      dyMonthValue: dyMonth, dyMonthOptions: ['All', ...dyMonths].map(v => ({ v, label: v === 'All' ? 'All months' : v })), dyMonthStyle: dySel(dyMonth !== 'All'),
+      dyMonthValue: dyMonth, dyMonthOptions: ['All', ...dyMonths].map(v => ({ v, label: v === 'All' ? 'All months' : v })), dyMonthStyle: dySel(dyMonth !== ymLabel(curYm)),
       dyStatusValue: dyStatus, dyStatusOptions: ['All', 'Fully completed', 'Partly completed', 'Not completed', 'Upcoming'].map(v => ({ v, label: v === 'All' ? 'All statuses' : v })), dyStatusStyle: dySel(dyStatus !== 'All'),
       dyOnMonth: (e) => this.setState({ dyMonth: e.target.value, dyPage: 0 }),
       dyOnStatus: (e) => this.setState({ dyStatus: e.target.value, dyPage: 0 }),
-      dyHasFilters: dyMonth !== 'All' || dyStatus !== 'All',
-      dyClear: () => this.setState({ dyMonth: 'All', dyStatus: 'All', dyPage: 0 }),
+      dyHasFilters: dyMonth !== ymLabel(curYm) || dyStatus !== 'All',
+      dyClear: () => this.setState({ dyMonth: null, dyStatus: 'All', dyPage: 0 }),
     };
     const cfLo = Math.max(0, Math.min(cfPage - 3, cfPages - 7));
     const cfPageButtons = [];
@@ -2430,7 +2436,7 @@ class Component extends DCLogic {
     } else if (active === 'blitz') {
       crossFilters = [
         { label: 'Visit Channel (in detail below)', value: cf.blitzDetailChannel || 'All', options: blitzDetailChannelOptions, onChange: (e) => this.setCrossFilter('blitz', 'blitzDetailChannel', e.target.value) },
-        { label: 'Month (in detail below)', value: cf.blitzMonth || 'All', options: blitzDetailMonthOptions, onChange: (e) => this.setCrossFilter('blitz', 'blitzMonth', e.target.value) },
+        { label: 'Month', value: cf.blitzMonth || curYm, options: [...new Set([...blitzDetailMonthOptions, curYm])], onChange: (e) => this.setCrossFilter('blitz', 'blitzMonth', e.target.value) },
         { label: 'From Day (in detail below)', value: cf.blitzDateFrom || '', options: null, isDate: true, min: blitzMinDate, max: blitzMaxDate, onChange: (e) => this.setCrossFilter('blitz', 'blitzDateFrom', e.target.value) },
         { label: 'To Day (in detail below)', value: cf.blitzDateTo || '', options: null, isDate: true, min: blitzMinDate, max: blitzMaxDate, onChange: (e) => this.setCrossFilter('blitz', 'blitzDateTo', e.target.value) },
         { label: 'Late Check-in (>8am)', value: cf.blitzLateCheckin || 'All', options: ['All', 'Yes'], onChange: (e) => this.setCrossFilter('blitz', 'blitzLateCheckin', e.target.value) },
@@ -2509,7 +2515,7 @@ class Component extends DCLogic {
       kpis = [
         { label: 'Planned Calls', value: fmtNum(totalPlanned), delta: '', deltaStyle: '' },
         { label: 'Completed Calls', value: fmtNum(totalCompleted), delta: '', deltaStyle: '' },
-        { label: 'Completion Rate', value: fmtPct(totalPlanned ? totalCompleted / totalPlanned : 0), delta: '', deltaStyle: '' },
+        { label: 'Completion Rate', value: fmtPct(totalPlanned ? totalCompleted / totalPlanned : 0), delta: blitzYm === 'All' ? 'All months' : ymLabel(blitzYm), deltaStyle: 'font-size:11.5px; font-weight:700; color:#8592A6;' },
         { label: 'Off-Diary Visits', value: (() => { const o = blitzMembers.reduce((a, m) => a + m.offDiaryCount, 0), v = blitzMembers.reduce((a, m) => a + m.offDiaryVisits, 0); return v ? fmtPct(o / v) : '—'; })(), delta: '', deltaStyle: '' },
         { label: 'Reps with Attendance Data', value: realCount + ' / ' + blitzMembers.length, delta: '', deltaStyle: '' },
         { label: 'Reps with Full Coverage %', value: coverageCount + ' / ' + blitzMembers.length, delta: '', deltaStyle: '' },
