@@ -55,8 +55,24 @@ exports.handler = async (event) => {
     u.fixedCode = newCode(taken);
     u.updatedAt = new Date().toISOString();
     changed.push(u.email);
+  } else if (action === 'set') {
+    // body.codes: [{ email, code }] — typed by the admin on setup-demo, never stored in source.
+    for (const { email, code } of (body.codes || [])) {
+      const e = String(email || '').trim().toLowerCase(), c = String(code || '').trim();
+      if (!e || c.length < 4) continue;
+      let u = users.find(x => (x.email || '').toLowerCase() === e);
+      if (!u) {
+        const r = ALLOC.reps.find(x => x.email.toLowerCase() === e);
+        if (!r) continue;
+        u = { email: e, name: r.name, role: 'field_rep', storeCodes: r.storeCodes || [] };
+        users.push(u);
+      }
+      u.fixedCode = c;
+      u.updatedAt = new Date().toISOString();
+      changed.push(u.email);
+    }
   } else if (action !== 'list') {
-    return json(400, { error: 'action must be list, issue or reset' });
+    return json(400, { error: 'action must be list, issue, reset or set' });
   }
 
   if (changed.length) await saveUsers(TENANT, users);

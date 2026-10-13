@@ -23,6 +23,10 @@
       <button id="b5" style="background:#fff; color:#14181F; border:1px solid #D3DAE4; border-radius:8px; padding:10px 16px; font-size:14px; font-weight:600; cursor:pointer;">Copy list</button>
     </div>
     <div id="team" style="margin-top:14px; font-size:13px;"></div>
+    <h2 style="font-size:16px; margin:24px 0 6px;">Set codes</h2>
+    <p style="font-size:13px; color:#5A6475; margin:0 0 8px;">One per line: <code>email code</code>. Saves exactly these codes on the reps' logins.</p>
+    <textarea id="setcodes" rows="6" style="display:block; width:100%; box-sizing:border-box; padding:10px; border:1px solid #D3DAE4; border-radius:8px; font-size:13px; font-family:monospace;" placeholder="jose.kelly@leegrapulse.co.za 1234"></textarea>
+    <button id="b6" style="margin-top:10px; background:#0A5EEA; color:#fff; border:0; border-radius:8px; padding:10px 16px; font-size:14px; font-weight:600; cursor:pointer;">5. Save these codes</button>
     <pre id="out" style="margin-top:20px; background:#F3F5F8; border-radius:8px; padding:12px; font-size:12px; white-space:pre-wrap; max-height:360px; overflow:auto;">Result will show here.</pre>
   </div>
 <script>
@@ -39,11 +43,11 @@ async function run(path) {
 document.getElementById('b1').onclick = () => run('/api/admin-seed-test-rep');
 document.getElementById('b2').onclick = () => run('/api/admin-seed-philips-allocation');
 let teamText = '';
-async function team(action) {
+async function team(action, extra) {
   const out = document.getElementById('out'), box = document.getElementById('team');
   out.textContent = 'Running…';
   try {
-    const res = await fetch('/api/admin-team-codes', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ code: document.getElementById('code').value.trim(), action }) });
+    const res = await fetch('/api/admin-team-codes', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(Object.assign({ code: document.getElementById('code').value.trim(), action }, extra || {})) });
     const d = await res.json();
     if (!res.ok) { out.textContent = 'HTTP ' + res.status + '\n' + (d.error || ''); return; }
     out.textContent = 'HTTP 200 · ' + d.team.length + ' users · ' + d.changed + ' new code(s)';
@@ -54,6 +58,11 @@ async function team(action) {
 document.getElementById('b3').onclick = () => team('list');
 document.getElementById('b4').onclick = () => team('issue');
 document.getElementById('b5').onclick = () => { if (teamText) navigator.clipboard.writeText(teamText); };
+document.getElementById('b6').onclick = () => {
+  const codes = document.getElementById('setcodes').value.split('\n').map(l => l.trim().split(/[\s,;|]+/)).filter(p => p.length >= 2).map(p => ({ email: p.find(x => x.includes('@')), code: p.filter(x => !x.includes('@')).pop() })).filter(x => x.email && x.code);
+  if (!codes.length) { document.getElementById('out').textContent = 'Nothing to save — use one "email code" per line.'; return; }
+  team('set', { codes });
+};
 </script>
 </body>
 </html>
