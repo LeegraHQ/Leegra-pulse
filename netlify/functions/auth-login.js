@@ -215,6 +215,7 @@ exports.handler = async (event) => {
         name: tenant.name,
         logo: tenant.logoUrl,
         staffName: normalizedEmail.split('@')[0],
+        staffDisplayName: userRecord.name || null,
         staffEmail: normalizedEmail,
         repStoreCount: visibleStores.length,
         compliance: dashboard.compliance,

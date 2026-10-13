@@ -41,6 +41,61 @@ const VISIT_SURVEYS = [
 // A store call stays open until these three are submitted; Snag Report is optional.
 const CALL_SURVEYS = ['stock_pricing', 'execution_image', 'competitor_feedback'];
 
+// Header questions the app fills from the login + chosen store, so reps never retype them.
+const AUTO_FILL_IDS = ['blitz', 'rep_name', 'channel', 'store_code', 'store_name', 'region'];
+const PREFIX_CHANNEL = { CH: 'Checkers', C: 'Clicks', CLKS: 'Clicks', BRU: 'Babies R Us', A: 'Baby City', M: 'Makro', S: 'Dis-Chem' };
+function storeChannel(store, lists) {
+  if (!store) return '';
+  if (store.channel) return store.channel;
+  const byCode = lists?.channelByCode?.[store.code];
+  if (byCode) return byCode;
+  const n = String(store.name || '').toLowerCase();
+  if (n.includes('medirite')) return 'Medirite';
+  if (n.includes('baby city')) return 'Baby City';
+  if (n.includes('babies')) return 'Babies R Us';
+  if (n.includes('makro')) return 'Makro';
+  if (n.includes('clicks')) return 'Clicks';
+  if (n.includes('checkers') || /^cx\b/.test(n)) return 'Checkers';
+  if (n.includes('dis-chem') || n.includes('dischem')) return 'Dis-Chem';
+  if (/^TBC-/.test(store.code || '')) return '';
+  const prefix = (String(store.code || '').match(/^[A-Z]+/) || [''])[0];
+  return PREFIX_CHANNEL[prefix] || '';
+}
+function repDisplayName(client) {
+  if (client?.staffDisplayName) return client.staffDisplayName;
+  return String(client?.staffEmail || client?.staffName || '').split('@')[0]
+    .split(/[._-]+/).filter(Boolean).map(w => w[0].toUpperCase() + w.slice(1)).join(' ');
+}
+function autoAnswers(questions, store, client, lists) {
+  const vals = {
+    blitz: repDisplayName(client),
+    rep_name: repDisplayName(client),
+    channel: storeChannel(store, lists),
+    store_code: /^TBC-/.test(store?.code || '') ? '' : (store?.code || ''),
+    store_name: store?.name || '',
+    region: store?.region || '',
+  };
+  const out = {};
+  questions.forEach(q => { if (AUTO_FILL_IDS.includes(q.id) && vals[q.id]) out[q.id] = vals[q.id]; });
+  return out;
+}
+// Upgrade free-text fields to dropdowns from the tenant's survey lists.
+function enhanceField(f, row, lists, channel) {
+  if (!lists) return f;
+  if (f.id === 'sku_code' || f.id === 'philips_sku') {
+    const cat = (lists.skusByCategory || {})[row?.category] || [];
+    const chan = Object.keys((lists.prices || {})[channel] || {});
+    const options = [...new Set([...cat, ...chan, ...(lists.skus || []), ...(f.options || [])])];
+    return { ...f, type: 'suggest', options };
+  }
+  if (f.id === 'competitor') return { ...f, type: 'choice', options: lists.competitors || [] };
+  if (f.id === 'competitor_sku') {
+    const options = (lists.competitorSkus || {})[row?.competitor] || [];
+    return options.length ? { ...f, type: 'suggest', options, keepCase: true } : f;
+  }
+  return f;
+}
+
 // --- session persistence -------------------------------------------------
 // The signed token has no server-side expiry, so the ONLY thing that used to
 // end a session was the page losing its React state — which mobile browsers
@@ -161,6 +216,12 @@ export default function App() {
   const [visitError, setVisitError] = useState('');
   const [callDone, setCallDone] = useState(''); // store name of the call just ended, shown on the store picker
   const [callSurveysDone, setCallSurveysDone] = useState(() => BOOT?.callSurveysDone || []); // surveys submitted in the open store call
+  const [surveyLists, setSurveyLists] = useState(null); // dropdown lists + store channels, /survey-lists/<tenant>.json
+  const listsTenant = session?.client?.code;
+  useEffect(() => {
+    if (!listsTenant) return;
+    fetch(`/survey-lists/${listsTenant}.json`).then(r => (r.ok ? r.json() : null)).then(setSurveyLists).catch(() => {});
+  }, [listsTenant]);
   const [training, setTraining] = useState({ m1: false, m2: false, m3: false });
 
   const [visitLog, setVisitLog] = useState([]);
@@ -404,7 +465,9 @@ export default function App() {
       const store = stores.find(s => s.code === selectedStoreCode) || stores[0];
       const v = await checkIn(session.token, store.code, visitType || undefined);
       setVisit({ id: v.id, checkedInAt: new Date(v.checkin_at), questionnaire: v.questionnaire });
-      setAnswers({});
+      const auto = autoAnswers(v.questionnaire?.questions || [], store, session.client, surveyLists);
+      setAnswers(auto);
+      Object.entries(auto).forEach(([qid, val]) => submitAnswer(session.token, v.id, qid, val).catch(() => {}));
       setVisitError('');
       setCallDone('');
     } else {
@@ -440,7 +503,18 @@ export default function App() {
   }
 
   function handleCellChange(q, idx, fieldId, value) {
-    saveRows(q.id, rowsOf(q.id).map((r, i) => (i === idx ? { ...r, [fieldId]: value } : r)));
+    saveRows(q.id, rowsOf(q.id).map((r, i) => {
+      if (i !== idx) return r;
+      const next = { ...r, [fieldId]: value };
+      // Picking a SKU fills the Philips RRP from the channel price list when it's still empty.
+      if (fieldId === 'sku_code' && (q.fields || []).some(f => f.id === 'philips_rrp') && (r.philips_rrp == null || r.philips_rrp === '')) {
+        const store = session.client.stores.find(s => s.code === selectedStoreCode) || session.client.stores[0];
+        const price = surveyLists?.prices?.[storeChannel(store, surveyLists)]?.[String(value).toUpperCase()];
+        if (price != null) next.philips_rrp = price;
+      }
+      if (fieldId === 'competitor' && r.competitor !== value) next.competitor_sku = '';
+      return next;
+    }));
   }
 
   async function handleCellPhoto(q, idx, field, file) {
@@ -731,7 +805,10 @@ export default function App() {
   const setSF = (k) => (e) => { const v = e.target.value; setStoreFilter(f => ({ ...f, [k]: v })); };
 
   if (screen === 'app') {
-    const questions = visit?.questionnaire?.questions || [];
+    const allQuestions = visit?.questionnaire?.questions || [];
+    // Auto-filled header answers are shown as a read-only summary, not as questions.
+    const autoShown = allQuestions.filter(q => AUTO_FILL_IDS.includes(q.id) && answers[q.id] != null && answers[q.id] !== '');
+    const questions = allQuestions.filter(q => !autoShown.includes(q));
     const isAnswered = a => (Array.isArray(a) ? a.length > 0 : a !== undefined && a !== null && a !== '');
     const doneCount = questions.filter(q => isAnswered(answers[q.id])).length;
     if (!client.stores.length) {
@@ -835,6 +912,14 @@ export default function App() {
             <>
               <button className="lp-btn lp-btn-secondary lp-block" disabled>✓ Checked in — GPS verified</button>
               <div className="lp-label">{visit.questionnaire?.name || 'Visit tasks'} · {doneCount}/{questions.length}</div>
+              {autoShown.length > 0 && (
+                <div className="lp-inner-card" style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+                  <div className="lp-kicker" style={{ width: '100%', marginBottom: 0 }}>Filled in for you</div>
+                  {autoShown.map(q => (
+                    <span key={q.id} className="lp-tag lp-tag-neutral">{q.label.replace(/\s*\(.*\)$/, '')}: {String(answers[q.id])}</span>
+                  ))}
+                </div>
+              )}
               {!questions.length && <div className="lp-muted" style={{ fontSize: 12 }}>No checklist configured for this store yet.</div>}
               <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                 {questions.map(q => {
@@ -856,7 +941,8 @@ export default function App() {
                                 Remove
                               </button>
                             </div>
-                            {(q.fields || []).map(f => {
+                            {(q.fields || []).map(f0 => {
+                              const f = enhanceField(f0, row, surveyLists, storeChannel(store, surveyLists));
                               const cell = row?.[f.id];
                               if (f.type === 'boolean') {
                                 return (
@@ -894,7 +980,7 @@ export default function App() {
                                     <div style={{ flex: 1, fontSize: 13 }}>{f.label}{f.required ? ' *' : ''}</div>
                                     <select
                                       className="lp-input"
-                                      style={{ width: 140 }}
+                                      style={{ width: 160 }}
                                       value={cell || ''}
                                       onChange={e => handleCellChange(q, idx, f.id, e.target.value)}
                                     >
@@ -916,7 +1002,7 @@ export default function App() {
                                       list={listId}
                                       placeholder="Pick or type"
                                       value={cell ?? ''}
-                                      onChange={e => handleCellChange(q, idx, f.id, e.target.value.toUpperCase())}
+                                      onChange={e => handleCellChange(q, idx, f.id, f.keepCase ? e.target.value : e.target.value.toUpperCase())}
                                     />
                                     <datalist id={listId}>
                                       {(f.options || []).map(opt => <option key={opt} value={opt} />)}
