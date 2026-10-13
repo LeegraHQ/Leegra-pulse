@@ -62,6 +62,21 @@ function durationHHMM(startIso, endIso) {
 }
 
 exports.handler = async (event) => {
+  try {
+    return await handle(event);
+  } catch (err) {
+    console.error('report-feed failed', err && err.stack);
+    return {
+      statusCode: 200,
+      headers: { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' },
+      body: JSON.stringify({ attendance: [], feedback: [], error: 'live feed error: ' + (err && err.message) }),
+    };
+  }
+};
+
+const validIso = (iso) => !!iso && !isNaN(new Date(iso).getTime());
+
+async function handle(event) {
   if (event.httpMethod !== 'GET') return { statusCode: 405, body: 'Method not allowed' };
 
   const tenantCode = (event.queryStringParameters?.tenant || 'PH-201').trim().toUpperCase();
@@ -78,12 +93,13 @@ exports.handler = async (event) => {
       getUsers(tenantCode),
     ]);
   } catch (err) {
+    console.error('report-feed read failed', err && err.message);
     // The dashboard falls back to its static sidecar, so a storage blip must
     // degrade to "no live rows" rather than breaking the page.
     return {
       statusCode: 200,
       headers: { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' },
-      body: JSON.stringify({ tenant: tenantCode, attendance: [], feedback: [], error: 'live feed unavailable' }),
+      body: JSON.stringify({ tenant: tenantCode, attendance: [], feedback: [], error: 'live feed unavailable: ' + (err && err.message) }),
     };
   }
 
@@ -97,8 +113,11 @@ exports.handler = async (event) => {
   const attendance = [];
   const feedback = [];
 
+  let skipped = 0;
   for (const v of visits) {
-    if (!v.checkin_at) continue;
+    // One malformed visit (bad date, odd answer shape) must not take the whole feed down.
+    if (!v || !validIso(v.checkin_at)) { skipped++; continue; }
+    try {
     const store = storeByCode[v.storeCode] || {};
     const storeName = store.name || v.storeCode || '';
     const channel = channelOf(storeName);
@@ -110,8 +129,8 @@ exports.handler = async (event) => {
       rep,
       date,
       timePart(v.checkin_at),
-      v.checkout_at ? timePart(v.checkout_at) : '',
-      v.checkout_at ? durationHHMM(v.checkin_at, v.checkout_at) : '',
+      validIso(v.checkout_at) ? timePart(v.checkout_at) : '',
+      validIso(v.checkout_at) ? durationHHMM(v.checkin_at, v.checkout_at) : '',
       channel,
       channel,
       storeName,
@@ -120,7 +139,7 @@ exports.handler = async (event) => {
     // Questionnaire answers become Survey Answer rows. The dashboard treats
     // "yes" as available and anything else as not, so booleans are mapped to
     // Yes/No and free text passes through as-is.
-    const questions = v.questions || [];
+    const questions = Array.isArray(v.questions) ? v.questions : [];
     const answers = v.answers || {};
     for (const q of questions) {
       const raw = answers[q.id];
@@ -168,6 +187,10 @@ exports.handler = async (event) => {
 
       pushRow(q.label || q.id, raw === true ? 'Yes' : raw === false ? 'No' : String(raw));
     }
+    } catch (err) {
+      skipped++;
+      console.error('report-feed skipped visit', v.id, err && err.message);
+    }
   }
 
   // Newest first — the dashboard slices the first 200 rows for display.
@@ -181,8 +204,9 @@ exports.handler = async (event) => {
       tenant: tenantCode,
       generatedAt: new Date().toISOString(),
       visitCount: attendance.length,
+      skippedVisits: skipped,
       attendance,
       feedback,
     }),
   };
-};
+}

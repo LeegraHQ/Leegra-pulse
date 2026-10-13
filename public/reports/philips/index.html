@@ -1469,7 +1469,7 @@ class Component extends DCLogic {
 
   loadLiveFeed() {
     fetch('/api/report-feed?tenant=PH-201')
-      .then(r => (r.ok ? r.json() : Promise.reject(new Error('feed ' + r.status))))
+      .then(r => (r.ok ? r.json() : Promise.reject(new Error('HTTP ' + r.status))))
       .then(live => {
         if (!live || !this.baseData) return;
         const base = this.baseData;
@@ -1513,10 +1513,11 @@ class Component extends DCLogic {
           liveVisitCount: (live.attendance || []).length,
           liveAnswerCount: (live.feedback || []).length,
           liveUpdatedAt: live.generatedAt || new Date().toISOString(),
-          liveError: !!live.error,
+          liveError: !!live.error && !(live.attendance || []).length,
+          liveErrorText: live.error || '',
         });
       })
-      .catch(() => this.setState({ liveFeedSeen: true, liveError: true }));
+      .catch((err) => this.setState({ liveFeedSeen: true, liveError: true, liveErrorText: (err && err.message) || 'no response' }));
   }
 
   renderVals() {
@@ -2604,7 +2605,7 @@ class Component extends DCLogic {
       liveBadgeLabel: s.liveError
         ? 'App feed unavailable'
         : (s.liveVisitCount ? `${s.liveVisitCount} live app visits` : 'App feed connected — no visits yet'),
-      liveBadgeTitle: (s.liveUpdatedAt ? `App feed last read ${new Date(s.liveUpdatedAt).toLocaleTimeString()} — ${s.liveAnswerCount || 0} survey answers` : 'Waiting for the first check-in from the field app')
+      liveBadgeTitle: (s.liveError ? `Reason: ${s.liveErrorText || 'unknown'} · ` : '') + (s.liveUpdatedAt ? `App feed last read ${new Date(s.liveUpdatedAt).toLocaleTimeString()} — ${s.liveAnswerCount || 0} survey answers` : 'Waiting for the first check-in from the field app')
         + ` · ${s.historyBatchCount || 0} stored history upload(s)`,
       liveDotStyle: `width:7px; height:7px; border-radius:50%; display:inline-block; background:${s.liveError ? '#C0392B' : (s.liveVisitCount ? '#1E8A4C' : '#B4820A')};`,
       liveBadgeStyle: s.liveError
