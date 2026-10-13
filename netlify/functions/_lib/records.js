@@ -93,18 +93,50 @@ async function saveTenantSettings(tenantCode, settings) {
 // list (see computeDashboard) — not completed counts or the leaderboard.
 const PH_SURVEY_HISTORY = require('../_philips-visit-history.json');
 
+// Reads many blobs without tripping the Blobs rate limit: a few at a time, and
+// a single failed read is skipped instead of failing the whole list. Firing
+// every get at once (the old Promise.all) broke login and the report feed once
+// the live visit count grew.
+async function getManyJSON(store, keys, limit = 20) {
+  const out = new Array(keys.length);
+  let next = 0;
+  async function worker() {
+    while (next < keys.length) {
+      const i = next++;
+      try { out[i] = await store.get(keys[i], { type: 'json' }); } catch { out[i] = null; }
+    }
+  }
+  await Promise.all(Array.from({ length: Math.min(limit, keys.length) }, worker));
+  return out;
+}
+
+// Per warm function instance, so back-to-back requests don't re-read every blob.
+const VISIT_CACHE_MS = 60 * 1000;
+const visitCache = {};
+async function cached(key, load) {
+  const hit = visitCache[key];
+  if (hit && Date.now() - hit.at < VISIT_CACHE_MS) return hit.value;
+  const value = await load();
+  visitCache[key] = { at: Date.now(), value };
+  return value;
+}
+
 async function getImportedVisits(tenantCode) {
-  const store = blobsStore(`visits-history-${tenantCode}`);
-  const { blobs } = await store.list();
-  const batches = await Promise.all(blobs.map(b => store.get(b.key, { type: 'json' })));
-  return batches.flat().filter(Boolean);
+  return cached(`imp-${tenantCode}`, async () => {
+    const store = blobsStore(`visits-history-${tenantCode}`);
+    const { blobs } = await store.list();
+    const batches = await getManyJSON(store, blobs.map(b => b.key));
+    return batches.flat().filter(Boolean);
+  });
 }
 
 async function getLiveVisits(tenantCode) {
-  const store = blobsStore(`visits-live-${tenantCode}`);
-  const { blobs } = await store.list();
-  const visits = await Promise.all(blobs.map(b => store.get(b.key, { type: 'json' })));
-  return visits.filter(Boolean);
+  return cached(`live-${tenantCode}`, async () => {
+    const store = blobsStore(`visits-live-${tenantCode}`);
+    const { blobs } = await store.list();
+    const visits = await getManyJSON(store, blobs.map(b => b.key));
+    return visits.filter(Boolean);
+  });
 }
 
 // Normalizes live check-in records to the same flat shape the imported CSV
@@ -124,6 +156,7 @@ async function getAllVisits(tenantCode) {
 }
 
 async function saveLiveVisit(tenantCode, visit) {
+  delete visitCache[`live-${tenantCode}`];
   const store = blobsStore(`visits-live-${tenantCode}`);
   await store.setJSON(visit.id, visit);
 }

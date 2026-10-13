@@ -30,6 +30,15 @@ const { resolveIdentityByEmail } = require('./_lib/identity');
 const { getOtp, clearOtp, getStores, getAllVisits, computeDashboard, getTenantSettings, recordUserLogin } = require('./_lib/records');
 
 exports.handler = async (event) => {
+  try {
+    return await handle(event);
+  } catch (err) {
+    console.error('auth-login failed', err && err.stack);
+    return { statusCode: 500, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ error: 'Sign-in error: ' + (err && err.message) }) };
+  }
+};
+
+async function handle(event) {
   if (event.httpMethod !== 'POST') return { statusCode: 405, body: 'Method not allowed' };
 
   let body;
@@ -226,11 +235,17 @@ exports.handler = async (event) => {
   const role = userRecord.role || 'field_rep';
   const storeCodes = userRecord.storeCodes || [];
 
+  // Visits only colour the store list (last visit / status), so a slow read
+  // must not block sign-in: after 6s the rep gets in with plain store rows.
+  const visitsOrEmpty = Promise.race([
+    getAllVisits(tenant.code),
+    new Promise(resolve => setTimeout(() => resolve([]), 6000)),
+  ]).catch(() => []);
   const [stores, visits, settings] = await Promise.all([
     getStores(tenant.code),
-    getAllVisits(tenant.code),
-    getTenantSettings(tenant.code),
-    recordUserLogin(tenant.code, normalizedEmail),
+    visitsOrEmpty,
+    getTenantSettings(tenant.code).catch(() => ({})),
+    recordUserLogin(tenant.code, normalizedEmail).catch(() => null),
   ]);
   const dashboard = computeDashboard(stores, visits);
   const visibleStores = role === 'field_rep'

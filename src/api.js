@@ -51,8 +51,9 @@ export async function login({ email, code, tenantCode }) {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ email, code, tenant_code: tenantCode }),
   });
-  const data = await res.json();
-  if (!res.ok) throw new Error(data.error || 'Invalid or expired code');
+  let data = {};
+  try { data = await res.json(); } catch { data = { error: `Sign-in service did not respond (${res.status}). Try again in a minute.` }; }
+  if (!res.ok || data.error) throw new Error(data.error || 'Invalid or expired code');
   return data; // { token, role, client } or { needsTenantChoice, tenants }
 }
 
