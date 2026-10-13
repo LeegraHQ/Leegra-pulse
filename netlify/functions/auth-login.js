@@ -110,11 +110,16 @@ exports.handler = async (event) => {
   // than falling through to their staff rights.
   if (isStaffSharedCodeLogin) {
     const asRep = await resolveIdentityByEmail(normalizedEmail, { preferTenantUser: true });
-    const repRole = asRep && asRep.kind === 'tenant_user' ? (asRep.userRecord.role || 'field_rep') : null;
-    if (repRole !== 'field_rep') {
+    const repMatches = !asRep ? []
+      : asRep.kind === 'tenant_user' ? [{ tenant: asRep.tenant, userRecord: asRep.userRecord }]
+      : asRep.kind === 'multi_tenant_user' ? asRep.matches : [];
+    const reps = repMatches.filter(m => (m.userRecord.role || 'field_rep') === 'field_rep');
+    if (!reps.length) {
       return { statusCode: 401, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ error: 'That code is not valid for this account.' }) };
     }
-    identity = asRep;
+    identity = reps.length === 1
+      ? { kind: 'tenant_user', tenant: reps[0].tenant, userRecord: reps[0].userRecord }
+      : { kind: 'multi_tenant_user', matches: reps };
   }
 
   // A code holder doesn't need a user record on the tenant — the holder entry
@@ -129,6 +134,35 @@ exports.handler = async (event) => {
 
   if (!identity) {
     return { statusCode: 401, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ error: 'Invalid or expired code' }) };
+  }
+
+  // An account on several clients (Fleet demo, Chris as a rep): resolve the
+  // client BEFORE checking codes, so each client's own fixed code works and an
+  // emailed OTP isn't used up by the "choose a client" step.
+  if (identity.kind === 'multi_tenant_user') {
+    let chosen = tenantCodeChoice ? identity.matches.find(m => m.tenant.code === tenantCodeChoice) : null;
+    if (tenantCodeChoice && !chosen) {
+      return { statusCode: 400, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ error: 'Not assigned to that client' }) };
+    }
+    if (!chosen) {
+      const byCode = identity.matches.filter(m => m.userRecord.fixedCode && m.userRecord.fixedCode === submittedCode);
+      if (byCode.length === 1) chosen = byCode[0];
+    }
+    if (!chosen) {
+      const otp = (isTestRepLogin || isStaffSharedCodeLogin || isHolderCodeLogin) ? null : await getOtp(normalizedEmail);
+      const otpOk = otp && otp.code === submittedCode && Date.now() <= otp.expiresAt;
+      const fixedMatches = identity.matches.filter(m => m.userRecord.fixedCode && m.userRecord.fixedCode === submittedCode);
+      if (!isTestRepLogin && !isStaffSharedCodeLogin && !isHolderCodeLogin && !otpOk && !fixedMatches.length) {
+        return { statusCode: 401, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ error: 'Invalid or expired code' }) };
+      }
+      const list = fixedMatches.length ? fixedMatches : identity.matches;
+      return {
+        statusCode: 200,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ needsTenantChoice: true, tenants: list.map(m => ({ code: m.tenant.code, name: m.tenant.name, logo: m.tenant.logoUrl })) }),
+      };
+    }
+    identity = { kind: 'tenant_user', tenant: chosen.tenant, userRecord: chosen.userRecord };
   }
 
   // A tenant user's fixedCode (if set) is checked here, before falling back
