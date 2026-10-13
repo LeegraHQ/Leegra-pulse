@@ -68,7 +68,11 @@ export async function getDashboardSummary(token, tenantCode) {
   }
   const qs = tenantCode ? `?tenant_code=${encodeURIComponent(tenantCode)}` : '';
   const res = await fetch(`${API_BASE}/dashboard-summary${qs}`, { headers: { Authorization: `Bearer ${token}` } });
-  if (!res.ok) throw new Error('Could not load dashboard');
+  if (!res.ok) {
+    let detail = '';
+    try { detail = (await res.json()).error || ''; } catch { /* non-JSON (e.g. function timeout) */ }
+    throw new Error(`Could not load dashboard (${res.status}${detail ? ': ' + detail : ''})`);
+  }
   return res.json();
 }
 

@@ -327,7 +327,9 @@ export default function App() {
         return;
       }
       if (LEEGRA_ROLES.includes(result.role)) {
-        const { tenants } = await getDashboardSummary(result.token);
+        // A slow all-clients summary must not block staff sign-in.
+        let tenants = [];
+        try { ({ tenants } = await getDashboardSummary(result.token)); } catch (err) { setError(err.message); }
         setSession({ ...result, isSuperAdmin: true, tenants });
         setScreen('superadmin');
       } else {
