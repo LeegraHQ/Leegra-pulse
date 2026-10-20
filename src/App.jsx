@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { login, requestLoginCode, getDashboardSummary, checkIn, checkOut, submitAnswer, uploadPhotoAnswer, getVisitLog, downloadVisitLogExport, clearVisitHistory, getLoginStatus } from './api.js';
 import { TRAINING_MATERIALS, TENANT_DIRECTORY } from './clients.js';
 import './theme.css';
@@ -46,6 +46,22 @@ const CALL_SURVEYS = ['stock_pricing', 'execution_image', 'competitor_feedback']
 
 // Header questions the app fills from the login + chosen store, so reps never retype them.
 const AUTO_FILL_IDS = ['blitz', 'rep_name', 'channel', 'store_code', 'store_name', 'region'];
+
+// A photo already saved on the server (e.g. after the app reloaded): fetch it
+// with the rep's token and show it, since the local preview is gone.
+function PhotoThumb({ photoId, token, tenant, style, alt }) {
+  const [url, setUrl] = useState(null);
+  useEffect(() => {
+    if (!photoId || !token || !tenant) return;
+    let off = false, made = null;
+    fetch(`/api/visit-photo?tenant_code=${encodeURIComponent(tenant)}&photo_id=${encodeURIComponent(photoId)}`, { headers: { Authorization: `Bearer ${token}` } })
+      .then(r => (r.ok ? r.blob() : null))
+      .then(b => { if (b && !off) { made = URL.createObjectURL(b); setUrl(made); } })
+      .catch(() => {});
+    return () => { off = true; if (made) URL.revokeObjectURL(made); };
+  }, [photoId, token, tenant]);
+  return url ? <img src={url} alt={alt || ''} style={style} /> : <div style={{ ...style, height: 120 }} />;
+}
 const PREFIX_CHANNEL = { CH: 'Checkers', C: 'Clicks', CLKS: 'Clicks', BRU: 'Babies R Us', A: 'Baby City', M: 'Makro', S: 'Dis-Chem' };
 function storeChannel(store, lists) {
   if (!store) return '';
@@ -217,7 +233,41 @@ export default function App() {
   }); // { id, checkedInAt, questionnaire: { id, name, questions } }
   const [answers, setAnswers] = useState(() => BOOT?.answers || {}); // { [questionId]: answer }
   const [visitError, setVisitError] = useState('');
-  const [photoBusy, setPhotoBusy] = useState(''); // key of the photo currently uploading
+  const [photoLocal, setPhotoLocal] = useState({}); // key -> { url, status: 'saving'|'saved'|'error', error }
+  const [updateReady, setUpdateReady] = useState(false);
+  const answersRef = useRef({});
+  answersRef.current = answers;
+
+  // New deploys: phones keep the old app open for days. Check for a newer
+  // build and offer a one-tap update (state is restored after reload).
+  useEffect(() => {
+    const mine = Array.from(document.scripts).map(s => s.src).find(s => /\/assets\/[^/]+\.js/.test(s)) || '';
+    if (!mine) return;
+    let found = false;
+    async function check() {
+      if (found) return;
+      try {
+        const html = await (await fetch('/index.html?v=' + Date.now(), { cache: 'no-store' })).text();
+        const m = html.match(/src="([^"]*\/assets\/[^"]+\.js)"/);
+        if (m && !mine.endsWith(m[1])) { found = true; setUpdateReady(true); }
+      } catch (e) { /* offline — try later */ }
+    }
+    check();
+    const id = setInterval(check, 120000);
+    const onVis = () => { if (document.visibilityState === 'visible') check(); };
+    document.addEventListener('visibilitychange', onVis);
+    return () => { clearInterval(id); document.removeEventListener('visibilitychange', onVis); };
+  }, []);
+
+  useEffect(() => {
+    if (!updateReady) return;
+    const b = document.createElement('button');
+    b.textContent = 'New version available — tap to update';
+    Object.assign(b.style, { position: 'fixed', left: '12px', right: '12px', bottom: '16px', zIndex: '9999', padding: '14px', borderRadius: '10px', border: '1px solid var(--accent-400, #b9e33d)', background: 'var(--neutral-900, #16181f)', color: 'var(--neutral-100, #eef0f3)', fontSize: '15px', fontWeight: '600' });
+    b.onclick = () => window.location.reload();
+    document.body.appendChild(b);
+    return () => b.remove();
+  }, [updateReady]);
   const [callDone, setCallDone] = useState(''); // store name of the call just ended, shown on the store picker
   const [callSurveysDone, setCallSurveysDone] = useState(() => BOOT?.callSurveysDone || []); // surveys submitted in the open store call
   const [surveyLists, setSurveyLists] = useState(null); // dropdown lists + store channels, /survey-lists/<tenant>.json
@@ -498,7 +548,9 @@ export default function App() {
   // (one row per SKU line). The whole array is saved on every edit, so a
   // dropped connection mid-visit never leaves half a row on the server.
   function rowsOf(questionId) {
-    const rows = answers[questionId];
+    // Read through the ref so a photo that finishes uploading later never
+    // overwrites edits the rep made while it was saving.
+    const rows = answersRef.current[questionId];
     return Array.isArray(rows) ? rows : [];
   }
 
@@ -536,16 +588,52 @@ export default function App() {
     return { source, lines: [store ? `${store.name} (${store.code})` : '', rep] };
   }
 
+  // Shows the photo straight away, then uploads it with the stamp burned in.
   async function runPhotoUpload(key, questionId, file, source) {
-    setPhotoBusy(key);
+    const localUrl = URL.createObjectURL(file);
+    setPhotoLocal(p => ({ ...p, [key]: { url: localUrl, status: 'saving' } }));
     try {
-      return await uploadPhotoAnswer(session.token, visit.id, questionId, file, photoStamp(source));
+      const res = await uploadPhotoAnswer(session.token, visit.id, questionId, file, photoStamp(source));
+      setPhotoLocal(p => ({ ...p, [key]: { url: res.previewUrl || localUrl, status: 'saved' } }));
+      return res;
     } catch (e) {
-      window.alert(`Photo not saved: ${e.message || e}. Please try again.`);
+      setPhotoLocal(p => ({ ...p, [key]: { url: localUrl, status: 'error', error: String(e.message || e) } }));
       return null;
-    } finally {
-      setPhotoBusy('');
     }
+  }
+
+  function renderPhoto(key, label, required, value, onPick) {
+    const local = photoLocal[key];
+    const saved = value && typeof value === 'object' && value.photoId ? value : null;
+    const status = local?.status || (saved ? 'saved' : null);
+    const imgStyle = { width: '100%', maxHeight: 260, objectFit: 'contain', borderRadius: 8, background: 'rgba(0,0,0,0.3)', display: 'block' };
+    return (
+      <div key={key} className="lp-row-card" style={{ flexDirection: 'column', alignItems: 'stretch', gap: 8 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <div style={{ flex: 1, fontSize: 13 }}>{label}{required ? ' *' : ''}</div>
+          {status === 'saving' && <span className="lp-tag lp-tag-neutral">Saving…</span>}
+          {status === 'saved' && <span className="lp-tag lp-tag-accent2">✓ Saved</span>}
+          {status === 'error' && <span className="lp-tag lp-tag-outline">Not saved</span>}
+        </div>
+        {local?.url ? <img src={local.url} alt={label} style={imgStyle} />
+          : saved ? <PhotoThumb photoId={saved.photoId} token={session.token} tenant={session.client?.code} style={imgStyle} alt={label} /> : null}
+        {status === 'error' && <div style={{ fontSize: 12, color: 'var(--accent-300)' }}>Photo not saved: {local.error}. Please try again.</div>}
+        {status !== 'saving' && (
+          <div style={{ display: 'flex', gap: 8 }}>
+            <label className="lp-tag lp-tag-outline" style={{ cursor: 'pointer', flex: 1, textAlign: 'center', padding: '10px 0' }}>
+              {status ? 'Retake · Camera' : 'Camera'}
+              <input type="file" accept="image/*" capture="environment" style={{ display: 'none' }}
+                onChange={e => { const f = e.target.files && e.target.files[0]; e.target.value = ''; onPick(f, 'camera'); }} />
+            </label>
+            <label className="lp-tag lp-tag-outline" style={{ cursor: 'pointer', flex: 1, textAlign: 'center', padding: '10px 0' }}>
+              Gallery
+              <input type="file" accept="image/*" style={{ display: 'none' }}
+                onChange={e => { const f = e.target.files && e.target.files[0]; e.target.value = ''; onPick(f, 'gallery'); }} />
+            </label>
+          </div>
+        )}
+      </div>
+    );
   }
 
   async function handleCellPhoto(q, idx, field, file, source) {
@@ -843,7 +931,9 @@ export default function App() {
       .map(q => (PHOTOS_ENABLED || !q.fields ? q : { ...q, fields: q.fields.filter(f => f.type !== 'photo') }));
     // Auto-filled header answers are shown as a read-only summary, not as questions.
     const autoShown = allQuestions.filter(q => AUTO_FILL_IDS.includes(q.id) && answers[q.id] != null && answers[q.id] !== '');
-    const questions = allQuestions.filter(q => !autoShown.includes(q));
+    // Store/rep details are never asked: they're filled from the login and
+    // chosen store here, and again on the server at submit.
+    const questions = allQuestions.filter(q => !AUTO_FILL_IDS.includes(q.id));
     const isAnswered = a => (Array.isArray(a) ? a.length > 0 : a !== undefined && a !== null && a !== '');
     const doneCount = questions.filter(q => isAnswered(answers[q.id])).length;
     if (!client.stores.length) {
@@ -947,14 +1037,6 @@ export default function App() {
             <>
               <button className="lp-btn lp-btn-secondary lp-block" disabled>✓ Checked in — GPS verified</button>
               <div className="lp-label">{visit.questionnaire?.name || 'Visit tasks'} · {doneCount}/{questions.length}</div>
-              {autoShown.length > 0 && (
-                <div className="lp-inner-card" style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
-                  <div className="lp-kicker" style={{ width: '100%', marginBottom: 0 }}>Filled in for you</div>
-                  {autoShown.map(q => (
-                    <span key={q.id} className="lp-tag lp-tag-neutral">{q.label.replace(/\s*\(.*\)$/, '')}: {String(answers[q.id])}</span>
-                  ))}
-                </div>
-              )}
               {!questions.length && <div className="lp-muted" style={{ fontSize: 12 }}>No checklist configured for this store yet.</div>}
               <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                 {questions.map(q => {
@@ -989,31 +1071,7 @@ export default function App() {
                                 );
                               }
                               if (f.type === 'photo') {
-                                const photoCell = cell && typeof cell === 'object' ? cell : null;
-                                return (
-                                  <div key={f.id} className="lp-row-card" style={{ alignItems: 'center' }}>
-                                    <div style={{ flex: 1, fontSize: 13 }}>{f.label}{f.required ? ' *' : ''}</div>
-                                    {photoCell?.previewUrl && (
-                                      <img src={photoCell.previewUrl} alt="" style={{ width: 36, height: 36, borderRadius: 6, objectFit: 'cover', marginRight: 8 }} />
-                                    )}
-                                    {photoBusy === `${q.id}__${idx}__${f.id}` ? (
-                                      <div className="lp-tag lp-tag-neutral">Saving…</div>
-                                    ) : (
-                                      <div style={{ display: 'flex', gap: 6 }}>
-                                        <label className="lp-tag lp-tag-outline" style={{ cursor: 'pointer' }}>
-                                          {photoCell ? 'Retake' : 'Camera'}
-                                          <input type="file" accept="image/*" capture="environment" style={{ display: 'none' }}
-                                            onChange={e => { handleCellPhoto(q, idx, f, e.target.files[0], 'camera'); e.target.value = ''; }} />
-                                        </label>
-                                        <label className="lp-tag lp-tag-outline" style={{ cursor: 'pointer' }}>
-                                          Gallery
-                                          <input type="file" accept="image/*" style={{ display: 'none' }}
-                                            onChange={e => { handleCellPhoto(q, idx, f, e.target.files[0], 'gallery'); e.target.value = ''; }} />
-                                        </label>
-                                      </div>
-                                    )}
-                                  </div>
-                                );
+                                return renderPhoto(`${q.id}__${idx}__${f.id}`, f.label, f.required, cell, (file, src) => handleCellPhoto(q, idx, f, file, src));
                               }
                               if (f.type === 'choice') {
                                 return (
@@ -1082,31 +1140,7 @@ export default function App() {
                     );
                   }
                   if (q.type === 'photo') {
-                    const photoAnswer = answer && typeof answer === 'object' ? answer : null;
-                    return (
-                      <div key={q.id} className="lp-row-card" style={{ alignItems: 'center' }}>
-                        <div style={{ flex: 1, fontSize: 13 }}>{q.label}{q.required ? ' *' : ''}</div>
-                        {photoAnswer?.previewUrl && (
-                          <img src={photoAnswer.previewUrl} alt="" style={{ width: 36, height: 36, borderRadius: 6, objectFit: 'cover', marginRight: 8 }} />
-                        )}
-                        {photoBusy === q.id ? (
-                          <div className="lp-tag lp-tag-neutral">Saving…</div>
-                        ) : (
-                          <div style={{ display: 'flex', gap: 6 }}>
-                            <label className="lp-tag lp-tag-outline" style={{ cursor: 'pointer' }}>
-                              {photoAnswer ? 'Retake' : 'Camera'}
-                              <input type="file" accept="image/*" capture="environment" style={{ display: 'none' }}
-                                onChange={e => { handlePhotoAnswer(q.id, e.target.files[0], 'camera'); e.target.value = ''; }} />
-                            </label>
-                            <label className="lp-tag lp-tag-outline" style={{ cursor: 'pointer' }}>
-                              Gallery
-                              <input type="file" accept="image/*" style={{ display: 'none' }}
-                                onChange={e => { handlePhotoAnswer(q.id, e.target.files[0], 'gallery'); e.target.value = ''; }} />
-                            </label>
-                          </div>
-                        )}
-                      </div>
-                    );
+                    return renderPhoto(q.id, q.label, q.required, answer, (file, src) => handlePhotoAnswer(q.id, file, src));
                   }
                   if (q.type === 'choice') {
                     return (
