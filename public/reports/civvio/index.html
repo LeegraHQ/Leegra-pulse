@@ -104,6 +104,31 @@
   .lightbox { position:fixed; inset:0; background:rgba(27,29,34,0.9); display:flex; align-items:center; justify-content:center; z-index:60; padding:32px; }
   .lightbox img { max-width:100%; max-height:80vh; border-radius:10px; }
   .lightbox-cap { color:#fff; font-size:13px; margin-top:12px; text-align:center; }
+  .comment-form { display:flex; flex-direction:column; gap:8px; margin-bottom:14px; }
+  .comment-input { border:1px solid #E1E6EB; border-radius:8px; padding:8px 10px; font-size:13px; font-family:inherit; color:#1B1D22; background:#fff; }
+  .comment-input:focus-visible { outline:2px solid var(--accent); outline-offset:2px; }
+  .comment-text { resize:vertical; min-height:58px; }
+  .comment-actions { display:flex; align-items:center; gap:10px; }
+  .comment-btn { margin-left:auto; border:0; background:var(--accent); color:#fff; font-weight:600; font-size:12.5px; padding:8px 14px; border-radius:8px; cursor:pointer; font-family:inherit; white-space:nowrap; line-height:1.2; }
+  .comment-btn:hover { filter:brightness(1.08); }
+  .comment-btn:active { filter:brightness(0.92); }
+  .comment-btn:disabled { opacity:0.45; cursor:default; filter:none; }
+  .comment-note { font-size:11.5px; color:#7C8896; }
+  .comment-error { font-size:11.5px; color:var(--accent); }
+  .comment-item { border-top:1px solid #EEF1F4; padding:10px 0; display:flex; flex-direction:column; gap:3px; }
+  .comment-item:first-child { border-top:0; }
+  .comment-meta { font-size:11px; color:#7C8896; }
+  .comment-body { font-size:13px; color:#1B1D22; white-space:pre-wrap; }
+  .comment-scope { font-size:11px; color:#B5651D; font-weight:600; }
+  .comment-empty { font-size:12px; color:#B0B8C0; padding:8px 0; }
+  .note-btn { border:1px solid #E1E6EB; background:#fff; border-radius:999px; font-size:11px; padding:3px 9px; cursor:pointer; color:#5A6470; font-family:inherit; white-space:nowrap; }
+  .note-btn:hover { border-color:var(--accent); color:var(--accent); }
+  .note-btn.has { background:#FDF1E4; border-color:#F2DFC6; color:#B5651D; font-weight:600; }
+  .note-modal { position:fixed; inset:0; background:rgba(27,29,34,0.55); display:flex; align-items:center; justify-content:center; z-index:70; padding:24px; }
+  .note-box { background:#fff; border-radius:12px; padding:18px; width:min(520px,100%); max-height:80vh; overflow:auto; }
+  .note-title { font-size:14px; font-weight:600; color:#1B1D22; }
+  .note-sub { font-size:11px; color:#7C8896; margin:2px 0 12px; }
+  .note-close { border:0; background:none; font-size:12px; color:#7C8896; cursor:pointer; font-family:inherit; padding:0; }
 </style>
 </head>
 <body>
@@ -199,7 +224,7 @@
     <div class="card">
       <div class="card-header">Store Calls &amp; Feedback <span class="hint" id="calls-hint"></span></div>
       <table>
-        <thead><tr><th>Store</th><th>Region</th><th>Channel</th><th>Manager</th><th>Status</th><th>Date(s) Completed</th><th class="num">Rating</th></tr></thead>
+        <thead><tr><th>Store</th><th>Region</th><th>Channel</th><th>Manager</th><th>Status</th><th>Date(s) Completed</th><th class="num">Rating</th><th>Notes</th></tr></thead>
         <tbody id="tbl-calls"></tbody>
       </table>
     </div>
@@ -210,6 +235,22 @@
   <div class="card" style="margin-bottom:12px;">
     <div class="card-header">Store Visit Photos <span class="hint" id="photo-hint"></span></div>
     <div class="photo-grid" id="photo-grid"></div>
+  </div>
+
+  <div class="card" style="margin-bottom:12px;">
+    <div class="card-header">Comments <span class="hint">Everyone sees these</span></div>
+    <div class="card-body">
+      <div class="card-sub">Notes on a single store sit with that store in the table above — this thread is for the month overall.</div>
+      <div class="comment-form">
+        <input class="comment-input" id="comment-name" placeholder="Your name" autocomplete="off" maxlength="60">
+        <textarea class="comment-input comment-text" id="comment-text" placeholder="Add a comment…" maxlength="2000"></textarea>
+        <div class="comment-actions">
+          <div class="comment-error" id="comment-error"></div>
+          <button class="comment-btn" id="comment-post">Post comment</button>
+        </div>
+      </div>
+      <div id="comment-list"></div>
+    </div>
   </div>
 </div>
 
@@ -796,8 +837,15 @@ function render() {
     const dates = [r.dateCompleted1, r.dateCompleted2].filter(Boolean).join(', ') || '—';
     const ratingColor = r.rating == null ? '#B0B8C0' : r.rating >= 4 ? '#1B1D22' : r.rating >= 3 ? '#B5651D' : '#C0432F';
     const ratingLabel = r.rating == null ? '—' : r.rating.toFixed(1) + ' ★';
-    return '<tr><td class="name-cell">' + esc(r.store) + '</td><td class="muted">' + esc(r.region) + '</td><td class="muted">' + esc(r.channel) + '</td><td class="muted">' + esc(r.manager) + '</td><td><span class="badge' + (session.isAdmin ? ' editable' : '') + '" data-store="' + esc(r.store) + '" style="background:' + bg + ';color:' + color + '">' + esc(r.status) + '</span></td><td class="muted" style="white-space:nowrap">' + esc(dates) + '</td><td class="num" style="font-weight:600;color:' + ratingColor + '">' + ratingLabel + '</td></tr>';
-  }).join('') : '<tr class="empty-row"><td colspan="7">No store calls match the selected filters.</td></tr>';
+    const noteCount = notesFor(r.store).length;
+    const noteLabel = noteCount ? noteCount + (noteCount > 1 ? ' notes' : ' note') : 'Add note';
+    const noteCell = '<td><button class="note-btn' + (noteCount ? ' has' : '') + '" data-note="' + esc(r.store) + '">' + noteLabel + '</button></td>';
+    return '<tr><td class="name-cell">' + esc(r.store) + '</td><td class="muted">' + esc(r.region) + '</td><td class="muted">' + esc(r.channel) + '</td><td class="muted">' + esc(r.manager) + '</td><td><span class="badge' + (session.isAdmin ? ' editable' : '') + '" data-store="' + esc(r.store) + '" style="background:' + bg + ';color:' + color + '">' + esc(r.status) + '</span></td><td class="muted" style="white-space:nowrap">' + esc(dates) + '</td><td class="num" style="font-weight:600;color:' + ratingColor + '">' + ratingLabel + '</td>' + noteCell + '</tr>';
+  }).join('') : '<tr class="empty-row"><td colspan="8">No store calls match the selected filters.</td></tr>';
+
+  callsBody.querySelectorAll('[data-note]').forEach(el => {
+    el.addEventListener('click', () => openNoteBox(el.dataset.note));
+  });
 
   if (session.isAdmin) {
     callsBody.querySelectorAll('.badge.editable').forEach(el => {
@@ -906,10 +954,172 @@ async function checkStorage() {
   }
 }
 
+/* --------------------------------- comments ------------------------------- */
+// One append-only thread per client, served by /api/report-comments. A comment
+// with `store` set is a note on that store (shown in the Notes column of the
+// store table); an empty `store` is the general thread at the bottom of the
+// page. Everyone who gets past the gate can read and post — same audience the
+// rest of the dashboard already has.
+
+const NAME_KEY = 'civvio_comment_name';
+let comments = [];
+let commentsRemote = false;
+
+const notesFor = store => comments.filter(c => c.store === store);
+
+function commentWhen(iso) {
+  const d = new Date(iso);
+  if (isNaN(d)) return '';
+  return d.toLocaleDateString([], { day: 'numeric', month: 'short' }) + ' · ' +
+    d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+}
+
+async function loadComments() {
+  try {
+    const res = await fetch('/api/report-comments?tenant=' + TENANT);
+    if (!res.ok || !(res.headers.get('content-type') || '').includes('application/json')) throw new Error('no backend');
+    const data = await res.json();
+    comments = Array.isArray(data.comments) ? data.comments : [];
+    commentsRemote = !data.error;
+  } catch (e) {
+    comments = [];
+    commentsRemote = false;
+  }
+  renderComments();
+}
+
+async function postComment(storeName, name, text) {
+  const res = await fetch('/api/report-comments', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ tenant: TENANT, store: storeName || '', name: name, text: text }),
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok || !data.comment) throw new Error(data.error || 'That comment could not be saved. Try again in a moment.');
+  comments.unshift(data.comment);
+  try { localStorage.setItem(NAME_KEY, name); } catch (e) { /* storage unavailable */ }
+}
+
+function commentHtml(c, withScope) {
+  return '<div class="comment-item">' +
+    (withScope && c.store ? '<div class="comment-scope">' + esc(c.store) + '</div>' : '') +
+    '<div class="comment-meta">' + esc(c.name) + ' · ' + commentWhen(c.at) + '</div>' +
+    '<div class="comment-body">' + esc(c.text) + '</div>' +
+    '</div>';
+}
+
+function renderComments() {
+  const list = document.getElementById('comment-list');
+  if (!list) return;
+  const general = comments.filter(c => !c.store);
+  list.innerHTML = general.length
+    ? general.map(c => commentHtml(c, false)).join('')
+    : '<div class="comment-empty">' + (commentsRemote ? 'No comments yet.' : 'Comments are not reachable right now — try reloading in a moment.') + '</div>';
+  const btn = document.getElementById('comment-post');
+  if (btn) btn.disabled = !commentsRemote;
+  const nameInput = document.getElementById('comment-name');
+  if (nameInput && !nameInput.value) {
+    try { nameInput.value = localStorage.getItem(NAME_KEY) || ''; } catch (e) { /* storage unavailable */ }
+  }
+}
+
+function wireCommentForm() {
+  const btn = document.getElementById('comment-post');
+  if (!btn) return;
+  btn.addEventListener('click', async () => {
+    const nameEl = document.getElementById('comment-name');
+    const textEl = document.getElementById('comment-text');
+    const err = document.getElementById('comment-error');
+    const name = nameEl.value.trim();
+    const text = textEl.value.trim();
+    err.textContent = '';
+    if (!name) { err.textContent = 'Add your name first.'; nameEl.focus(); return; }
+    if (!text) { err.textContent = 'Write a comment first.'; textEl.focus(); return; }
+    btn.disabled = true;
+    btn.textContent = 'Posting…';
+    try {
+      await postComment('', name, text);
+      textEl.value = '';
+      renderComments();
+    } catch (e) {
+      err.textContent = e.message;
+    } finally {
+      btn.disabled = false;
+      btn.textContent = 'Post comment';
+    }
+  });
+}
+
+// Per-store notes: the Notes column opens this box for one store.
+function openNoteBox(storeName) {
+  const modal = document.createElement('div');
+  modal.className = 'note-modal';
+  const box = document.createElement('div');
+  box.className = 'note-box';
+  modal.appendChild(box);
+
+  function draw() {
+    const notes = notesFor(storeName);
+    box.innerHTML =
+      '<div style="display:flex;align-items:flex-start;gap:10px">' +
+        '<div style="flex:1"><div class="note-title">' + esc(storeName) + '</div>' +
+        '<div class="note-sub">Notes on this store, visible to everyone who opens the dashboard.</div></div>' +
+        '<button class="note-close" data-close>Close</button>' +
+      '</div>' +
+      '<div class="comment-form">' +
+        '<input class="comment-input" data-note-name placeholder="Your name" autocomplete="off" maxlength="60">' +
+        '<textarea class="comment-input comment-text" data-note-text placeholder="Add a note about this store…" maxlength="2000"></textarea>' +
+        '<div class="comment-actions"><div class="comment-error" data-note-error></div>' +
+        '<button class="comment-btn" data-note-post' + (commentsRemote ? '' : ' disabled') + '>Post note</button></div>' +
+      '</div>' +
+      (notes.length ? notes.map(c => commentHtml(c, false)).join('')
+        : '<div class="comment-empty">' + (commentsRemote ? 'No notes on this store yet.' : 'Notes are not reachable right now.') + '</div>');
+
+    const nameEl = box.querySelector('[data-note-name]');
+    try { nameEl.value = localStorage.getItem(NAME_KEY) || ''; } catch (e) { /* storage unavailable */ }
+    box.querySelector('[data-close]').addEventListener('click', close);
+    const postBtn = box.querySelector('[data-note-post]');
+    postBtn.addEventListener('click', async () => {
+      const textEl = box.querySelector('[data-note-text]');
+      const err = box.querySelector('[data-note-error]');
+      const name = nameEl.value.trim();
+      const text = textEl.value.trim();
+      err.textContent = '';
+      if (!name) { err.textContent = 'Add your name first.'; nameEl.focus(); return; }
+      if (!text) { err.textContent = 'Write a note first.'; textEl.focus(); return; }
+      postBtn.disabled = true;
+      postBtn.textContent = 'Posting…';
+      try {
+        await postComment(storeName, name, text);
+        draw();
+        render();
+      } catch (e) {
+        err.textContent = e.message;
+        postBtn.disabled = false;
+        postBtn.textContent = 'Post note';
+      }
+    });
+  }
+
+  function close() {
+    modal.remove();
+    document.removeEventListener('keydown', onKey);
+  }
+  function onKey(e) { if (e.key === 'Escape') close(); }
+
+  modal.addEventListener('click', e => { if (e.target === modal) close(); });
+  document.addEventListener('keydown', onKey);
+  draw();
+  document.body.appendChild(modal);
+  const first = box.querySelector('[data-note-text]');
+  if (first) first.focus();
+}
+
 async function boot() {
   loadLocalPhotos();
+  wireCommentForm();
   render();
-  await Promise.all([checkStorage(), loadRemotePhotos(), loadOverrides()]);
+  await Promise.all([checkStorage(), loadRemotePhotos(), loadOverrides(), loadComments()]);
   render();
   diag();
 }

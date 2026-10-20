@@ -82,12 +82,22 @@ table.plain td:first-child{color:var(--text-primary);font-weight:600}
 .lightbox{display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:100;align-items:center;justify-content:center;cursor:zoom-out}
 .lightbox.open{display:flex}
 .lightbox img{max-width:92%;max-height:92%;border-radius:8px}
+.media-bar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:14px}
+.select{border:1px solid var(--border);background:var(--surface-1);color:var(--text-primary);border-radius:10px;padding:7px 10px;font-size:12.5px;font-weight:600;font-family:inherit}
+.select:focus-visible,.filter-input:focus-visible,.media-tab:focus-visible,.btn:focus-visible{outline:2px solid var(--brand-red);outline-offset:2px}
+.filter-row th{background:var(--surface-1);padding:6px}
+.filter-input{width:100%;min-width:90px;border:1px solid var(--border);background:var(--page);color:var(--text-primary);border-radius:8px;padding:6px 8px;font-size:12px;font-family:inherit}
+.filter-meta{font-size:12px;color:var(--text-muted);margin-top:8px;display:flex;gap:12px;align-items:center}
+.placeholder{border:2px dashed var(--border);border-radius:14px;padding:24px;color:var(--text-muted);font-size:13.5px;line-height:1.65}
+.placeholder b{color:var(--text-primary)}
+.cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:10px;margin-top:14px}
+.col-chip{border:1px solid var(--border);border-radius:10px;padding:9px 11px;font-size:12px;color:var(--text-secondary);background:var(--surface-1)}
 @media(max-width:1200px){.kpis{grid-template-columns:repeat(2,1fr)}.grid2,.grid3,.grid4{grid-template-columns:1fr}.media-grid{grid-template-columns:repeat(2,1fr)}}
 </style></head>
 <body class="viz-root">
 <div class="header">
   <div class="brand"><img src="/logos/bridgestone-logo.png" onerror="this.style.display='none'"/><div><h1>Bridgestone Mystery Shopper Dashboard</h1><p>Month-over-month trend • Feb – June 2026 assessments</p></div></div>
-  <div class="actions"><a class="btn red" href="bridgestone-mystery-shopper-import-template.xlsx">Download Import Template</a></div>
+  <div class="actions"><a class="btn red" href="bridgestone-mystery-shopper-import-template.xls">Download Import Template</a><a class="btn" href="bridgestone-current-data.xls">Download Current Data</a></div>
 </div>
 <div class="wrap">
 
@@ -97,13 +107,13 @@ table.plain td:first-child{color:var(--text-primary);font-weight:600}
 
 <div class="grid2" style="margin-bottom:16px">
   <div class="card">
-    <div class="section-title"><h2>Executive Summary</h2><span class="small">Computed from 594 real imported visits, Feb–June 2026</span></div>
-    <div class="summary">
-      The clearest and most consistent trend across five months of real Mystery Shopper visits is a <b>steady decline in Bridgestone's recommendation share</b>: <b>39%</b> of February visits, <b>32%</b> in March, <b>17%</b> in April, <b>12%</b> in May, and <b>11%</b> in June. Continental briefly overtook Bridgestone in April (21%) and May (18%) but fell sharply to just <b>4%</b> in June — the real story in June is <b>Dunlop surging to 39%</b> recommendation share, the new brand to watch.<br><br>
-      Unlike the deck's May-only figures suggested, the fuller real dataset shows promotion mentions and warranty offers have stayed fairly stable across all five months (promotions 40–45%, warranty offered 58–75%, actually improving to <b>75%</b> in June) — the concern is specifically recommendation share, not a broader collapse in staff behaviour. Recommendation basis has held steady around <b>60–64% Price</b> over Quality throughout.<br><br>
-      Bridgestone stock availability sits at <b>69–80%</b> across the period, dipping to its lowest (69%) in June — worth watching alongside the recommendation share drop. Real Competition Execution tracking (126 visits, Supa Quick channel) shows Bridgestone POSM cube and counter-flyer visibility both at <b>48%</b>.<br><br>
-      <i>Priority action: Bridgestone recommendation training and incentives remain the top lever, with June's Dunlop surge now the most urgent competitive signal to respond to.</i>
+    <div class="section-title"><h2>Executive Summary</h2>
+      <label style="font-size:12px;color:var(--text-muted);font-weight:700;display:flex;align-items:center;gap:6px">Month
+        <select class="select" id="execMonthSelect"></select>
+      </label>
     </div>
+    <div class="small" id="execMeta" style="margin-bottom:10px"></div>
+    <div class="summary" id="execSummary"></div>
   </div>
   <div class="card">
     <div class="section-title"><h2>Brand Recommendation Share Trend</h2><span class="small">% of visits</span></div>
@@ -123,22 +133,52 @@ table.plain td:first-child{color:var(--text-primary);font-weight:600}
     <div id="demoBlock"></div>
   </div>
   <div class="card">
-    <div class="section-title"><h2>Warranty &amp; Promotions Mentioned</h2><span class="small">Best month on record (April)</span></div>
+    <div class="section-title"><h2>Warranty, Guarantees &amp; Promotions</h2><span class="small" id="wpMeta"></span></div>
+    <div class="media-bar">
+      <label style="font-size:12px;color:var(--text-muted);font-weight:700">Month
+        <select class="select" id="wpMonthSelect"></select>
+      </label>
+      <label style="font-size:12px;color:var(--text-muted);font-weight:700">Channel
+        <select class="select" id="wpChannelSelect"></select>
+      </label>
+    </div>
     <div id="warrantyPromoBlock"></div>
   </div>
 </div>
 
 <div class="card" style="margin-bottom:16px">
-  <div class="section-title"><h2>Brand Visibility &amp; POSM — Per Dealer Group</h2><span class="small">April 2026 snapshot — most complete per-channel dataset available</span></div>
+  <div class="section-title"><h2>Brand Visibility &amp; POSM — Per Dealer Group</h2>
+    <label style="font-size:12px;color:var(--text-muted);font-weight:700;display:flex;align-items:center;gap:6px">Month
+      <select class="select" id="channelMonthSelect"></select>
+    </label>
+  </div>
   <div class="table-wrap">
     <table class="plain" id="channelTable"></table>
   </div>
+  <div class="filter-meta"><span id="channelCount"></span><button class="table-toggle" id="channelClear">Clear all filters</button></div>
 </div>
 
 <div class="card" style="margin-bottom:16px">
-  <div class="section-title"><h2>Store &amp; POSM Pictures</h2><span class="small">Field evidence per store, per channel</span></div>
+  <div class="section-title"><h2>Pictures</h2><span class="small" id="mediaSource">Field evidence per store — served from Supabase Storage</span></div>
   <div class="media-tabs" id="mediaTabs"></div>
+  <div class="media-bar">
+    <label style="font-size:12px;color:var(--text-muted);font-weight:700">Channel
+      <select class="select" id="mediaChannelSelect"></select>
+    </label>
+    <label style="font-size:12px;color:var(--text-muted);font-weight:700">Store
+      <select class="select" id="mediaStoreSelect"></select>
+    </label>
+    <span class="small" id="mediaCount" style="color:var(--text-muted);font-size:12px"></span>
+  </div>
   <div id="mediaGrid"></div>
+</div>
+
+<div class="card" style="margin-bottom:16px">
+  <div class="section-title"><h2>Pricing</h2><span class="small">Awaiting Bridgestone pricing template</span></div>
+  <div class="placeholder">
+    <b>Reserved for the pricing report.</b> Send the pricing template through and this section will carry price-quoted analysis per brand, pattern, size and channel — month-over-month, the same way the trends above work. The Import Template already ships with a <b>Pricing</b> sheet using the structure below, so pricing can start being captured on visits immediately; the columns will be replaced with yours once received.
+    <div class="cols" id="pricingCols"></div>
+  </div>
 </div>
 
 <div class="card" style="margin-bottom:16px">
@@ -151,6 +191,7 @@ table.plain td:first-child{color:var(--text-primary);font-weight:600}
   <div class="table-wrap">
     <table class="plain" id="sampleDrillTable"></table>
   </div>
+  <div class="filter-meta"><span id="drillCount"></span><button class="table-toggle" id="drillClear">Clear all filters</button></div>
 </div>
 
 </div>
@@ -229,6 +270,39 @@ function renderLineChart(containerId, series, opts) {
   }
 }
 
+// ---------- Executive Summary, per month ----------
+// Paste each month's summary in as HTML (b, i, br all fine). Any month left
+// as null shows the "not uploaded yet" note.
+const EXEC_SUMMARIES = {
+  'All months (Feb – June)': {
+    meta: 'Computed from 594 real imported visits, Feb–June 2026',
+    html: `The clearest and most consistent trend across five months of real Mystery Shopper visits is a <b>steady decline in Bridgestone's recommendation share</b>: <b>39%</b> of February visits, <b>32%</b> in March, <b>17%</b> in April, <b>12%</b> in May, and <b>11%</b> in June. Continental briefly overtook Bridgestone in April (21%) and May (18%) but fell sharply to just <b>4%</b> in June — the real story in June is <b>Dunlop surging to 39%</b> recommendation share, the new brand to watch.<br><br>
+      Unlike the deck's May-only figures suggested, the fuller real dataset shows promotion mentions and warranty offers have stayed fairly stable across all five months (promotions 40–45%, warranty offered 58–75%, actually improving to <b>75%</b> in June) — the concern is specifically recommendation share, not a broader collapse in staff behaviour. Recommendation basis has held steady around <b>60–64% Price</b> over Quality throughout.<br><br>
+      Bridgestone stock availability sits at <b>69–80%</b> across the period, dipping to its lowest (69%) in June — worth watching alongside the recommendation share drop. Real Competition Execution tracking (126 visits, Supa Quick channel) shows Bridgestone POSM cube and counter-flyer visibility both at <b>48%</b>.<br><br>
+      <i>Priority action: Bridgestone recommendation training and incentives remain the top lever, with June's Dunlop surge now the most urgent competitive signal to respond to.</i>`,
+  },
+  'Feb 2026': { meta: 'Awaiting Bridgestone summary', html: null },
+  'March 2026': { meta: 'Awaiting Bridgestone summary', html: null },
+  'April 2026': { meta: 'Awaiting Bridgestone summary', html: null },
+  'May 2026': { meta: 'Awaiting Bridgestone summary', html: null },
+  'June 2026': { meta: 'Awaiting Bridgestone summary', html: null },
+  'July 2026': { meta: 'Awaiting Bridgestone summary', html: null },
+  'August 2026': { meta: 'Awaiting Bridgestone summary', html: null },
+};
+let execMonth = Object.keys(EXEC_SUMMARIES)[0];
+
+function renderExecSummary() {
+  const sel = document.getElementById('execMonthSelect');
+  const keys = Object.keys(EXEC_SUMMARIES);
+  sel.innerHTML = keys.map(k => `<option${k === execMonth ? ' selected' : ''}>${k}</option>`).join('');
+  sel.onchange = () => { execMonth = sel.value; renderExecSummary(); };
+  const s = EXEC_SUMMARIES[execMonth];
+  document.getElementById('execMeta').textContent = s.meta;
+  document.getElementById('execSummary').innerHTML = s.html
+    ? s.html
+    : `<div class="placeholder"><b>No summary uploaded for ${execMonth} yet.</b><br>Send the written summary for this month through and it will show here, with the charts alongside unchanged. Until then the combined <b>All months</b> view carries the full-period read.</div>`;
+}
+
 // ---------- KPI stat tiles ----------
 const KPIS = [
   { label: 'Real Visits Imported', value: '594', delta: 'Feb – June 2026, from Import Template', deltaClass: 'neutral', icon: '' },
@@ -304,68 +378,264 @@ function renderDemo() {
   renderBarList('demo-vehicle', DEMO.vehicle, { color: 'var(--series-other)' });
 }
 
-const WARRANTY_TYPES = [
-  ['Bridgestone Firestone 1 Year', 95], ['TWT Manufacturer Warranty', 100], ['TWT Black Rhino Wheels', 10],
-  ['Dunlop 18 Month Insurance', 85], ['Michelin 5 Year Warranty', 50], ['Suttimo 8 Year Warranty', 100], ['Suttimo 10 000km Warranty', 100],
+// ---------- Warranty, Guarantees & Promotions ----------
+// One row per item mentioned: { type, name, share, month, channel }.
+// type: 'Warranty' | 'Guarantee' | 'Promotion'.  share = % of visits where
+// mentioned, within that month/channel.  channel 'Unspecified' = the source
+// deck gave the item without splitting it by dealer group.
+const WP_MONTHS = ['Feb 2026','March 2026','April 2026','May 2026','June 2026','July 2026','August 2026'];
+const WP_DATA = [
+  { type:'Warranty', name:'Bridgestone Firestone 1 Year', share:95, month:'April 2026', channel:'Unspecified' },
+  { type:'Warranty', name:'TWT Manufacturer Warranty', share:100, month:'April 2026', channel:'Tiger Wheel & Tyre' },
+  { type:'Warranty', name:'TWT Black Rhino Wheels', share:10, month:'April 2026', channel:'Tiger Wheel & Tyre' },
+  { type:'Warranty', name:'Dunlop 18 Month Insurance', share:85, month:'April 2026', channel:'Unspecified' },
+  { type:'Warranty', name:'Michelin 5 Year Warranty', share:50, month:'April 2026', channel:'Unspecified' },
+  { type:'Warranty', name:'Suttimo 8 Year Warranty', share:100, month:'April 2026', channel:'Unspecified' },
+  { type:'Warranty', name:'Suttimo 10 000km Warranty', share:100, month:'April 2026', channel:'Unspecified' },
+  { type:'Promotion', name:'Supa Quick 40th Birthday Bash', share:100, month:'April 2026', channel:'Supa Quick' },
+  { type:'Promotion', name:'Lombaard Cyber Sale', share:100, month:'April 2026', channel:'Lombaard' },
+  { type:'Promotion', name:'Tyremart Buy Now Pay Later', share:90, month:'April 2026', channel:'Tyremart' },
+  { type:'Promotion', name:'Tyreworx Online Win 4 Tyres', share:100, month:'April 2026', channel:'Tyreworx' },
+  { type:'Promotion', name:'TWT Buy 4 Tyres + Free Apparel', share:100, month:'April 2026', channel:'Tiger Wheel & Tyre' },
+  { type:'Promotion', name:'Hi-Q Spend R3000+', share:100, month:'April 2026', channel:'Hi-Q' },
+  { type:'Promotion', name:'Hi-Q Ceat Set + Tyre Damage', share:100, month:'April 2026', channel:'Hi-Q' },
+  // Guarantees — none supplied yet. Add rows here as they come in, e.g.
+  // { type:'Guarantee', name:'Bridgestone 30 Day Ride Guarantee', share:0, month:'June 2026', channel:'Supa Quick' },
 ];
-const PROMO_TYPES = [
-  ['Supa Quick 40th Birthday Bash', 100], ['Lombaard Cyber Sale', 100], ['Tyremart Buy Now Pay Later', 90],
-  ['Tyreworx Online Win 4 Tyres', 100], ['TWT Buy 4 Tyres + Free Apparel', 100], ['Hi-Q Spend R3000+', 100], ['Hi-Q Ceat Set + Tyre Damage', 100],
-];
+
+const wpMonthsWithData = () => WP_MONTHS.filter(m => WP_DATA.some(d => d.month === m));
+let wpMonth = wpMonthsWithData().slice(-1)[0] || WP_MONTHS[0];
+let wpChannel = 'All channels';
+
+function wpPool() { return WP_DATA.filter(d => d.month === wpMonth); }
 
 function renderWarrantyPromo() {
-  const el = document.getElementById('warrantyPromoBlock');
-  el.innerHTML = `
-    <div style="margin-bottom:14px"><div style="font-weight:700;font-size:12.5px;margin-bottom:6px">Warranty types (where offered)</div><div id="wp-warranty"></div></div>
-    <div><div style="font-weight:700;font-size:12.5px;margin-bottom:6px">Promotions mentioned</div><div id="wp-promo"></div></div>
-  `;
-  renderBarList('wp-warranty', WARRANTY_TYPES, { color: 'var(--warning)' });
-  renderBarList('wp-promo', PROMO_TYPES, { color: 'var(--series-bridgestone)' });
+  const monthSel = document.getElementById('wpMonthSelect');
+  const chanSel = document.getElementById('wpChannelSelect');
+  const withData = wpMonthsWithData();
+  monthSel.innerHTML = WP_MONTHS.map(m => `<option${m === wpMonth ? ' selected' : ''}>${m}${withData.includes(m) ? '' : ' — no data'}</option>`).join('');
+  monthSel.onchange = () => { wpMonth = monthSel.value.replace(' — no data',''); wpChannel = 'All channels'; renderWarrantyPromo(); };
+
+  const pool = wpPool();
+  const channels = ['All channels', ...[...new Set(pool.map(d => d.channel))].sort()];
+  if (!channels.includes(wpChannel)) wpChannel = 'All channels';
+  chanSel.innerHTML = channels.map(c => `<option${c === wpChannel ? ' selected' : ''}>${c}</option>`).join('');
+  chanSel.onchange = () => { wpChannel = chanSel.value; renderWarrantyPromo(); };
+
+  const shown = pool.filter(d => wpChannel === 'All channels' || d.channel === wpChannel);
+  document.getElementById('wpMeta').textContent = shown.length
+    ? shown.length + ' item' + (shown.length === 1 ? '' : 's') + ' mentioned'
+    : 'No data for this selection';
+
+  const groups = [
+    { type:'Warranty', title:'Warranty types (where offered)', id:'wp-warranty', color:'var(--warning)' },
+    { type:'Guarantee', title:'Guarantees offered', id:'wp-guarantee', color:'var(--good)' },
+    { type:'Promotion', title:'Promotions mentioned', id:'wp-promo', color:'var(--series-bridgestone)' },
+  ];
+  document.getElementById('warrantyPromoBlock').innerHTML = groups.map(g => {
+    const items = shown.filter(d => d.type === g.type);
+    return `<div style="margin-bottom:14px">
+      <div style="font-weight:700;font-size:12.5px;margin-bottom:6px">${g.title}</div>
+      ${items.length
+        ? `<div id="${g.id}"></div>`
+        : `<div class="placeholder" style="padding:12px;font-size:12.5px">No ${g.type.toLowerCase()} data for ${wpMonth}${wpChannel === 'All channels' ? '' : ' · ' + wpChannel} yet.</div>`}
+    </div>`;
+  }).join('');
+  groups.forEach(g => {
+    const items = shown.filter(d => d.type === g.type);
+    if (items.length) renderBarList(g.id, items.map(d => [d.name, d.share]), { color: g.color });
+  });
 }
 
+// ---------- Brand visibility & POSM per dealer group ----------
+// [ month, dealer group, Bridgestone fixed signage %, Firestone fixed signage %,
+//   Bridgestone POSM available %, Firestone POSM available % ]
+// null = not supplied. Add a month's rows and it appears in the Month filter.
+const CHANNEL_MONTHS = ['Feb 2026','March 2026','April 2026','May 2026','June 2026','July 2026','August 2026'];
 const CHANNEL_DATA = [
-  ['Best Drive', 25, 10, 40, 10],
-  ['DunlopZone', 55, 15, 70, 10],
-  ['Fit-It', 15, 0, null, null],
-  ['Hi-Q', 35, 15, 30, 5],
-  ['Independent', 70, 0, null, null],
-  ['Kal Tire', 50, 5, null, null],
-  ['Lombaard', 100, 100, 100, 25],
-  ["Minty's", null, null, 50, 0],
-  ['Point-S', null, null, 50, 0],
-  ['Supa Quick', null, null, 100, 80],
+  ['April 2026','Best Drive', 25, 10, 40, 10],
+  ['April 2026','DunlopZone', 55, 15, 70, 10],
+  ['April 2026','Fit-It', 15, 0, null, null],
+  ['April 2026','Hi-Q', 35, 15, 30, 5],
+  ['April 2026','Independent', 70, 0, null, null],
+  ['April 2026','Kal Tire', 50, 5, null, null],
+  ['April 2026','Lombaard', 100, 100, 100, 25],
+  ['April 2026',"Minty's", null, null, 50, 0],
+  ['April 2026','Point-S', null, null, 50, 0],
+  ['April 2026','Supa Quick', null, null, 100, 80],
 ];
 
-function renderChannelTable() {
-  const el = document.getElementById('channelTable');
-  let html = '<tr><th>Dealer Group</th><th>Bridgestone Fixed Signage</th><th>Firestone Fixed Signage</th><th>Bridgestone POSM Available</th><th>Firestone POSM Available</th></tr>';
-  CHANNEL_DATA.forEach(row => {
-    html += '<tr>' + row.map((v, i) => i === 0 ? `<td>${v}</td>` : `<td>${v === null ? '—' : v + '%'}</td>`).join('') + '</tr>';
-  });
-  el.innerHTML = html;
+const CHANNEL_COLS = ['Dealer Group','Bridgestone Fixed Signage','Firestone Fixed Signage','Bridgestone POSM Available','Firestone POSM Available'];
+const BANDS = [
+  { label:'75% and up', test:v => v !== null && v >= 75 },
+  { label:'50 – 74%', test:v => v !== null && v >= 50 && v < 75 },
+  { label:'25 – 49%', test:v => v !== null && v >= 25 && v < 50 },
+  { label:'Under 25%', test:v => v !== null && v < 25 },
+  { label:'No data', test:v => v === null },
+];
+const channelMonthsWithData = () => CHANNEL_MONTHS.filter(m => CHANNEL_DATA.some(r => r[0] === m));
+let channelMonth = channelMonthsWithData().slice(-1)[0] || CHANNEL_MONTHS[0];
+const channelFilters = ['', '', '', '', ''];
+
+function channelRows() {
+  return CHANNEL_DATA.filter(r => r[0] === channelMonth).map(r => r.slice(1));
+}
+function channelFiltered() {
+  return channelRows().filter(row => channelFilters.every((f, i) => {
+    if (!f) return true;
+    if (i === 0) return String(row[0]).toLowerCase().includes(f.toLowerCase());
+    const band = BANDS.find(b => b.label === f);
+    return band ? band.test(row[i]) : true;
+  }));
 }
 
-// ---------- Store & POSM pictures ----------
-// Empty until real photos are sent in (matching the Import Template's
-// Signage/POSM/Cube/Counter-Flyer filename columns) — then each becomes
-// { channel, store, caption, src }.
+function renderChannelTable() {
+  const monthSel = document.getElementById('channelMonthSelect');
+  const withData = channelMonthsWithData();
+  monthSel.innerHTML = CHANNEL_MONTHS.map(m => `<option${m === channelMonth ? ' selected' : ''}>${m}${withData.includes(m) ? '' : ' — no data'}</option>`).join('');
+  monthSel.onchange = () => { channelMonth = monthSel.value.replace(' — no data',''); channelFilters.fill(''); renderChannelTable(); };
+
+  const el = document.getElementById('channelTable');
+  const head = '<tr>' + CHANNEL_COLS.map(c => `<th>${c}</th>`).join('') + '</tr>';
+  const filterRow = '<tr class="filter-row">' + CHANNEL_COLS.map((c, i) => {
+    if (i === 0) return `<th><input class="filter-input" data-ch="0" placeholder="Filter…" value="${channelFilters[0]}"></th>`;
+    return `<th><select class="filter-input" data-ch="${i}"><option value="">All</option>${BANDS.map(b => `<option value="${b.label}"${channelFilters[i] === b.label ? ' selected' : ''}>${b.label}</option>`).join('')}</select></th>`;
+  }).join('') + '</tr>';
+
+  const rows = channelFiltered();
+  const body = rows.length
+    ? rows.map(row => '<tr>' + row.map((v, i) => i === 0 ? `<td>${v}</td>` : `<td>${v === null ? '—' : v + '%'}</td>`).join('') + '</tr>').join('')
+    : `<tr><td colspan="${CHANNEL_COLS.length}" style="text-align:center;color:var(--text-muted);padding:22px">${channelRows().length ? 'No dealer groups match these filters.' : 'No data loaded for ' + channelMonth + ' yet.'}</td></tr>`;
+
+  el.innerHTML = head + filterRow + body;
+  document.getElementById('channelCount').textContent = `Showing ${rows.length} of ${channelRows().length} dealer groups · ${channelMonth}`;
+
+  el.querySelectorAll('.filter-input').forEach(input => {
+    const commit = () => {
+      const i = +input.dataset.ch;
+      channelFilters[i] = input.value;
+      const active = document.activeElement === input;
+      const caret = input.selectionStart;
+      renderChannelTable();
+      if (active) {
+        const again = document.querySelector(`.filter-input[data-ch="${i}"]`);
+        again.focus();
+        if (again.tagName === 'INPUT' && again.setSelectionRange) again.setSelectionRange(caret, caret);
+      }
+    };
+    input.addEventListener(input.tagName === 'SELECT' ? 'change' : 'input', commit);
+  });
+}
+
+// ---------- Pictures (Supabase Storage) ----------
+// Fill these three in and the grids below load straight from the bucket.
+// Each category maps to a folder inside the bucket; files are matched to
+// stores by the store code at the start of the filename (BD-PE-001_posm.jpg).
+const SUPABASE = {
+  url: '',          // e.g. https://abcdefgh.supabase.co
+  anonKey: '',      // the project's public anon key
+  bucket: 'bridgestone-photos',
+};
+const MEDIA_CATEGORIES = [
+  { name: 'POSM Displays', folder: 'posm' },
+  { name: 'Warranty Displays', folder: 'warranty' },
+  { name: 'Guarantee Displays', folder: 'guarantee' },
+  { name: 'General', folder: 'general' },
+  { name: 'Sample Quotes', folder: 'quotes' },
+];
+
+// Local fallback items (used when Supabase isn't configured yet):
+// { category, channel, store, caption, src }
 const MEDIA_ITEMS = [];
-let mediaChannel = 'All';
+
+let mediaCategory = MEDIA_CATEGORIES[0].name;
+let mediaChannel = 'All channels';
+let mediaStore = 'All stores';
+const supabaseCache = {};
+const supabaseReady = () => !!(SUPABASE.url && SUPABASE.anonKey);
+
+function publicUrl(path) {
+  return SUPABASE.url.replace(/\/$/, '') + '/storage/v1/object/public/' + SUPABASE.bucket + '/' + path;
+}
+
+async function fetchCategory(cat) {
+  if (supabaseCache[cat.name]) return supabaseCache[cat.name];
+  const res = await fetch(SUPABASE.url.replace(/\/$/, '') + '/storage/v1/object/list/' + SUPABASE.bucket, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', apikey: SUPABASE.anonKey, Authorization: 'Bearer ' + SUPABASE.anonKey },
+    body: JSON.stringify({ prefix: cat.folder, limit: 500, sortBy: { column: 'name', order: 'asc' } }),
+  });
+  if (!res.ok) throw new Error('Supabase list failed (' + res.status + ')');
+  const rows = await res.json();
+  const items = (rows || [])
+    .filter(r => r.name && /\.(jpe?g|png|webp|heic)$/i.test(r.name))
+    .map(r => {
+      const code = r.name.split(/[_\-. ]/)[0];
+      const store = (STORE_LOOKUP[code] || {}).name || code;
+      const channel = (STORE_LOOKUP[code] || {}).channel || 'Unmapped';
+      return { category: cat.name, channel, store, caption: store, src: publicUrl(cat.folder + '/' + r.name) };
+    });
+  supabaseCache[cat.name] = items;
+  return items;
+}
+
+// Store code -> name / channel, from the imported visit rows.
+const STORE_LOOKUP = {};
+
+function currentItems() {
+  const all = supabaseReady() ? (supabaseCache[mediaCategory] || []) : MEDIA_ITEMS.filter(m => m.category === mediaCategory);
+  return all.filter(m =>
+    (mediaChannel === 'All channels' || m.channel === mediaChannel) &&
+    (mediaStore === 'All stores' || m.store === mediaStore));
+}
 
 function renderMediaTabs() {
-  const channels = ['All', ...new Set(MEDIA_ITEMS.map(m => m.channel))];
   const el = document.getElementById('mediaTabs');
-  el.innerHTML = channels.map(c => `<button class="media-tab ${c === mediaChannel ? 'active' : ''}" data-channel="${c}">${c}</button>`).join('');
+  el.innerHTML = MEDIA_CATEGORIES.map(c => `<button class="media-tab ${c.name === mediaCategory ? 'active' : ''}" data-cat="${c.name}">${c.name}</button>`).join('');
   el.querySelectorAll('.media-tab').forEach(btn => {
-    btn.addEventListener('click', () => { mediaChannel = btn.dataset.channel; renderMediaTabs(); renderMedia(); });
+    btn.addEventListener('click', () => { mediaCategory = btn.dataset.cat; mediaChannel = 'All channels'; mediaStore = 'All stores'; renderMediaTabs(); loadMedia(); });
   });
+}
+
+function renderMediaFilters() {
+  const pool = supabaseReady() ? (supabaseCache[mediaCategory] || []) : MEDIA_ITEMS.filter(m => m.category === mediaCategory);
+  const chSel = document.getElementById('mediaChannelSelect');
+  const stSel = document.getElementById('mediaStoreSelect');
+  const channels = ['All channels', ...[...new Set(pool.map(m => m.channel))].sort()];
+  const stores = ['All stores', ...[...new Set(pool.filter(m => mediaChannel === 'All channels' || m.channel === mediaChannel).map(m => m.store))].sort()];
+  chSel.innerHTML = channels.map(c => `<option${c === mediaChannel ? ' selected' : ''}>${c}</option>`).join('');
+  stSel.innerHTML = stores.map(s => `<option${s === mediaStore ? ' selected' : ''}>${s}</option>`).join('');
+  chSel.onchange = () => { mediaChannel = chSel.value; mediaStore = 'All stores'; renderMediaFilters(); renderMedia(); };
+  stSel.onchange = () => { mediaStore = stSel.value; renderMedia(); };
+}
+
+async function loadMedia() {
+  const grid = document.getElementById('mediaGrid');
+  const cat = MEDIA_CATEGORIES.find(c => c.name === mediaCategory);
+  if (supabaseReady() && !supabaseCache[mediaCategory]) {
+    grid.innerHTML = `<div class="media-empty">Loading ${mediaCategory} from Supabase…</div>`;
+    try { await fetchCategory(cat); }
+    catch (err) {
+      grid.innerHTML = `<div class="media-empty"><b>Could not reach Supabase.</b><br>${err.message}<br>Check the bucket name (<code>${SUPABASE.bucket}</code>), that the bucket is public, and that the anon key is correct.</div>`;
+      return;
+    }
+  }
+  renderMediaFilters();
+  renderMedia();
 }
 
 function renderMedia() {
   const el = document.getElementById('mediaGrid');
-  const items = mediaChannel === 'All' ? MEDIA_ITEMS : MEDIA_ITEMS.filter(m => m.channel === mediaChannel);
+  const items = currentItems();
+  const cat = MEDIA_CATEGORIES.find(c => c.name === mediaCategory);
+  document.getElementById('mediaCount').textContent = items.length ? items.length + ' picture' + (items.length === 1 ? '' : 's') : '';
+  document.getElementById('mediaSource').textContent = supabaseReady()
+    ? 'Live from Supabase Storage — bucket ' + SUPABASE.bucket
+    : 'Supabase Storage not connected yet';
   if (!items.length) {
-    el.innerHTML = `<div class="media-empty">No store or POSM pictures loaded yet.<br>Send photos through to Leegra — name each file starting with the store code (matching the Import Template's Signage / POSM / Cube / Counter Flyer filename columns, e.g. <code>BRG-0001_signage.jpg</code>) — and they'll appear here per store and per channel.</div>`;
+    el.innerHTML = supabaseReady()
+      ? `<div class="media-empty">No pictures in <b>${mediaCategory}</b> for this filter.<br>Upload to <code>${SUPABASE.bucket}/${cat.folder}/</code>, naming each file with the store code first — e.g. <code>BD-PE-001_${cat.folder}.jpg</code>.</div>`
+      : `<div class="media-empty"><b>Supabase not connected yet.</b><br>Send through the project URL, the public anon key and the bucket name, and every picture category below fills automatically.<br><br>Expected folders inside the bucket: ${MEDIA_CATEGORIES.map(c => '<code>' + c.folder + '/</code>').join(' · ')}<br>File naming: store code first, e.g. <code>BD-PE-001_${cat.folder}.jpg</code>.</div>`;
     return;
   }
   el.innerHTML = `<div class="media-grid">${items.map(m => `
@@ -400,13 +670,62 @@ function yesNoTag(v) {
   return v === 'Yes' ? '<span class="status-tag good">Yes</span>' : '<span class="status-tag critical">No</span>';
 }
 
+const DRILL_COLS = [
+  { label: 'Store', type: 'text' },
+  { label: 'Channel', type: 'select' },
+  { label: 'Region', type: 'select' },
+  { label: 'Visit Date', type: 'text' },
+  { label: 'Brand Recommended', type: 'select' },
+  { label: 'Stock Available', type: 'select' },
+  { label: 'Signage Available', type: 'select' },
+  { label: 'Promotion Mentioned', type: 'select' },
+];
+const drillFilters = DRILL_COLS.map(() => '');
+
+function filteredVisits() {
+  return REAL_VISITS.filter(row => drillFilters.every((f, i) =>
+    !f || String(row[i]).toLowerCase().includes(f.toLowerCase())));
+}
+
 function renderSampleDrillTable() {
   const el = document.getElementById('sampleDrillTable');
-  let html = '<tr><th>Store</th><th>Channel</th><th>Region</th><th>Visit Date</th><th>Brand Recommended</th><th>Stock Available</th><th>Signage Available</th><th>Promotion Mentioned</th></tr>';
-  REAL_VISITS.forEach(row => {
-    html += `<tr><td>${row[0]}</td><td>${row[1]}</td><td>${row[2]}</td><td>${row[3]}</td><td>${row[4]}</td><td>${yesNoTag(row[5])}</td><td>${yesNoTag(row[6])}</td><td>${yesNoTag(row[7])}</td></tr>`;
+  const head = '<tr>' + DRILL_COLS.map(c => `<th>${c.label}</th>`).join('') + '</tr>';
+  const filterRow = '<tr class="filter-row">' + DRILL_COLS.map((c, i) => {
+    if (c.type === 'select') {
+      const vals = [...new Set(REAL_VISITS.map(r => r[i]))].sort();
+      return `<th><select class="filter-input" data-col="${i}"><option value="">All</option>${vals.map(v => `<option value="${v}"${drillFilters[i] === v ? ' selected' : ''}>${v}</option>`).join('')}</select></th>`;
+    }
+    return `<th><input class="filter-input" data-col="${i}" placeholder="Filter…" value="${drillFilters[i]}"></th>`;
+  }).join('') + '</tr>';
+
+  const rows = filteredVisits();
+  const body = rows.length
+    ? rows.map(row => `<tr><td>${row[0]}</td><td>${row[1]}</td><td>${row[2]}</td><td>${row[3]}</td><td>${row[4]}</td><td>${yesNoTag(row[5])}</td><td>${yesNoTag(row[6])}</td><td>${yesNoTag(row[7])}</td></tr>`).join('')
+    : `<tr><td colspan="${DRILL_COLS.length}" style="text-align:center;color:var(--text-muted);padding:22px">No visits match these filters.</td></tr>`;
+
+  el.innerHTML = head + filterRow + body;
+  document.getElementById('drillCount').textContent = `Showing ${rows.length} of ${REAL_VISITS.length} loaded rows (594 total in the import file)`;
+
+  el.querySelectorAll('.filter-input').forEach(input => {
+    const commit = () => {
+      const i = +input.dataset.col;
+      drillFilters[i] = input.value;
+      const active = document.activeElement === input;
+      const caret = input.selectionStart;
+      renderSampleDrillTable();
+      if (active) {
+        const again = document.querySelector(`.filter-input[data-col="${i}"]`);
+        again.focus();
+        if (again.setSelectionRange && again.tagName === 'INPUT') again.setSelectionRange(caret, caret);
+      }
+    };
+    input.addEventListener(input.tagName === 'SELECT' ? 'change' : 'input', commit);
   });
-  el.innerHTML = html;
+}
+
+function renderPricingCols() {
+  const cols = ['Store & code', 'Channel & region', 'Visit date', 'Brand', 'Pattern / product', 'Size', 'Price quoted (ZAR)', 'Fitment included', 'Promotion applied'];
+  document.getElementById('pricingCols').innerHTML = cols.map(c => `<div class="col-chip">${c}</div>`).join('');
 }
 
 function renderMetricTrends() {
@@ -422,6 +741,7 @@ function renderMetricTrends() {
 }
 
 renderKpis();
+renderExecSummary();
 renderLineChart('brandTrendChart', [
   { name: 'Bridgestone', color: 'var(--series-bridgestone)', values: MONTHLY.bridgestoneShare },
   { name: 'Continental', color: 'var(--series-continental)', values: MONTHLY.continentalShare },
@@ -432,9 +752,19 @@ renderCompetition();
 renderDemo();
 renderWarrantyPromo();
 renderChannelTable();
+REAL_VISITS.forEach(r => { STORE_LOOKUP[r[0]] = { name: r[0], channel: r[1] }; });
 renderMediaTabs();
-renderMedia();
+loadMedia();
+renderPricingCols();
 renderSampleDrillTable();
+document.getElementById('channelClear').addEventListener('click', () => {
+  channelFilters.fill('');
+  renderChannelTable();
+});
+document.getElementById('drillClear').addEventListener('click', () => {
+  drillFilters.fill('');
+  renderSampleDrillTable();
+});
 
 // resolve CSS custom properties to concrete colors for SVG stroke/fill (some
 // browsers don't resolve var() inside dynamically-injected SVG attribute strings
