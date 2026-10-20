@@ -15,7 +15,7 @@
 // same path, so this exposes nothing new. It is strictly read-only, and only
 // tenants with a published report page are served (PUBLIC_REPORT_TENANTS).
 
-const { getLiveVisits, getStores, getUsers } = require('./_lib/records');
+const { getLiveVisits, getStores, getUsers, getPhoto } = require('./_lib/records');
 
 const PUBLIC_REPORT_TENANTS = {
   'PH-201': { supplier: 'Philips', survey: 'Pulse App Check-in' },
@@ -83,6 +83,19 @@ async function handle(event) {
   const meta = PUBLIC_REPORT_TENANTS[tenantCode];
   if (!meta) return { statusCode: 404, body: JSON.stringify({ error: 'No published report for that client' }) };
 
+  // ?photo=<id> serves one rep photo for the public dashboard's galleries.
+  const photoId = event.queryStringParameters?.photo;
+  if (photoId) {
+    const photo = await getPhoto(tenantCode, photoId).catch(() => null);
+    if (!photo) return { statusCode: 404, body: 'Photo not found' };
+    return {
+      statusCode: 200,
+      headers: { 'Content-Type': photo.mime || 'image/jpeg', 'Cache-Control': 'public, max-age=86400' },
+      isBase64Encoded: true,
+      body: Buffer.from(photo.bytes).toString('base64'),
+    };
+  }
+
   let visits = [];
   let stores = [];
   let users = [];
@@ -112,6 +125,17 @@ async function handle(event) {
 
   const attendance = [];
   const feedback = [];
+  // Section tables, in the dashboard's positional row shapes (see the
+  // headers in public/reports/philips/index.html).
+  const stockPricing = [];
+  const competitorFeedback = [];
+  const executionReport = [];
+  const executionPhotos = [];
+  const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  const yn = (v) => (v === true ? 'Yes' : v === false ? 'No' : (v == null ? '' : String(v)));
+  const num = (v) => (v === '' || v == null || isNaN(Number(v)) ? null : Number(v));
+  const photoUrl = (cell) => (cell && typeof cell === 'object' && cell.photoId
+    ? `/api/report-feed?tenant=${encodeURIComponent(tenantCode)}&photo=${encodeURIComponent(cell.photoId)}` : '');
 
   let skipped = 0;
   for (const v of visits) {
@@ -120,10 +144,42 @@ async function handle(event) {
     try {
     const store = storeByCode[v.storeCode] || {};
     const storeName = store.name || v.storeCode || '';
-    const channel = channelOf(storeName);
-    const region = store.region || 'Unassigned';
+    const ans = v.answers || {};
+    const channel = ans.channel || store.channel || channelOf(storeName);
+    const region = ans.region || store.region || 'Unassigned';
     const rep = repName(v.repEmail);
     const date = datePart(v.checkin_at);
+    const month = MONTHS[+date.slice(5, 7) - 1] + ' ' + date.slice(0, 4);
+    const storeCode = v.storeCode || '';
+
+    for (const row of Array.isArray(ans.sku_lines) ? ans.sku_lines : []) {
+      if (!row || !row.sku_code) continue;
+      const listed = yn(row.listing);
+      stockPricing.push([rep, channel, storeCode, storeName, region, row.category || '', row.sku_code,
+        num(row.philips_rrp), num(row.store_system_rrp), num(row.promo_price), yn(row.on_promo), row.sku_status || '',
+        listed, photoUrl(row.proof_of_delisting) ? 'Photo' : '', num(row.store_system_mdq), num(row.total_soh),
+        num(row.qty_on_shelf), num(row.qty_box_damages), num(row.qty_customer_returns), yn(row.additional_stock_required),
+        date, month, listed === 'No' ? 'No' : 'Yes']);
+    }
+    for (const row of Array.isArray(ans.comp_lines) ? ans.comp_lines : []) {
+      if (!row || !(row.competitor || row.competitor_sku)) continue;
+      competitorFeedback.push([rep, channel, storeCode, storeName, region, row.category || '', row.competitor || '',
+        row.competitor_sku || '', row.sku_status || '', num(row.competitor_price), yn(row.on_promo), num(row.total_soh),
+        photoUrl(row.product_image), row.philips_sku || '', num(row.philips_on_shelf_price), date]);
+    }
+    for (const row of Array.isArray(ans.exec_lines) ? ans.exec_lines : []) {
+      if (!row) continue;
+      const before = photoUrl(row.before_image), after = photoUrl(row.after_image);
+      if (!before && !after && !row.display_area) continue;
+      executionReport.push([rep, channel, storeCode, storeName, region, row.category || '', before ? 'Photo' : '',
+        row.display_area || '', row.sku_code || '', after ? 'Photo' : '', date, month, before && after ? 'Yes' : 'No']);
+      for (const [stage, cell, url] of [['Before', row.before_image, before], ['After', row.after_image, after]]) {
+        if (!url) continue;
+        const taken = validIso(cell.takenAt) ? cell.takenAt : v.checkin_at;
+        executionPhotos.push({ file: url, date: datePart(taken), time: timePart(taken), storeCode, storeName, channel, region, rep,
+          displayArea: row.display_area || '', category: row.category || '', confirm: '', type: 'Execution', stage, source: 'app' });
+      }
+    }
 
     attendance.push([
       rep,
@@ -207,6 +263,10 @@ async function handle(event) {
       skippedVisits: skipped,
       attendance,
       feedback,
+      stockPricing,
+      competitorFeedback,
+      executionReport,
+      executionPhotos,
     }),
   };
 }

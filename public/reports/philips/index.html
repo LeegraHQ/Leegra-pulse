@@ -547,7 +547,7 @@
         <div style="background:#fff; border:1px solid #E4E9F0; border-radius:14px; overflow:auto;">
           <table style="width:100%; min-width:1200px; border-collapse:collapse; font-size:12px;">
             <thead><tr style="background:#F8FAFC;">
-              <th style="{{ thStyle }}">Channel</th><th style="{{ thStyle }}">Category</th><th style="{{ thStyle }}">Philips SKU</th><th style="{{ thStyleRight }}">Philips Price</th><th style="{{ thStyle }}">Competitor</th><th style="{{ thStyle }}">Competitor SKU</th><th style="{{ thStyle }}">Position</th><th style="{{ thStyleRight }}">Competitor Price</th><th style="{{ thStyleRight }}">Philips vs Competitor</th>
+              <th style="{{ thStyle }}">Date</th><th style="{{ thStyle }}">Store</th><th style="{{ thStyle }}">Blitz</th><th style="{{ thStyle }}">Channel</th><th style="{{ thStyle }}">Category</th><th style="{{ thStyle }}">Philips SKU</th><th style="{{ thStyleRight }}">Philips Price</th><th style="{{ thStyle }}">Competitor</th><th style="{{ thStyle }}">Competitor SKU</th><th style="{{ thStyle }}">Position</th><th style="{{ thStyleRight }}">Competitor Price</th><th style="{{ thStyleRight }}">Philips vs Competitor</th>
             </tr>
             <tr style="background:#F8FAFC;">
               <sc-for list="{{ cfColFilters }}" as="f" hint-placeholder-count="8">
@@ -561,7 +561,7 @@
             <tbody>
               <sc-for list="{{ competitorRows }}" as="row" hint-placeholder-count="8">
                 <tr style="border-top:1px solid #F1F3F7;">
-                  <td style="padding:10px 12px; white-space:nowrap; color:#0B1B3A; font-weight:600;">{{ row.channel }}</td><td style="padding:10px 12px; white-space:nowrap; color:#4A5872;">{{ row.category }}</td><td style="padding:10px 12px; white-space:nowrap; color:#0A5EEA; font-weight:700;">{{ row.philipsSku }}</td><td style="padding:10px 12px; white-space:nowrap; text-align:right; font-weight:700; color:#0B1B3A;">{{ row.philipsPrice }}</td><td style="padding:10px 12px; white-space:nowrap; color:#0B1B3A;">{{ row.competitor }}</td><td style="padding:10px 12px; min-width:220px; color:#0B1B3A;">{{ row.competitorSku }}</td><td style="padding:10px 12px; white-space:nowrap; color:#8592A6;">{{ row.skuStatus }}</td><td style="padding:10px 12px; white-space:nowrap; text-align:right; font-weight:700; color:#0B1B3A;">{{ row.competitorPrice }}</td><td style="padding:10px 12px; white-space:nowrap; text-align:right;"><span style="{{ row.gapStyle }}">{{ row.gap }}</span></td>
+                  <td style="padding:10px 12px; white-space:nowrap; color:#4A5872;">{{ row.date }}</td><td style="padding:10px 12px; min-width:160px; color:#0B1B3A;">{{ row.storeName }}</td><td style="padding:10px 12px; white-space:nowrap; color:#4A5872;">{{ row.blitz }}</td><td style="padding:10px 12px; white-space:nowrap; color:#0B1B3A; font-weight:600;">{{ row.channel }}</td><td style="padding:10px 12px; white-space:nowrap; color:#4A5872;">{{ row.category }}</td><td style="padding:10px 12px; white-space:nowrap; color:#0A5EEA; font-weight:700;">{{ row.philipsSku }}</td><td style="padding:10px 12px; white-space:nowrap; text-align:right; font-weight:700; color:#0B1B3A;">{{ row.philipsPrice }}</td><td style="padding:10px 12px; white-space:nowrap; color:#0B1B3A;">{{ row.competitor }}</td><td style="padding:10px 12px; min-width:220px; color:#0B1B3A;">{{ row.competitorSku }}</td><td style="padding:10px 12px; white-space:nowrap; color:#8592A6;">{{ row.skuStatus }}</td><td style="padding:10px 12px; white-space:nowrap; text-align:right; font-weight:700; color:#0B1B3A;">{{ row.competitorPrice }}</td><td style="padding:10px 12px; white-space:nowrap; text-align:right;"><span style="{{ row.gapStyle }}">{{ row.gap }}</span></td>
                 </tr>
               </sc-for>
             </tbody>
@@ -1487,6 +1487,12 @@ class Component extends DCLogic {
         const fixRep = (n) => repByNorm[norm(n)] || n;
         const liveAtt = (live.attendance || []).map(r => [fixRep(r[0]), ...r.slice(1)]).filter(r => !seenAtt.has(attKey(r)));
         const liveFb = (live.feedback || []).map(r => [...r.slice(0, 3), fixRep(r[3]), ...r.slice(4)]).filter(r => !seenFb.has(fbKey(r)));
+        // App survey lines for the Stock Count, Competitor and Execution sections.
+        const repFirst = (rows) => (rows || []).map(r => [fixRep(r[0]), ...r.slice(1)]);
+        const liveSp = repFirst(live.stockPricing);
+        const liveCf = repFirst(live.competitorFeedback);
+        const liveEx = repFirst(live.executionReport);
+        const liveExPhotos = (live.executionPhotos || []).map(p => ({ ...p, rep: fixRep(p.rep) }));
         // App check-ins also feed each rep's Blitz Call Diary detail table.
         const toMin = (t) => { const [hh, mm] = String(t || '').split(':').map(Number); return (hh || 0) * 60 + (mm || 0); };
         const blitzDetail = {};
@@ -1507,6 +1513,10 @@ class Component extends DCLogic {
           data: Object.assign({}, base, {
             attendance: [...(base.attendance || []), ...liveAtt].filter(r => !NON_PHILIPS_CHANNEL(r)),
             feedback: [...(base.feedback || []), ...liveFb],
+            stockPricing: [...liveSp, ...(base.stockPricing || [])],
+            competitorFeedback: [...liveCf, ...(base.competitorFeedback || [])],
+            executionReport: [...liveEx, ...(base.executionReport || [])],
+            executionPhotos: [...liveExPhotos, ...(base.executionPhotos || [])],
             blitzVisitDetail: blitzDetail,
           }),
           liveFeedSeen: true,
@@ -2243,8 +2253,15 @@ class Component extends DCLogic {
     if (cf.channel && cf.channel !== 'All') competitorFiltered = competitorFiltered.filter(r => r[1] === cf.channel);
     if (cf.region && cf.region !== 'All') competitorFiltered = competitorFiltered.filter(r => r[4] === cf.region);
     if (cf.category && cf.category !== 'All') competitorFiltered = competitorFiltered.filter(r => r[5] === cf.category);
+    // Index 15 is the capture date (app rows); the national price check has none.
+    const CF_UNDATED = 'National price check';
+    const cfDateOf = (r) => r[15] || CF_UNDATED;
+    const cfDates = ['All', ...[...new Set(d.competitorFeedback.map(cfDateOf))].sort((a, b) => (a === CF_UNDATED ? 1 : b === CF_UNDATED ? -1 : b.localeCompare(a)))];
+    if (cf.date && cf.date !== 'All') competitorFiltered = competitorFiltered.filter(r => cfDateOf(r) === cf.date);
+    if (cf.dateFrom) competitorFiltered = competitorFiltered.filter(r => r[15] && r[15] >= cf.dateFrom);
+    if (cf.dateTo) competitorFiltered = competitorFiltered.filter(r => r[15] && r[15] <= cf.dateTo);
     // Per-column filters: each dropdown lists the values left after the other column filters.
-    const CF_COLS = [[1, 'Channel'], [5, 'Category'], [13, 'Philips SKU'], [14, 'Philips Price'], [6, 'Competitor'], [7, 'Competitor SKU'], [8, 'Position'], [9, 'Competitor Price']];
+    const CF_COLS = [[15, 'Date'], [3, 'Store'], [0, 'Blitz'], [1, 'Channel'], [5, 'Category'], [13, 'Philips SKU'], [14, 'Philips Price'], [6, 'Competitor'], [7, 'Competitor SKU'], [8, 'Position'], [9, 'Competitor Price']];
     const CF_BLANK = '(Blank)';
     const cfVal = (r, i) => (r[i] == null || String(r[i]).trim() === '' ? CF_BLANK : String(r[i]).trim());
     const colF = s.cfCol || {};
@@ -2307,7 +2324,7 @@ class Component extends DCLogic {
     for (let p = cfLo; p < Math.min(cfPages, cfLo + 7); p++) cfPageButtons.push({ label: String(p + 1), disabled: p === cfPage, style: cfBtn(p === cfPage, p === cfPage), onClick: () => cfGo(p) });
     const cfStart = cfPage * CF_PAGE;
     const competitorRows = competitorFiltered.slice(cfStart, cfStart + CF_PAGE).map(r => ({
-      blitz: r[0], channel: r[1], storeCode: r[2], storeName: r[3], region: r[4], category: r[5],
+      blitz: r[0] || '—', channel: r[1], storeCode: r[2], storeName: r[3] || '—', region: r[4], category: r[5], date: r[15] || '—',
       competitor: r[6], competitorSku: r[7], skuStatus: r[8] || '—',
       competitorPrice: r[9] != null && r[9] !== '' ? fmtR(r[9]) : '—', onPromo: r[10] || '—', totalSoh: r[11] != null && r[11] !== '' ? fmtNum(r[11]) : '—',
       philipsSku: r[13], philipsPrice: r[14] != null && r[14] !== '' ? fmtR(r[14]) : '—',
@@ -2488,6 +2505,7 @@ class Component extends DCLogic {
         { label: 'Channel', value: cf.channel || 'All', options: cfChannels, onChange: (e) => this.setCrossFilter('competitorFeedback', 'channel', e.target.value) },
         { label: 'Region', value: cf.region || 'All', options: cfRegions, onChange: (e) => this.setCrossFilter('competitorFeedback', 'region', e.target.value) },
         { label: 'Category', value: cf.category || 'All', options: cfCategories, onChange: (e) => this.setCrossFilter('competitorFeedback', 'category', e.target.value) },
+        { label: 'Date', value: cf.date || 'All', options: cfDates, onChange: (e) => this.setCrossFilter('competitorFeedback', 'date', e.target.value) },
       ];
     } else if (active === 'executionReport') {
       crossFilters = [];
