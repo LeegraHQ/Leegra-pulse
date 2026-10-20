@@ -2,7 +2,8 @@
 // Env vars (set in Netlify → Site settings → Environment variables):
 //   SUPABASE_URL                https://xxxx.supabase.co
 //   SUPABASE_SERVICE_ROLE_KEY   service_role key (server-side only, never ship to the browser)
-const URL = process.env.SUPABASE_URL;
+//   SUPABASE_PHOTO_BUCKET       storage bucket name (default 'visit-photos')
+const URL = (process.env.SUPABASE_URL || '').replace(/\/+$/, '');
 const KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
 function configured() { return !!(URL && KEY); }
@@ -11,7 +12,6 @@ function headers(extra) {
   return Object.assign({ apikey: KEY, Authorization: 'Bearer ' + KEY, 'Content-Type': 'application/json' }, extra || {});
 }
 
-// table('visit_photos').select('?tenant_code=eq.CIV-088&order=taken_at.desc')
 async function select(table, query) {
   const res = await fetch(URL + '/rest/v1/' + table + (query || ''), { headers: headers() });
   if (!res.ok) throw new Error('supabase select ' + table + ': ' + await res.text());
@@ -50,7 +50,8 @@ async function remove(table, query) {
   return true;
 }
 
-// Uploads raw bytes to a Storage bucket and returns the public URL.
+// Uploads raw bytes to a Storage bucket and returns the public URL
+// (only reachable if the bucket is public; reads below work either way).
 async function uploadToBucket(bucket, path, buffer, contentType) {
   const res = await fetch(URL + '/storage/v1/object/' + bucket + '/' + path, {
     method: 'POST',
@@ -61,4 +62,22 @@ async function uploadToBucket(bucket, path, buffer, contentType) {
   return URL + '/storage/v1/object/public/' + bucket + '/' + path;
 }
 
-module.exports = { configured, select, insert, upsert, patch, remove, uploadToBucket };
+// Authenticated read — works for private buckets. Returns null when missing.
+async function downloadFromBucket(bucket, path) {
+  const res = await fetch(URL + '/storage/v1/object/authenticated/' + bucket + '/' + path, {
+    headers: { apikey: KEY, Authorization: 'Bearer ' + KEY },
+  });
+  if (res.status === 404 || res.status === 400) return null;
+  if (!res.ok) throw new Error('supabase storage download: ' + await res.text());
+  return { bytes: Buffer.from(await res.arrayBuffer()), mime: res.headers.get('content-type') || 'image/jpeg' };
+}
+
+async function removeFromBucket(bucket, path) {
+  const res = await fetch(URL + '/storage/v1/object/' + bucket + '/' + path, {
+    method: 'DELETE', headers: { apikey: KEY, Authorization: 'Bearer ' + KEY },
+  });
+  if (!res.ok && res.status !== 404) throw new Error('supabase storage delete: ' + await res.text());
+  return true;
+}
+
+module.exports = { configured, select, insert, upsert, patch, remove, uploadToBucket, downloadFromBucket, removeFromBucket };

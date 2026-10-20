@@ -11,13 +11,16 @@
 const jwt = require('./_lib/jwt');
 const { getLiveVisit, saveLiveVisit, getStores, getUsers } = require('./_lib/records');
 
+// Photo questions on/off. Photos are stored in Supabase (falls back to Netlify Blobs).
+const PHOTOS_ENABLED = true;
+
 function isAnswered(answer) {
   return answer !== undefined && answer !== null && answer !== '';
 }
 
 function repeatProblem(q, rows) {
   if (!Array.isArray(rows) || !rows.length) return `${q.label} — add at least one ${(q.rowLabel || 'row').toLowerCase()}`;
-  const required = (q.fields || []).filter(f => f.required);
+  const required = (q.fields || []).filter(f => f.required && (PHOTOS_ENABLED || f.type !== 'photo'));
   for (let i = 0; i < rows.length; i++) {
     const missing = required.filter(f => !isAnswered(rows[i]?.[f.id])).map(f => f.label);
     if (missing.length) return `${q.label} ${i + 1} — ${missing.join(', ')}`;
@@ -80,6 +83,8 @@ exports.handler = async (event) => {
       if (!q.required) continue;
       const problem = repeatProblem(q, visit.answers[q.id]);
       if (problem) missing.push(problem);
+    } else if (q.type === 'photo' && !PHOTOS_ENABLED) {
+      continue;
     } else if (q.required && !isAnswered(visit.answers[q.id])) {
       missing.push(q.label);
     }

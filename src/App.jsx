@@ -3,6 +3,9 @@ import { login, requestLoginCode, getDashboardSummary, checkIn, checkOut, submit
 import { TRAINING_MATERIALS, TENANT_DIRECTORY } from './clients.js';
 import './theme.css';
 
+// Photo questions on/off. Photos are stored in Supabase (falls back to Netlify Blobs).
+const PHOTOS_ENABLED = true;
+
 // The three tiers Leegra's own internal staff can hold (see
 // admin-staff-assign.js) — all three can browse every client's dashboard;
 // only leegra_super_admin/leegra_admin can also write (import stores/users/
@@ -214,6 +217,7 @@ export default function App() {
   }); // { id, checkedInAt, questionnaire: { id, name, questions } }
   const [answers, setAnswers] = useState(() => BOOT?.answers || {}); // { [questionId]: answer }
   const [visitError, setVisitError] = useState('');
+  const [photoBusy, setPhotoBusy] = useState(''); // key of the photo currently uploading
   const [callDone, setCallDone] = useState(''); // store name of the call just ended, shown on the store picker
   const [callSurveysDone, setCallSurveysDone] = useState(() => BOOT?.callSurveysDone || []); // surveys submitted in the open store call
   const [surveyLists, setSurveyLists] = useState(null); // dropdown lists + store channels, /survey-lists/<tenant>.json
@@ -526,10 +530,29 @@ export default function App() {
     }));
   }
 
-  async function handleCellPhoto(q, idx, field, file) {
+  function photoStamp(source) {
+    const store = session.client?.stores?.find(s => s.code === selectedStoreCode);
+    const rep = answers.blitz || answers.rep_name || session.email;
+    return { source, lines: [store ? `${store.name} (${store.code})` : '', rep] };
+  }
+
+  async function runPhotoUpload(key, questionId, file, source) {
+    setPhotoBusy(key);
+    try {
+      return await uploadPhotoAnswer(session.token, visit.id, questionId, file, photoStamp(source));
+    } catch (e) {
+      window.alert(`Photo not saved: ${e.message || e}. Please try again.`);
+      return null;
+    } finally {
+      setPhotoBusy('');
+    }
+  }
+
+  async function handleCellPhoto(q, idx, field, file, source) {
     if (!visit || !file) return;
-    const res = await uploadPhotoAnswer(session.token, visit.id, `${q.id}__${idx}__${field.id}`, file);
-    handleCellChange(q, idx, field.id, { photoId: res.photo_id, previewUrl: res.previewUrl });
+    const key = `${q.id}__${idx}__${field.id}`;
+    const res = await runPhotoUpload(key, key, file, source);
+    if (res) handleCellChange(q, idx, field.id, { photoId: res.photo_id, previewUrl: res.previewUrl, takenAt: res.takenAt });
   }
 
   async function handleAnswerChange(questionId, value) {
@@ -537,10 +560,10 @@ export default function App() {
     if (visit) await submitAnswer(session.token, visit.id, questionId, value);
   }
 
-  async function handlePhotoAnswer(questionId, file) {
+  async function handlePhotoAnswer(questionId, file, source) {
     if (!visit || !file) return;
-    const result = await uploadPhotoAnswer(session.token, visit.id, questionId, file);
-    setAnswers(a => ({ ...a, [questionId]: { photoId: result.photo_id, previewUrl: result.previewUrl } }));
+    const result = await runPhotoUpload(questionId, questionId, file, source);
+    if (result) setAnswers(a => ({ ...a, [questionId]: { photoId: result.photo_id, previewUrl: result.previewUrl, takenAt: result.takenAt } }));
   }
 
   function handleToggleTraining(id) {
@@ -814,7 +837,10 @@ export default function App() {
   const setSF = (k) => (e) => { const v = e.target.value; setStoreFilter(f => ({ ...f, [k]: v })); };
 
   if (screen === 'app') {
-    const allQuestions = visit?.questionnaire?.questions || [];
+    // Photo capture is paused until Supabase storage is set up (PHOTOS_ENABLED).
+    const allQuestions = (visit?.questionnaire?.questions || [])
+      .filter(q => PHOTOS_ENABLED || q.type !== 'photo')
+      .map(q => (PHOTOS_ENABLED || !q.fields ? q : { ...q, fields: q.fields.filter(f => f.type !== 'photo') }));
     // Auto-filled header answers are shown as a read-only summary, not as questions.
     const autoShown = allQuestions.filter(q => AUTO_FILL_IDS.includes(q.id) && answers[q.id] != null && answers[q.id] !== '');
     const questions = allQuestions.filter(q => !autoShown.includes(q));
@@ -970,16 +996,22 @@ export default function App() {
                                     {photoCell?.previewUrl && (
                                       <img src={photoCell.previewUrl} alt="" style={{ width: 36, height: 36, borderRadius: 6, objectFit: 'cover', marginRight: 8 }} />
                                     )}
-                                    <label className="lp-tag lp-tag-outline" style={{ cursor: 'pointer' }}>
-                                      {photoCell ? 'Retake' : 'Take photo'}
-                                      <input
-                                        type="file"
-                                        accept="image/*"
-                                        capture="environment"
-                                        style={{ display: 'none' }}
-                                        onChange={e => handleCellPhoto(q, idx, f, e.target.files[0])}
-                                      />
-                                    </label>
+                                    {photoBusy === `${q.id}__${idx}__${f.id}` ? (
+                                      <div className="lp-tag lp-tag-neutral">Saving…</div>
+                                    ) : (
+                                      <div style={{ display: 'flex', gap: 6 }}>
+                                        <label className="lp-tag lp-tag-outline" style={{ cursor: 'pointer' }}>
+                                          {photoCell ? 'Retake' : 'Camera'}
+                                          <input type="file" accept="image/*" capture="environment" style={{ display: 'none' }}
+                                            onChange={e => { handleCellPhoto(q, idx, f, e.target.files[0], 'camera'); e.target.value = ''; }} />
+                                        </label>
+                                        <label className="lp-tag lp-tag-outline" style={{ cursor: 'pointer' }}>
+                                          Gallery
+                                          <input type="file" accept="image/*" style={{ display: 'none' }}
+                                            onChange={e => { handleCellPhoto(q, idx, f, e.target.files[0], 'gallery'); e.target.value = ''; }} />
+                                        </label>
+                                      </div>
+                                    )}
                                   </div>
                                 );
                               }
@@ -1057,16 +1089,22 @@ export default function App() {
                         {photoAnswer?.previewUrl && (
                           <img src={photoAnswer.previewUrl} alt="" style={{ width: 36, height: 36, borderRadius: 6, objectFit: 'cover', marginRight: 8 }} />
                         )}
-                        <label className="lp-tag lp-tag-outline" style={{ cursor: 'pointer' }}>
-                          {photoAnswer ? 'Retake' : 'Take photo'}
-                          <input
-                            type="file"
-                            accept="image/*"
-                            capture="environment"
-                            style={{ display: 'none' }}
-                            onChange={e => handlePhotoAnswer(q.id, e.target.files[0])}
-                          />
-                        </label>
+                        {photoBusy === q.id ? (
+                          <div className="lp-tag lp-tag-neutral">Saving…</div>
+                        ) : (
+                          <div style={{ display: 'flex', gap: 6 }}>
+                            <label className="lp-tag lp-tag-outline" style={{ cursor: 'pointer' }}>
+                              {photoAnswer ? 'Retake' : 'Camera'}
+                              <input type="file" accept="image/*" capture="environment" style={{ display: 'none' }}
+                                onChange={e => { handlePhotoAnswer(q.id, e.target.files[0], 'camera'); e.target.value = ''; }} />
+                            </label>
+                            <label className="lp-tag lp-tag-outline" style={{ cursor: 'pointer' }}>
+                              Gallery
+                              <input type="file" accept="image/*" style={{ display: 'none' }}
+                                onChange={e => { handlePhotoAnswer(q.id, e.target.files[0], 'gallery'); e.target.value = ''; }} />
+                            </label>
+                          </div>
+                        )}
                       </div>
                     );
                   }

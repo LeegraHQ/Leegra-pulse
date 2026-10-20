@@ -4,6 +4,10 @@
 // one place to swap for a real DB later.
 
 const { getStore } = require('@netlify/blobs');
+const supa = require('./supabase');
+
+const PHOTO_BUCKET = process.env.SUPABASE_PHOTO_BUCKET || 'visit-photos';
+const photoPath = (tenantCode, photoId) => `rep-visits/${tenantCode}/${String(photoId).replace(/[^a-zA-Z0-9._-]/g, '_')}.jpg`;
 
 // The zero-config getStore(name) relies on Netlify auto-injecting Blobs
 // context, which isn't reliably present for every function/runtime — it can
@@ -171,15 +175,32 @@ async function deleteLiveVisit(tenantCode, visitId) {
   await store.delete(visitId);
 }
 
-// Visit photos — one blob per photo, keyed by a generated id, scoped per
-// tenant. Metadata carries the mime type so getPhoto can serve it back with
-// the right Content-Type.
+// Visit photos go to Supabase Storage (bucket SUPABASE_PHOTO_BUCKET, path
+// rep-visits/<tenant>/<photoId>.jpg). If Supabase isn't configured or the
+// upload fails, they fall back to a Netlify Blobs store so nothing is lost.
 async function savePhoto(tenantCode, photoId, bytes, mime) {
+  if (supa.configured()) {
+    try {
+      await supa.uploadToBucket(PHOTO_BUCKET, photoPath(tenantCode, photoId), bytes, mime || 'image/jpeg');
+      return 'supabase';
+    } catch (e) {
+      console.error('Supabase photo upload failed, saving to Blobs instead:', e.message);
+    }
+  }
   const store = blobsStore(`visit-photos-${tenantCode}`);
   await store.set(photoId, bytes, { metadata: { mime } });
+  return 'blobs';
 }
 
 async function getPhoto(tenantCode, photoId) {
+  if (supa.configured()) {
+    try {
+      const hit = await supa.downloadFromBucket(PHOTO_BUCKET, photoPath(tenantCode, photoId));
+      if (hit) return hit;
+    } catch (e) {
+      console.error('Supabase photo read failed:', e.message);
+    }
+  }
   const store = blobsStore(`visit-photos-${tenantCode}`);
   const [bytes, meta] = await Promise.all([
     store.get(photoId, { type: 'arrayBuffer' }),
@@ -190,6 +211,9 @@ async function getPhoto(tenantCode, photoId) {
 }
 
 async function deletePhoto(tenantCode, photoId) {
+  if (supa.configured()) {
+    await supa.removeFromBucket(PHOTO_BUCKET, photoPath(tenantCode, photoId)).catch(() => {});
+  }
   const store = blobsStore(`visit-photos-${tenantCode}`);
   await store.delete(photoId);
 }

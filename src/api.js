@@ -164,22 +164,69 @@ export async function downloadVisitLogExport(token, format) {
   URL.revokeObjectURL(url);
 }
 
-export async function uploadPhotoAnswer(token, visitId, questionId, file) {
+function fmtStamp(d) {
+  const p = n => String(n).padStart(2, '0');
+  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  return `${p(d.getDate())} ${months[d.getMonth()]} ${d.getFullYear()} ${p(d.getHours())}:${p(d.getMinutes())}`;
+}
+
+// Resizes to max 1600px, burns a date/time stamp (plus store and rep) into
+// the bottom-left corner, and returns a JPEG. Gallery picks are stamped with
+// the file's own date (when the photo was taken/saved) and the upload time.
+async function stampImage(file, { source, lines = [] }) {
+  const url = URL.createObjectURL(file);
+  const img = await new Promise((resolve, reject) => {
+    const i = new Image();
+    i.onload = () => resolve(i);
+    i.onerror = () => reject(new Error('Could not read that image'));
+    i.src = url;
+  });
+  const scale = Math.min(1, 1600 / Math.max(img.naturalWidth, img.naturalHeight));
+  const w = Math.round(img.naturalWidth * scale), h = Math.round(img.naturalHeight * scale);
+  const canvas = document.createElement('canvas');
+  canvas.width = w; canvas.height = h;
+  const ctx = canvas.getContext('2d');
+  ctx.drawImage(img, 0, 0, w, h);
+  URL.revokeObjectURL(url);
+
+  const now = new Date();
+  const taken = source === 'gallery' && file.lastModified ? new Date(file.lastModified) : now;
+  const text = [
+    source === 'gallery' ? `Taken ${fmtStamp(taken)} · Uploaded ${fmtStamp(now)}` : fmtStamp(now),
+    ...lines.filter(Boolean),
+  ];
+  const fs = Math.max(14, Math.round(w / 45));
+  ctx.font = `600 ${fs}px -apple-system, system-ui, sans-serif`;
+  const pad = Math.round(fs * 0.6), lh = Math.round(fs * 1.3);
+  const boxW = Math.max(...text.map(t => ctx.measureText(t).width)) + pad * 2;
+  const boxH = text.length * lh + pad;
+  ctx.fillStyle = 'rgba(0,0,0,0.55)';
+  ctx.fillRect(0, h - boxH, boxW, boxH);
+  ctx.fillStyle = '#fff';
+  ctx.textBaseline = 'top';
+  text.forEach((t, i) => ctx.fillText(t, pad, h - boxH + pad / 2 + i * lh));
+
+  const blob = await new Promise(r => canvas.toBlob(r, 'image/jpeg', 0.82));
+  return { blob, takenAt: taken.toISOString() };
+}
+
+export async function uploadPhotoAnswer(token, visitId, questionId, file, stamp = {}) {
+  const { blob, takenAt } = await stampImage(file, stamp);
   const base64 = await new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.onload = () => resolve(reader.result.split(',')[1]);
     reader.onerror = reject;
-    reader.readAsDataURL(file);
+    reader.readAsDataURL(blob);
   });
-  if (USE_MOCK) return { ok: true, photo_id: 'mock-photo', previewUrl: URL.createObjectURL(file) };
+  if (USE_MOCK) return { ok: true, photo_id: 'mock-photo', previewUrl: URL.createObjectURL(blob), takenAt };
   const res = await fetch(`${API_BASE}/visit-photo`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-    body: JSON.stringify({ visit_id: visitId, question_id: questionId, image_base64: base64, mime: file.type }),
+    body: JSON.stringify({ visit_id: visitId, question_id: questionId, image_base64: base64, mime: 'image/jpeg', taken_at: takenAt, source: stamp.source || 'camera' }),
   });
-  const data = await res.json();
+  const data = await res.json().catch(() => ({}));
   if (!res.ok) throw new Error(data.error || 'Could not upload photo');
-  return { ...data, previewUrl: URL.createObjectURL(file) };
+  return { ...data, previewUrl: URL.createObjectURL(blob), takenAt };
 }
 
 export async function getLearningMaterials(token) {
