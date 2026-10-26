@@ -44,6 +44,10 @@ const PH_VISIT_SURVEYS = [
 // A store call stays open until these three are submitted; Snag Report is optional.
 const PH_CALL_SURVEYS = ['stock_pricing', 'execution_image', 'competitor_feedback'];
 // Clients with their own survey set. Anything not listed uses the Philips set above.
+// Removed from the super-user client list.
+const HIDDEN_TENANT_CODES = ['SIR-014', 'BEU-305', 'TWR-260'];
+// Clients whose card opens their own dashboard instead of the generic one.
+const DIRECT_DASHBOARDS = { 'CIV-088': '/reports/civvio/execution/' };
 const TENANT_SURVEYS = {
   'CIV-088': { visit: [{ value: 'dmq_stand', label: 'DMQ Monthly Stand Check' }], call: ['dmq_stand'] },
 };
@@ -775,11 +779,11 @@ export default function App() {
           </div>
           <div className="lp-muted" style={{ fontSize: 12 }}>All client accounts — select one to view its dashboard.</div>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12 }}>
-            {session.tenants.map(c => (
-              <div key={c.code} className="lp-inner-card" style={{ cursor: 'pointer' }} onClick={() => handleOpenClient(c.code)}>
-                <div className="lp-title" style={{ fontSize: 15 }}>{c.name}</div>
+            {session.tenants.filter(c => !HIDDEN_TENANT_CODES.includes(c.code)).map(c => (
+              <div key={c.code} className="lp-inner-card" style={{ cursor: 'pointer' }} onClick={() => DIRECT_DASHBOARDS[c.code] ? (window.location.href = DIRECT_DASHBOARDS[c.code]) : handleOpenClient(c.code)}>
+                <div className="lp-title" style={{ fontSize: 15 }}>{c.code === 'CIV-088' ? 'Civvio · DMQ' : c.name}</div>
                 <div className="lp-meta">{c.code}</div>
-                <div className="lp-tag lp-tag-accent2">{c.compliance} compliance</div>
+                <div className="lp-tag lp-tag-accent2">{DIRECT_DASHBOARDS[c.code] ? 'Execution dashboard' : `${c.compliance} compliance`}</div>
               </div>
             ))}
           </div>
