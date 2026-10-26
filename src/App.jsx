@@ -28,21 +28,25 @@ const CLIENT_REPORT_LINKS = {
   'SUP-042': '/reports/supaquick/',
   'SIR-014': '/reports/sirfruit/',
   'BEU-305': '/reports/beurer/',
-  'CIV-088': '/reports/civvio/',
+  'CIV-088': '/reports/civvio/execution/',
 };
 
 // The surveys a rep can start a visit with. The value is the visit_type sent
 // to /api/visits, which the backend matches against each questionnaire's
 // visitType (see _lib/records.js pickQuestionnaire) — so adding a survey here
 // means loading a questionnaire with the same visit_type, and nothing else.
-const VISIT_SURVEYS = [
+const PH_VISIT_SURVEYS = [
   { value: 'stock_pricing', label: 'Stock Count & Pricing Feedback' },
   { value: 'execution_image', label: 'Execution (Image Report)' },
   { value: 'competitor_feedback', label: 'Competitor Feedback' },
   { value: 'snag_report', label: 'Snag Report' },
 ];
 // A store call stays open until these three are submitted; Snag Report is optional.
-const CALL_SURVEYS = ['stock_pricing', 'execution_image', 'competitor_feedback'];
+const PH_CALL_SURVEYS = ['stock_pricing', 'execution_image', 'competitor_feedback'];
+// Clients with their own survey set. Anything not listed uses the Philips set above.
+const TENANT_SURVEYS = {
+  'CIV-088': { visit: [{ value: 'dmq_stand', label: 'DMQ Monthly Stand Check' }], call: ['dmq_stand'] },
+};
 
 // Header questions the app fills from the login + chosen store, so reps never retype them.
 const AUTO_FILL_IDS = ['blitz', 'rep_name', 'channel', 'store_code', 'store_name', 'region'];
@@ -219,6 +223,9 @@ function mergeReportVisits(stores, reportVisits) {
 export default function App() {
   const [screen, setScreen] = useState(BOOT?.session ? (BOOT.screen || 'login') : 'login'); // login | app | dashboard | superadmin
   const [session, setSession] = useState(BOOT?.session || null); // { token, role, client, isSuperAdmin }
+  const tenantSurveys = TENANT_SURVEYS[session?.client?.code];
+  const VISIT_SURVEYS = tenantSurveys ? tenantSurveys.visit : PH_VISIT_SURVEYS;
+  const CALL_SURVEYS = tenantSurveys ? tenantSurveys.call : PH_CALL_SURVEYS;
   const [email, setEmail] = useState('');
   const [otpSent, setOtpSent] = useState(false);
   const [otpCode, setOtpCode] = useState('');
@@ -1030,7 +1037,7 @@ export default function App() {
             </button>
           )}
           {!visit && callSurveysDone.length > 0 && (
-            <button className="lp-btn lp-btn-ghost lp-block" onClick={() => { if (window.confirm('Leave this store without completing all 3 surveys?')) handleExitStore(); }}>Leave store early</button>
+            <button className="lp-btn lp-btn-ghost lp-block" onClick={() => { if (window.confirm(`Leave this store without completing all ${CALL_SURVEYS.length} surveys?`)) handleExitStore(); }}>Leave store early</button>
           )}
 
           {visit && (

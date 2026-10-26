@@ -1,0 +1,315 @@
+{
+ "tenantCode": "CIV-088",
+ "source": "DMQ Store List.xlsx",
+ "cadence": "monthly",
+ "stores": [
+  {
+   "code": "DMQ-01",
+   "name": "Totalsports Westville Pavillion Durban",
+   "channel": "Totalsports",
+   "region": "KZN",
+   "plannedRep": "Chris"
+  },
+  {
+   "code": "DMQ-02",
+   "name": "Totalsports Gateway Durban",
+   "channel": "Totalsports",
+   "region": "KZN",
+   "plannedRep": "Chris"
+  },
+  {
+   "code": "DMQ-03",
+   "name": "Totalsports Canal Walk Cape Town",
+   "channel": "Totalsports",
+   "region": "CPT",
+   "plannedRep": "Enver"
+  },
+  {
+   "code": "DMQ-04",
+   "name": "Totalsports Mall Of Africa Johannesburg",
+   "channel": "Totalsports",
+   "region": "GP",
+   "plannedRep": "Nikki"
+  },
+  {
+   "code": "DMQ-05",
+   "name": "Totalsports East Rand Mall Boksburg",
+   "channel": "Totalsports",
+   "region": "GP",
+   "plannedRep": "Chris"
+  },
+  {
+   "code": "DMQ-06",
+   "name": "Totalsports Clearwaters Roodepoort",
+   "channel": "Totalsports",
+   "region": "GP",
+   "plannedRep": "Chris"
+  },
+  {
+   "code": "DMQ-07",
+   "name": "Totalsports Tygervalley Bellville",
+   "channel": "Totalsports",
+   "region": "CPT",
+   "plannedRep": "Enver"
+  },
+  {
+   "code": "DMQ-08",
+   "name": "Totalsports Menlyn Park Pretoria",
+   "channel": "Totalsports",
+   "region": "GP",
+   "plannedRep": "Chris"
+  },
+  {
+   "code": "DMQ-09",
+   "name": "Totalsports Somerset Mall Somerset West",
+   "channel": "Totalsports",
+   "region": "CPT",
+   "plannedRep": "Enver"
+  },
+  {
+   "code": "DMQ-10",
+   "name": "Totalsposrts Fourways Mall Johannesburg",
+   "channel": "Totalsports",
+   "region": "GP",
+   "plannedRep": "Nikki"
+  },
+  {
+   "code": "DMQ-11",
+   "name": "Totalsports Eastgate Johannesburg",
+   "channel": "Totalsports",
+   "region": "GP",
+   "plannedRep": "Chris"
+  },
+  {
+   "code": "DMQ-12",
+   "name": "Totalsports Waterfall Mall Rustenburg",
+   "channel": "Totalsports",
+   "region": "NW",
+   "plannedRep": "Gordon"
+  },
+  {
+   "code": "DMQ-13",
+   "name": "Totalsports Cavendish Cape Town",
+   "channel": "Totalsports",
+   "region": "CPT",
+   "plannedRep": "Enver"
+  },
+  {
+   "code": "DMQ-14",
+   "name": "Totalsports Amanzimtoti Galleria",
+   "channel": "Totalsports",
+   "region": "KZN",
+   "plannedRep": "Chris"
+  },
+  {
+   "code": "DMQ-15",
+   "name": "Totalsports Cresta Johannesburg",
+   "channel": "Totalsports",
+   "region": "GP",
+   "plannedRep": "Chris"
+  },
+  {
+   "code": "DMQ-16",
+   "name": "Totalsports Vaal Mall Vanderbijlpark",
+   "channel": "Totalsports",
+   "region": "GP",
+   "plannedRep": "Chris"
+  },
+  {
+   "code": "DMQ-17",
+   "name": "Totalsports Centurion Pretoria",
+   "channel": "Totalsports",
+   "region": "GP",
+   "plannedRep": "Chris"
+  },
+  {
+   "code": "DMQ-18",
+   "name": "Totalsports Blue Route Cape Town",
+   "channel": "Totalsports",
+   "region": "CPT",
+   "plannedRep": "Enver"
+  },
+  {
+   "code": "DMQ-19",
+   "name": "Totalsports Montana Pretoria",
+   "channel": "Totalsports",
+   "region": "GP",
+   "plannedRep": "Chris"
+  },
+  {
+   "code": "DMQ-20",
+   "name": "Totalsports Loch Logan Bloemfontein",
+   "channel": "Totalsports",
+   "region": "FS",
+   "plannedRep": "Chris"
+  },
+  {
+   "code": "DMQ-21",
+   "name": "Totalsports Paarl Mall Paarl",
+   "channel": "Totalsports",
+   "region": "CPT",
+   "plannedRep": "Enver"
+  },
+  {
+   "code": "DMQ-22",
+   "name": "Totalsports Stellenbosch Eikestad",
+   "channel": "Totalsports",
+   "region": "CPT",
+   "plannedRep": "Enver"
+  },
+  {
+   "code": "DMQ-23",
+   "name": "Mr Price Sport Westville Pavillion",
+   "channel": "Mr Price Sport",
+   "region": "KZN",
+   "plannedRep": "Chris"
+  },
+  {
+   "code": "DMQ-24",
+   "name": "Mr Price Sport Gateway Durban",
+   "channel": "Mr Price Sport",
+   "region": "KZN",
+   "plannedRep": "Chris"
+  },
+  {
+   "code": "DMQ-25",
+   "name": "Mr Price Sport Canal Walk Cape Town",
+   "channel": "Mr Price Sport",
+   "region": "CPT",
+   "plannedRep": "Enver"
+  },
+  {
+   "code": "DMQ-26",
+   "name": "Mr Price Sport Mall Of Africa Johannesburg",
+   "channel": "Mr Price Sport",
+   "region": "GP",
+   "plannedRep": "Nikki"
+  },
+  {
+   "code": "DMQ-27",
+   "name": "Mr Price Sport East Rand Mall Boksburg",
+   "channel": "Mr Price Sport",
+   "region": "GP",
+   "plannedRep": "Chris"
+  },
+  {
+   "code": "DMQ-28",
+   "name": "Mr Price Sport Clearwaters Roodepoort",
+   "channel": "Mr Price Sport",
+   "region": "GP",
+   "plannedRep": "Chris"
+  },
+  {
+   "code": "DMQ-29",
+   "name": "Mr Price Sport Tygervalley Bellville",
+   "channel": "Mr Price Sport",
+   "region": "CPT",
+   "plannedRep": "Enver"
+  },
+  {
+   "code": "DMQ-30",
+   "name": "Mr Price Sport Menlyn Park Pretoria",
+   "channel": "Mr Price Sport",
+   "region": "GP",
+   "plannedRep": "Chris"
+  },
+  {
+   "code": "DMQ-31",
+   "name": "Mr Price Sport Somerset Mall Somerset West",
+   "channel": "Mr Price Sport",
+   "region": "CPT",
+   "plannedRep": "Enver"
+  },
+  {
+   "code": "DMQ-32",
+   "name": "Mr Price Sport Fourways Mall Johannesburg",
+   "channel": "Mr Price Sport",
+   "region": "GP",
+   "plannedRep": "Nikki"
+  },
+  {
+   "code": "DMQ-33",
+   "name": "Mr Price Sport Sandotn City Johannesburg",
+   "channel": "Mr Price Sport",
+   "region": "GP",
+   "plannedRep": "Chris"
+  },
+  {
+   "code": "DMQ-34",
+   "name": "Mr Price Sport Waterfall Mall Rustenburg",
+   "channel": "Mr Price Sport",
+   "region": "NW",
+   "plannedRep": "Gordon"
+  },
+  {
+   "code": "DMQ-35",
+   "name": "Mr Price Sport Cavendish Cape Town",
+   "channel": "Mr Price Sport",
+   "region": "CPT",
+   "plannedRep": "Enver"
+  },
+  {
+   "code": "DMQ-36",
+   "name": "Mr Price Sport Amanzimtoti Galleria",
+   "channel": "Mr Price Sport",
+   "region": "KZN",
+   "plannedRep": "Chris"
+  },
+  {
+   "code": "DMQ-37",
+   "name": "Mr Price Sport Cresta Johannesburg",
+   "channel": "Mr Price Sport",
+   "region": "GP",
+   "plannedRep": "Chris"
+  },
+  {
+   "code": "DMQ-38",
+   "name": "Mr Price Sport Vaal Mall Vanderbijlpark",
+   "channel": "Mr Price Sport",
+   "region": "GP",
+   "plannedRep": "Chris"
+  },
+  {
+   "code": "DMQ-39",
+   "name": "Mr Price Sport Centurion Pretoria",
+   "channel": "Mr Price Sport",
+   "region": "GP",
+   "plannedRep": "Chris"
+  },
+  {
+   "code": "DMQ-40",
+   "name": "Mr Price Sport Blue Route Cape Town",
+   "channel": "Mr Price Sport",
+   "region": "CPT",
+   "plannedRep": "Enver"
+  },
+  {
+   "code": "DMQ-41",
+   "name": "Mr Price Sport The Grove Pretoria",
+   "channel": "Mr Price Sport",
+   "region": "GP",
+   "plannedRep": "Chris"
+  },
+  {
+   "code": "DMQ-42",
+   "name": "Mr Price Sport Loch Logan Bloemfontein",
+   "channel": "Mr Price Sport",
+   "region": "FS",
+   "plannedRep": "Chris"
+  },
+  {
+   "code": "DMQ-43",
+   "name": "Mr Price Sport Paarl Mall Paarl",
+   "channel": "Mr Price Sport",
+   "region": "CPT",
+   "plannedRep": "Enver"
+  },
+  {
+   "code": "DMQ-44",
+   "name": "Mr Price Sport Stellenbosch Eikestad",
+   "channel": "Mr Price Sport",
+   "region": "CPT",
+   "plannedRep": "Enver"
+  }
+ ]
+}

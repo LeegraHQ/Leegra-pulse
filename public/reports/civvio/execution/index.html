@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DMQ / Civvio — Stand Execution</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root { --bg:#14161c; --surface:#21242c; --surface-2:#2a2e37; --text:#eef1e9; --muted:#9397ab; --line:color-mix(in srgb, var(--text) 10%, transparent); --accent:#b4fc0f; --accent-300:#d4fc7a; --warn:#ffb86b; --bad:#ff9b8a; --radius-lg:14px; --radius-md:8px; --shadow-md:0 0 0 1px #3a3d33, 0 6px 18px rgba(0,0,0,0.55); }
+  * { box-sizing:border-box; }
+  body { margin:0; font-family:'Inter',system-ui,sans-serif; font-size:13px; line-height:1.5; background:var(--bg); color:var(--text); }
+  a { color:var(--accent); } a:hover { color:var(--accent-300); }
+  .wrap { max-width:1280px; margin:0 auto; padding:20px 20px 48px; display:flex; flex-direction:column; gap:14px; }
+  .card { background:var(--surface); border-radius:var(--radius-lg); box-shadow:var(--shadow-md); padding:16px 18px; min-width:0; }
+  .kicker { font-size:10px; letter-spacing:0.1em; text-transform:uppercase; color:var(--accent-300); margin:0 0 8px; }
+  h1 { font-size:20px; font-weight:500; margin:0; }
+  .muted { color:var(--muted); }
+  .input, select { min-height:34px; padding:5px 10px; font:inherit; color:var(--text); background:var(--bg); border:1px solid color-mix(in srgb, var(--text) 16%, transparent); border-radius:var(--radius-md); width:100%; }
+  .input:focus-visible, select:focus-visible, .btn:focus-visible { outline:2px solid var(--accent); outline-offset:2px; }
+  .btn { font:inherit; font-size:12px; font-weight:600; cursor:pointer; padding:7px 12px; border-radius:var(--radius-md); background:transparent; color:var(--accent); border:1px solid var(--accent); }
+  .btn:hover { background:color-mix(in srgb, var(--accent) 12%, transparent); }
+  .btn.ghost { border-color:color-mix(in srgb, var(--text) 16%, transparent); color:var(--text); }
+  label { display:flex; flex-direction:column; gap:4px; font-size:11px; color:var(--muted); min-width:0; }
+  header { display:flex; align-items:center; gap:14px; flex-wrap:wrap; }
+  .filters { display:grid; grid-template-columns:repeat(auto-fit, minmax(150px, 1fr)); gap:10px; }
+  .kpis { display:grid; grid-template-columns:repeat(auto-fit, minmax(170px, 1fr)); gap:14px; }
+  .kpi-v { font-size:26px; font-weight:500; letter-spacing:-0.01em; }
+  .bar { height:6px; background:var(--surface-2); border-radius:3px; overflow:hidden; margin-top:8px; }
+  .bar > div { height:100%; background:var(--accent); border-radius:3px; }
+  .two { display:grid; grid-template-columns:repeat(auto-fit, minmax(320px, 1fr)); gap:14px; }
+  .scroll { overflow-x:auto; }
+  table { width:100%; border-collapse:collapse; }
+  th { text-align:left; font-size:10px; letter-spacing:0.06em; text-transform:uppercase; color:var(--muted); font-weight:500; padding:6px 8px; border-bottom:1px solid var(--line); white-space:nowrap; }
+  td { padding:7px 8px; border-bottom:1px solid var(--line); vertical-align:top; }
+  tr:last-child td { border-bottom:none; }
+  .num { text-align:right; font-variant-numeric:tabular-nums; }
+  .yes { color:var(--warn); font-weight:600; } .no { color:var(--muted); }
+  .thumb { width:44px; height:44px; border-radius:6px; object-fit:cover; cursor:zoom-in; display:block; background:var(--surface-2); }
+  .gallery { display:grid; grid-template-columns:repeat(auto-fill, minmax(200px, 1fr)); gap:14px; }
+  .ph { display:flex; flex-direction:column; gap:6px; }
+  .ph img { width:100%; aspect-ratio:4/3; object-fit:cover; border-radius:var(--radius-md); cursor:zoom-in; background:var(--surface-2); display:block; }
+  .ph-store { font-weight:600; }
+  .ph-meta { font-size:11px; color:var(--muted); }
+  .ph-comment { font-size:12px; text-wrap:pretty; }
+  .empty { color:var(--muted); padding:14px 0; }
+  .lightbox { position:fixed; inset:0; background:rgba(8,9,12,0.92); display:none; align-items:center; justify-content:center; flex-direction:column; gap:10px; padding:24px; z-index:10; cursor:zoom-out; }
+  .lightbox.show { display:flex; }
+  .lightbox img { max-width:100%; max-height:84vh; border-radius:var(--radius-md); }
+  .signin { max-width:380px; margin:80px auto; display:flex; flex-direction:column; gap:14px; }
+  .err { color:var(--bad); font-size:12px; min-height:18px; }
+  .tag { font-size:10px; padding:2px 8px; border-radius:999px; background:color-mix(in srgb, var(--accent) 14%, transparent); color:var(--accent-300); }
+</style>
+</head>
+<body>
+
+<div id="signin" class="card signin" style="display:none">
+  <img src="/logos/civvio-logo.png" alt="Civvio" height="26" style="align-self:flex-start">
+  <div><p class="kicker">DMQ / Civvio</p><h1>Stand execution dashboard</h1></div>
+  <label>Email<input id="email" class="input" type="email" autocomplete="email"></label>
+  <label>Login code<input id="code" class="input" type="password" autocomplete="off"></label>
+  <button id="go" class="btn">Sign in</button>
+  <div id="err" class="err"></div>
+</div>
+
+<div id="app" class="wrap" style="display:none">
+  <header>
+    <img src="/logos/civvio-logo.png" alt="Civvio" height="28">
+    <div style="flex:1;min-width:200px">
+      <h1>DMQ Stand Execution</h1>
+      <div class="muted" id="sub">Monthly stand check</div>
+    </div>
+    <span id="demoTag" class="tag" style="display:none">Sample data</span>
+    <a class="btn ghost" href="/" style="text-decoration:none">Leegra Pulse</a>
+    <a class="btn ghost" href="/reports/civvio/" style="text-decoration:none">Activation dashboard</a>
+    <span class="muted" id="who"></span>
+    <button class="btn ghost" id="out">Sign out</button>
+  </header>
+
+  <div class="card filters">
+    <label>Month<select id="fMonth"></select></label>
+    <label>Date<select id="fDate"></select></label>
+    <label>Channel<select id="fChannel"></select></label>
+    <label>Region<select id="fRegion"></select></label>
+    <label>Store<select id="fStore"></select></label>
+  </div>
+
+  <div class="kpis">
+    <div class="card"><p class="kicker">Stores completed</p><div class="kpi-v" id="kDone">–</div><div class="bar"><div id="kBar" style="width:0"></div></div><div class="muted" id="kPct" style="margin-top:6px"></div></div>
+    <div class="card"><p class="kicker">Avg facings</p><div class="kpi-v" id="kFacings">–</div></div>
+    <div class="card"><p class="kicker">Stock returns</p><div class="kpi-v" id="kReturns">–</div><div class="muted">stores reporting</div></div>
+    <div class="card"><p class="kicker">Damaged stock</p><div class="kpi-v" id="kDamaged">–</div><div class="muted">stores reporting</div></div>
+    <div class="card"><p class="kicker">Need more stock</p><div class="kpi-v" id="kAdditional">–</div><div class="muted">stores reporting</div></div>
+  </div>
+
+  <div class="two">
+    <div class="card"><p class="kicker">Completed vs planned · channel</p><div class="scroll"><table id="tChannel"></table></div></div>
+    <div class="card"><p class="kicker">Completed vs planned · region</p><div class="scroll"><table id="tRegion"></table></div></div>
+  </div>
+
+  <div class="card"><p class="kicker">Questionnaire feedback per store</p><div class="scroll"><table id="tFeedback"></table></div></div>
+
+  <div class="card"><p class="kicker">Photos per store</p><div class="gallery" id="gallery"></div></div>
+
+  <div class="card"><p class="kicker">Still to visit this month</p><div class="scroll"><table id="tOutstanding"></table></div></div>
+
+  <div class="card" id="viewsCard" style="display:none"><p class="kicker">Dashboard views · super users only</p><div class="scroll"><table id="tViews"></table></div></div>
+</div>
+
+<div class="lightbox" id="lb"><img id="lbImg" alt=""><div id="lbCap" class="muted" style="text-align:center;max-width:640px"></div></div>
+
+<script>
+(function () {
+  var $ = function (id) { return document.getElementById(id); };
+  var KEY = 'civvio-exec-auth';
+  var DEMO = /[?&]demo=1/.test(location.search);
+  var MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  var auth = null, data = null, timer = null;
+  var f = { month: '', date: '', channel: '', region: '', store: '' };
+
+  function esc(s) { return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) { return { '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;' }[c]; }); }
+  function monthOf(d) { return d.slice(0, 7); }
+  function monthLabel(m) { return MONTHS[+m.slice(5, 7) - 1] + ' ' + m.slice(0, 4); }
+  function photoUrl(id) { return DEMO ? '' : '/api/civvio-execution?photo=' + encodeURIComponent(id) + '&t=' + encodeURIComponent(auth.token); }
+  function ynCell(v) { return v === 'Yes' ? '<span class="yes">Yes</span>' : v === 'No' ? '<span class="no">No</span>' : '<span class="no">–</span>'; }
+
+  // ---- auth ----
+  function showSignin(msg) {
+    $('app').style.display = 'none'; $('signin').style.display = 'flex';
+    var last = localStorage.getItem(KEY + '-email'); if (last) $('email').value = last;
+    $('err').textContent = msg || '';
+  }
+  async function signIn() {
+    var email = $('email').value.trim().toLowerCase(), code = $('code').value.trim();
+    if (!email || !code) { $('err').textContent = 'Enter your email and login code.'; return; }
+    $('go').disabled = true; $('err').textContent = '';
+    try {
+      var r = await fetch('/api/auth-login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: email, code: code, tenant_code: 'CIV-088' }) });
+      var d = await r.json().catch(function () { return {}; });
+      if (!r.ok || !d.token) { $('err').textContent = d.error || 'Sign-in failed.'; return; }
+      if (d.role === 'field_rep') { $('err').textContent = 'This is a rep login. Use the Leegra Pulse app to capture surveys.'; return; }
+      auth = { token: d.token, email: email };
+      localStorage.setItem(KEY, JSON.stringify(auth)); localStorage.setItem(KEY + '-email', email);
+      sessionStorage.removeItem(KEY + '-logged');
+      start();
+    } catch (e) { $('err').textContent = 'Could not reach the server.'; }
+    finally { $('go').disabled = false; }
+  }
+  $('go').addEventListener('click', signIn);
+  $('code').addEventListener('keydown', function (e) { if (e.key === 'Enter') signIn(); });
+  $('out').addEventListener('click', function () { localStorage.removeItem(KEY); auth = null; clearInterval(timer); showSignin(); });
+
+  // ---- data ----
+  async function load() {
+    if (DEMO) { data = demoData(); render(); return; }
+    var log = !sessionStorage.getItem(KEY + '-logged');
+    var r = await fetch('/api/civvio-execution' + (log ? '?log=1' : ''), { headers: { Authorization: 'Bearer ' + auth.token } });
+    if (r.status === 401) { localStorage.removeItem(KEY); clearInterval(timer); showSignin('Your session has ended. Sign in again.'); return; }
+    if (!r.ok) return;
+    if (log) sessionStorage.setItem(KEY + '-logged', '1');
+    data = await r.json();
+    render();
+  }
+  function start() {
+    $('signin').style.display = 'none'; $('app').style.display = 'flex';
+    $('who').textContent = DEMO ? '' : auth.email;
+    $('demoTag').style.display = DEMO ? '' : 'none';
+    load(); clearInterval(timer); timer = setInterval(load, 90000);
+  }
+
+  // ---- filters ----
+  ['Month','Date','Channel','Region','Store'].forEach(function (k) {
+    $('f' + k).addEventListener('change', function (e) { f[k.toLowerCase()] = e.target.value; if (k === 'Month') f.date = ''; render(); });
+  });
+  function fillSelect(el, opts, val, allLabel) {
+    el.innerHTML = (allLabel ? '<option value="">' + allLabel + '</option>' : '') + opts.map(function (o) { return '<option value="' + esc(o[0]) + '"' + (o[0] === val ? ' selected' : '') + '>' + esc(o[1]) + '</option>'; }).join('');
+  }
+  function uniq(a) { return a.filter(function (x, i) { return x && a.indexOf(x) === i; }).sort(); }
+
+  // ---- render ----
+  function render() {
+    var stores = data.stores || [], visits = data.visits || [];
+    var nowM = new Date(Date.now() + 2 * 3600e3).toISOString().slice(0, 7);
+    var months = uniq(visits.map(function (v) { return monthOf(v.date); }).concat([nowM])).reverse();
+    if (!f.month || months.indexOf(f.month) < 0) f.month = months[0];
+    fillSelect($('fMonth'), months.map(function (m) { return [m, monthLabel(m)]; }), f.month);
+    var dates = uniq(visits.filter(function (v) { return monthOf(v.date) === f.month; }).map(function (v) { return v.date; })).reverse();
+    fillSelect($('fDate'), dates.map(function (d) { return [d, d]; }), f.date, 'All dates');
+    fillSelect($('fChannel'), uniq(stores.map(function (s) { return s.channel; })).map(function (c) { return [c, c]; }), f.channel, 'All channels');
+    fillSelect($('fRegion'), uniq(stores.map(function (s) { return s.region; })).map(function (c) { return [c, c]; }), f.region, 'All regions');
+    var storeOpts = stores.filter(function (s) { return (!f.channel || s.channel === f.channel) && (!f.region || s.region === f.region); }).map(function (s) { return [s.code, s.name]; }).sort(function (a, b) { return a[1].localeCompare(b[1]); });
+    fillSelect($('fStore'), storeOpts, f.store, 'All stores');
+
+    var storeOk = function (s) { return (!f.channel || s.channel === f.channel) && (!f.region || s.region === f.region) && (!f.store || s.code === f.store); };
+    var planned = stores.filter(storeOk);
+    var plannedCodes = planned.map(function (s) { return s.code; });
+    var vis = visits.filter(function (v) { return monthOf(v.date) === f.month && (!f.date || v.date === f.date) && plannedCodes.indexOf(v.storeCode) >= 0; });
+    var done = vis.filter(function (v) { return v.done; });
+    var doneStores = uniq(done.map(function (v) { return v.storeCode; }));
+
+    $('sub').textContent = 'Monthly stand check · ' + monthLabel(f.month) + (data.generatedAt && !DEMO ? ' · updated ' + new Date(data.generatedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '');
+    var pct = planned.length ? Math.round(doneStores.length / planned.length * 100) : 0;
+    $('kDone').textContent = doneStores.length + ' / ' + planned.length;
+    $('kBar').style.width = pct + '%';
+    $('kPct').textContent = pct + '% of planned stores';
+    var fac = done.map(function (v) { return v.facings; }).filter(function (n) { return n != null; });
+    $('kFacings').textContent = fac.length ? (fac.reduce(function (a, b) { return a + b; }, 0) / fac.length).toFixed(1) : '–';
+    var countYes = function (k) { return uniq(done.filter(function (v) { return v[k] === 'Yes'; }).map(function (v) { return v.storeCode; })).length; };
+    $('kReturns').textContent = countYes('returns');
+    $('kDamaged').textContent = countYes('damaged');
+    $('kAdditional').textContent = countYes('additional');
+
+    function split(key, el) {
+      var groups = uniq(planned.map(function (s) { return s[key]; }));
+      el.innerHTML = '<tr><th>' + (key === 'channel' ? 'Channel' : 'Region') + '</th><th class="num">Done</th><th class="num">Planned</th><th style="width:40%"></th></tr>' + groups.map(function (g) {
+        var p = planned.filter(function (s) { return s[key] === g; }).length;
+        var d = planned.filter(function (s) { return s[key] === g && doneStores.indexOf(s.code) >= 0; }).length;
+        return '<tr><td>' + esc(g) + '</td><td class="num">' + d + '</td><td class="num">' + p + '</td><td><div class="bar" style="margin:6px 0 0"><div style="width:' + (p ? Math.round(d / p * 100) : 0) + '%"></div></div></td></tr>';
+      }).join('');
+    }
+    split('channel', $('tChannel')); split('region', $('tRegion'));
+
+    $('tFeedback').innerHTML = '<tr><th>Date</th><th>Store</th><th>Channel</th><th>Region</th><th>Rep</th><th class="num">Facings</th><th>Returns</th><th>Damaged</th><th>More stock</th><th>Comment</th><th>Photo</th></tr>' +
+      (done.length ? done.map(function (v) {
+        var p = v.photos[0];
+        return '<tr><td style="white-space:nowrap">' + esc(v.date) + '<div class="muted">' + esc(v.time) + '</div></td><td>' + esc(v.storeName) + '</td><td>' + esc(v.channel) + '</td><td>' + esc(v.region) + '</td><td>' + esc(v.rep) + '</td><td class="num">' + (v.facings == null ? '–' : v.facings) + '</td><td>' + ynCell(v.returns) + '</td><td>' + ynCell(v.damaged) + '</td><td>' + ynCell(v.additional) + '</td><td style="min-width:180px">' + esc(v.comment || '') + '</td><td>' +
+          (p ? (DEMO ? '<div class="thumb"></div>' : '<img class="thumb" loading="lazy" src="' + photoUrl(p.id) + '" data-cap="' + esc(v.storeName + ' · ' + v.date + (v.comment ? ' · ' + v.comment : '')) + '" alt="">') : '') + '</td></tr>';
+      }).join('') : '<tr><td colspan="11" class="empty">No completed stand checks for this selection yet.</td></tr>');
+
+    var photos = [];
+    done.forEach(function (v) { v.photos.forEach(function (p) { photos.push({ v: v, p: p }); }); });
+    $('gallery').innerHTML = photos.length ? photos.map(function (x) {
+      var cap = x.v.storeName + ' · ' + x.v.date + (x.v.comment ? ' · ' + x.v.comment : '');
+      return '<div class="ph">' + (DEMO ? '<div style="aspect-ratio:4/3;border-radius:8px;background:var(--surface-2);display:flex;align-items:center;justify-content:center" class="muted">Stand photo</div>' : '<img loading="lazy" src="' + photoUrl(x.p.id) + '" data-cap="' + esc(cap) + '" alt="' + esc(x.v.storeName) + '">') +
+        '<div class="ph-store">' + esc(x.v.storeName) + '</div><div class="ph-meta">' + esc(x.v.date + ' ' + x.v.time + ' · ' + x.v.rep + ' · ' + x.v.region) + '</div>' + (x.v.comment ? '<div class="ph-comment">' + esc(x.v.comment) + '</div>' : '') + '</div>';
+    }).join('') : '<div class="empty">No photos for this selection yet.</div>';
+
+    var monthDone = uniq(visits.filter(function (v) { return monthOf(v.date) === f.month && v.done; }).map(function (v) { return v.storeCode; }));
+    var outstanding = planned.filter(function (s) { return monthDone.indexOf(s.code) < 0; });
+    $('tOutstanding').innerHTML = '<tr><th>Store</th><th>Channel</th><th>Region</th><th>Allocated to</th></tr>' +
+      (outstanding.length ? outstanding.map(function (s) { return '<tr><td>' + esc(s.name) + '</td><td>' + esc(s.channel) + '</td><td>' + esc(s.region) + '</td><td>' + esc(s.plannedRep || '') + '</td></tr>'; }).join('') : '<tr><td colspan="4" class="empty">Every planned store has been visited this month.</td></tr>');
+
+    if (data.superUser && data.views) {
+      $('viewsCard').style.display = '';
+      $('tViews').innerHTML = '<tr><th>Email</th><th class="num">Views</th><th>Last visit</th></tr>' + (data.views.length ? data.views.map(function (p) { return '<tr><td>' + esc(p.email) + '</td><td class="num">' + p.count + '</td><td>' + esc(new Date(p.last).toLocaleString()) + '</td></tr>'; }).join('') : '<tr><td colspan="3" class="empty">No views yet.</td></tr>');
+    } else $('viewsCard').style.display = 'none';
+  }
+
+  // ---- lightbox ----
+  document.addEventListener('click', function (e) {
+    var img = e.target.closest && e.target.closest('img[data-cap]');
+    if (img) { $('lbImg').src = img.src; $('lbCap').textContent = img.getAttribute('data-cap'); $('lb').classList.add('show'); }
+  });
+  $('lb').addEventListener('click', function () { $('lb').classList.remove('show'); });
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape') $('lb').classList.remove('show'); });
+
+  // ---- sample data for ?demo=1 ----
+  function demoData() {
+    var s = [['Totalsports Westville Pavillion Durban','Totalsports','KZN','Chris'],['Totalsports Gateway Durban','Totalsports','KZN','Chris'],['Totalsports Canal Walk Cape Town','Totalsports','CPT','Enver'],['Totalsports Mall Of Africa Johannesburg','Totalsports','GP','Nikki'],['Totalsports East Rand Mall Boksburg','Totalsports','GP','Chris'],['Mr Price Sport Loch Logan Bloemfontein','Mr Price Sport','FS','Chris'],['Mr Price Sport Paarl Mall Paarl','Mr Price Sport','CPT','Enver'],['Mr Price Sport Stellenbosch Eikestad','Mr Price Sport','CPT','Enver']]
+      .map(function (r, i) { return { code: 'DMQ-0' + (i + 1), name: r[0], channel: r[1], region: r[2], plannedRep: r[3] }; });
+    var m = new Date().toISOString().slice(0, 7);
+    var v = [[0, '-06', 6, 'No', 'No', 'Yes', 'Stand well stocked, needs size 8 and 9.'], [3, '-08', 4, 'Yes', 'No', 'No', 'Two pairs returned by customers.'], [2, '-12', 5, 'No', 'Yes', 'Yes', 'One box damaged in storeroom.'], [6, '-15', 6, 'No', 'No', 'No', '']]
+      .map(function (r, i) { var st = s[r[0]]; return { id: 'd' + i, storeCode: st.code, storeName: st.name, channel: st.channel, region: st.region, rep: 'Alex Walker', date: m + r[1], time: '10:1' + i, done: true, facings: r[2], returns: r[3], damaged: r[4], additional: r[5], comment: r[6], photos: [{ id: 'p' + i }] }; });
+    return { stores: s, visits: v, superUser: true, views: [{ email: 'dmq@leegrapulse.co.za', count: 3, last: new Date().toISOString() }] };
+  }
+
+  if (DEMO) { start(); return; }
+  try { auth = JSON.parse(localStorage.getItem(KEY) || 'null'); } catch (e) { auth = null; }
+  // Opened from the Leegra Pulse app: reuse that sign-in, no second login.
+  if (!auth) {
+    try {
+      var app = JSON.parse(localStorage.getItem('lp_session_v1') || 'null');
+      var ss = app && app.session;
+      if (ss && ss.token && ss.role !== 'field_rep') auth = { token: ss.token, email: ss.email || (ss.client && ss.client.staffEmail) || '' };
+    } catch (e) { auth = null; }
+  }
+  if (auth && auth.token) start(); else showSignin();
+})();
+</script>
+</body>
+</html>
