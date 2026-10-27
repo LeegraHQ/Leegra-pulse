@@ -79,7 +79,9 @@ async function handle(event) {
     };
   }
 
-  const normalizedEmail = (body.email || '').trim().toLowerCase();
+  // Common typos of the leegrapulse domain (e.g. "leegrpulse") still sign in.
+  const normalizedEmail = (body.email || '').trim().toLowerCase().replace(/\s+/g, '')
+    .replace(/@le+gr?a?pulse\.co\.za$/, '@leegrapulse.co.za');
   const submittedCode = (body.code || '').trim();
   const tenantCodeChoice = (body.tenant_code || '').trim().toUpperCase();
   if (!normalizedEmail || !submittedCode) {

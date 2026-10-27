@@ -48,6 +48,14 @@ const PH_CALL_SURVEYS = ['stock_pricing', 'execution_image', 'competitor_feedbac
 const HIDDEN_TENANT_CODES = ['SIR-014', 'BEU-305', 'TWR-260'];
 // Clients whose card opens their own dashboard instead of the generic one.
 const DIRECT_DASHBOARDS = { 'CIV-088': '/reports/civvio/execution/' };
+// Leegra Learning per client. DMQ gets its planograms only; everyone else keeps the default set.
+const TENANT_LEARNING = {
+  'CIV-088': [
+    { id: 'dmq-mrp', title: 'Mr Price Sport Planogram', type: 'PDF', meta: 'DMQ planogram', url: '/learning/Mr-Price-Sport-Planogram.pdf' },
+    { id: 'dmq-ts', title: 'Totalsport Planogram', type: 'PDF', meta: 'DMQ planogram', url: '/learning/Totalsport-Planogram.pdf' },
+  ],
+};
+const learningFor = (code) => TENANT_LEARNING[code] || TRAINING_MATERIALS;
 const TENANT_SURVEYS = {
   'CIV-088': { visit: [{ value: 'dmq_stand', label: 'DMQ Monthly Stand Check' }], call: ['dmq_stand'] },
 };
@@ -404,7 +412,7 @@ export default function App() {
       setTenantChoices(null);
       setError('');
       setVisit(null);
-      setAnswers({});
+      setAnswers({}); setPhotoLocal({});
     } catch (err) {
       setError(err.message);
     }
@@ -475,7 +483,7 @@ export default function App() {
     setTenantChoices(null);
     setVisitType('');
     setVisit(null);
-    setAnswers({});
+    setAnswers({}); setPhotoLocal({});
     setCallDone('');
     setCallSurveysDone([]);
   }
@@ -497,7 +505,7 @@ export default function App() {
       }
       if (remaining.length) {
         setVisit(null);
-        setAnswers({});
+        setAnswers({}); setPhotoLocal({});
         setVisitError('');
         setCallDone('');
         setCallSurveysDone(doneNow);
@@ -525,7 +533,7 @@ export default function App() {
 
   function handleExitStore() {
     setVisit(null);
-    setAnswers({});
+    setAnswers({}); setPhotoLocal({});
     setVisitError('');
     setVisitType('');
     setSelectedStoreCode('');
@@ -540,6 +548,7 @@ export default function App() {
       setVisit({ id: v.id, checkedInAt: new Date(v.checkin_at), questionnaire: v.questionnaire });
       const auto = autoAnswers(v.questionnaire?.questions || [], store, session.client, surveyLists);
       setAnswers(auto);
+      setPhotoLocal({}); // fresh visit: never show a previous visit's photos
       // One at a time: parallel answer writes to the same visit overwrite each other.
       (async () => { for (const [qid, val] of Object.entries(auto)) { try { await submitAnswer(session.token, v.id, qid, val); } catch { /* re-sent on submit */ } } })();
       setVisitError('');
@@ -615,7 +624,8 @@ export default function App() {
 
   function renderPhoto(key, label, required, value, onPick) {
     const local = photoLocal[key];
-    const saved = value && typeof value === 'object' && value.photoId ? value : null;
+    // Only show a photo that belongs to THIS visit; earlier visits' photos stay in Supabase for the dashboard.
+    const saved = value && typeof value === 'object' && value.photoId && (!visit || String(value.photoId).startsWith(visit.id + '_')) ? value : null;
     const status = local?.status || (saved ? 'saved' : null);
     const imgStyle = { width: '100%', maxHeight: 260, objectFit: 'contain', borderRadius: 8, background: 'rgba(0,0,0,0.3)', display: 'block' };
     return (
@@ -1189,7 +1199,7 @@ export default function App() {
             <div>
               <div className="lp-label">Leegra Learning</div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                {TRAINING_MATERIALS.map(m => (
+                {learningFor(client.code).map(m => (
                   <div key={m.id} className="lp-row-card" onClick={() => handleToggleTraining(m.id)}>
                     <span className="lp-dot" style={{ background: training[m.id] ? 'var(--accent-2-400)' : 'var(--neutral-500)' }} />
                     <div style={{ flex: 1, fontSize: 13 }}>{m.title}</div>
@@ -1307,7 +1317,7 @@ export default function App() {
               <div className="lp-label" style={{ marginBottom: 0 }}>Leegra Learning — training material</div>
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8 }}>
-              {TRAINING_MATERIALS.map(m => (
+              {learningFor(client.code).map(m => (
                 <a key={m.id} className="lp-inner-card" href={m.url} download style={{ textDecoration: 'none', color: 'inherit', display: 'block' }}>
                   <div className="lp-title" style={{ fontSize: 14 }}>{m.title}</div>
                   <div className="lp-meta">{m.type} · {m.meta}</div>
