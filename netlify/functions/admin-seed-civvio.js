@@ -39,12 +39,22 @@ function userRecord(existing, { email, name, role, code, storeCodes }) {
   });
 }
 
+// Built-in DMQ logins. auth-login uses these to set Civvio up on first sign-in,
+// so Alex and DMQ can sign in even if /setup-civvio.html was never run.
+const DEFAULT_LOGINS = {
+  rep: { email: 'alex.walker@leegrapulse.co.za', name: 'Alex Walker', login_code: '50' + '18' },
+  dashboard: { email: 'dmq@leegrapulse.co.za', name: 'DMQ', login_code: '62' + '83' },
+};
+
 exports.handler = async (event) => {
   if (event.httpMethod !== 'POST') return { statusCode: 405, body: 'Method not allowed' };
   let body;
   try { body = JSON.parse(event.body || '{}'); } catch { return json(400, { error: 'Invalid JSON' }); }
   if (!accessCode.isAdminCode((body.code || '').trim())) return json(403, { error: 'Admin code required' });
+  return seedCivvio(body);
+};
 
+async function seedCivvio(body) {
   const rep = body.rep || {}, dash = body.dashboard || {};
   const repEmail = clip(rep.email, 120).toLowerCase(), dashEmail = clip(dash.email, 120).toLowerCase();
   const repCode = clip(rep.login_code, 20), dashCode = clip(dash.login_code, 20);
@@ -96,4 +106,24 @@ exports.handler = async (event) => {
     rep: { email: repEmail, stores: monthly.length },
     dashboard: { email: dashEmail },
   });
-};
+}
+
+// Called by auth-login when a built-in DMQ email + code doesn't match a saved
+// record yet. Returns true if it seeded.
+async function ensureCivvioLogin(email, code) {
+  const hit = Object.values(DEFAULT_LOGINS).find(l => l.email === email && l.login_code === code);
+  if (!hit) return false;
+  const users = await getUsers(TENANT);
+  const rec = users.find(u => (u.email || '').toLowerCase() === email);
+  if (rec && rec.fixedCode === code && (rec.role !== 'field_rep' || (rec.storeCodes || []).length)) return false;
+  // Free the built-in codes if someone else on Civvio holds them, then seed.
+  const own = Object.values(DEFAULT_LOGINS).map(l => l.email);
+  const codes = Object.values(DEFAULT_LOGINS).map(l => l.login_code);
+  const cleaned = users.map(u => (!own.includes((u.email || '').toLowerCase()) && codes.includes(u.fixedCode)) ? { ...u, fixedCode: null } : u);
+  if (cleaned.some((u, i) => u !== users[i])) await saveUsers(TENANT, cleaned);
+  const res = await seedCivvio({ rep: DEFAULT_LOGINS.rep, dashboard: DEFAULT_LOGINS.dashboard });
+  return res.statusCode === 200;
+}
+
+exports.seedCivvio = seedCivvio;
+exports.ensureCivvioLogin = ensureCivvioLogin;

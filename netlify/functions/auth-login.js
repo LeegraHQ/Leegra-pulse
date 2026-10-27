@@ -28,6 +28,7 @@ const jwt = require('./_lib/jwt');
 const accessCode = require('./_lib/accesscode');
 const { resolveIdentityByEmail } = require('./_lib/identity');
 const { getOtp, clearOtp, getStores, getAllVisits, computeDashboard, getTenantSettings, recordUserLogin } = require('./_lib/records');
+const { ensureCivvioLogin } = require('./admin-seed-civvio');
 
 exports.handler = async (event) => {
   try {
@@ -111,6 +112,15 @@ async function handle(event) {
     && process.env.TEST_REP_PERMANENT_CODE
     && normalizedEmail === process.env.TEST_REP_EMAIL.trim().toLowerCase()
     && submittedCode === process.env.TEST_REP_PERMANENT_CODE;
+
+  // DMQ / Civvio: the built-in rep and dashboard logins set themselves up on
+  // first sign-in (stores, questionnaire, user record), so a skipped or failed
+  // /setup-civvio.html run never shows "Invalid or expired code".
+  try {
+    await ensureCivvioLogin(normalizedEmail, submittedCode);
+  } catch (err) {
+    console.error('civvio auto-setup failed', err && err.stack);
+  }
 
   let identity = await resolveIdentityByEmail(normalizedEmail);
 
