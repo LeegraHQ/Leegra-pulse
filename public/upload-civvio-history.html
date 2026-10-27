@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Leegra Pulse — DMQ past visits upload</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.sheetjs.com/xlsx-0.20.2/package/dist/xlsx.full.min.js"></script>
+<style>
+  :root { --bg:#14161c; --surface:#21242c; --text:#eef1e9; --accent:#b4fc0f; --accent-300:#d4fc7a; --radius-lg:14px; --radius-md:8px; --shadow-md:0 0 0 1px #3a3d33, 0 6px 18px rgba(0,0,0,0.55); }
+  * { box-sizing: border-box; }
+  body { margin:0; min-height:100vh; padding:40px 20px; font-family:'Inter',system-ui,sans-serif; font-size:14px; line-height:1.55; background:var(--bg); color:var(--text); display:flex; justify-content:center; }
+  main { width:100%; max-width:480px; }
+  .card { background:var(--surface); border-radius:var(--radius-lg); box-shadow:var(--shadow-md); padding:24px 22px; display:flex; flex-direction:column; gap:14px; }
+  .kicker { font-size:10px; letter-spacing:0.1em; text-transform:uppercase; color:var(--accent-300); margin:0; }
+  h1 { font-size:17px; font-weight:500; margin:0; }
+  p { margin:0; color:color-mix(in srgb, var(--text) 60%, transparent); text-wrap:pretty; }
+  a { color:var(--accent); } a:hover { color:var(--accent-300); }
+  label { display:flex; flex-direction:column; gap:6px; font-size:12px; color:color-mix(in srgb, var(--text) 70%, transparent); }
+  .input { min-height:36px; padding:6px 10px; font:inherit; font-size:14px; width:100%; color:var(--text); background:var(--bg); border:1px solid color-mix(in srgb, var(--text) 16%, transparent); border-radius:var(--radius-md); }
+  .input:focus-visible, .btn:focus-visible { outline:2px solid var(--accent); outline-offset:2px; }
+  .btn { font:inherit; font-size:13px; font-weight:600; cursor:pointer; padding:10px 14px; border-radius:var(--radius-md); background:transparent; color:var(--accent); border:1px solid var(--accent); }
+  .btn:hover:not(:disabled) { background:color-mix(in srgb, var(--accent) 12%, transparent); }
+  .btn:disabled { opacity:0.45; cursor:not-allowed; }
+  .note { font-size:12px; min-height:18px; } .ok { color:var(--accent-300); } .bad { color:#ff9b8a; }
+</style>
+</head>
+<body>
+<main>
+  <div class="card">
+    <img src="/logos/civvio-logo.png" alt="Civvio" height="26" style="align-self:flex-start">
+    <div><p class="kicker">DMQ / Civvio · CIV-088</p><h1>Upload past store visits</h1></div>
+    <p>Use the DMQ-Past-Visits-Template.xlsx file. Rows without a visit date are skipped. Each upload is added to what is already there.</p>
+    <label>Admin access code<input id="admin" class="input" type="password" autocomplete="off"></label>
+    <label>Excel file<input id="file" class="input" type="file" accept=".xlsx,.xls,.csv"></label>
+    <div id="preview" class="note"></div>
+    <button id="go" class="btn" disabled>Upload</button>
+    <div id="msg" class="note"></div>
+    <a href="/reports/civvio/execution/">Open the DMQ dashboard</a>
+  </div>
+</main>
+<script>
+(function () {
+  var $ = function (id) { return document.getElementById(id); };
+  var rows = [], fileName = '';
+  var pad = function (n) { return String(n).padStart(2, '0'); };
+  function toIso(v) {
+    if (v == null || v === '') return '';
+    if (v instanceof Date && !isNaN(v)) return v.getFullYear() + '-' + pad(v.getMonth() + 1) + '-' + pad(v.getDate());
+    if (typeof v === 'number') { var d = XLSX.SSF.parse_date_code(v); return d ? d.y + '-' + pad(d.m) + '-' + pad(d.d) : ''; }
+    var s = String(v).trim(), m;
+    if ((m = s.match(/^(\d{4})[-\/.](\d{1,2})[-\/.](\d{1,2})/))) return m[1] + '-' + pad(m[2]) + '-' + pad(m[3]);
+    if ((m = s.match(/^(\d{1,2})[-\/.](\d{1,2})[-\/.](\d{4})/))) return m[3] + '-' + pad(m[2]) + '-' + pad(m[1]);
+    return '';
+  }
+  function pick(r, start) { for (var k in r) if (k.toLowerCase().indexOf(start) === 0) return r[k]; return ''; }
+  $('file').addEventListener('change', async function () {
+    var file = this.files[0]; rows = []; $('go').disabled = true; $('msg').textContent = '';
+    if (!file) { $('preview').textContent = ''; return; }
+    fileName = file.name;
+    var wb = XLSX.read(await file.arrayBuffer(), { cellDates: true });
+    var sheet = wb.Sheets['Past visits'] || wb.Sheets[wb.SheetNames[0]];
+    var raw = XLSX.utils.sheet_to_json(sheet, { defval: '' });
+    rows = raw.map(function (r) {
+      return {
+        date: toIso(pick(r, 'visit date')), storeCode: String(pick(r, 'store code')).trim(),
+        storeName: pick(r, 'store name'), channel: pick(r, 'channel'), region: pick(r, 'region'), rep: pick(r, 'rep'),
+        facings: pick(r, 'facings'), returns: pick(r, 'stock returns'), damaged: pick(r, 'damaged'),
+        additional: pick(r, 'additional'), comment: pick(r, 'comment'),
+      };
+    }).filter(function (r) { return r.date && r.storeCode; });
+    $('preview').textContent = rows.length + ' visit' + (rows.length === 1 ? '' : 's') + ' ready to upload (' + (raw.length - rows.length) + ' rows without a date skipped).';
+    $('go').disabled = !rows.length;
+  });
+  $('go').addEventListener('click', async function () {
+    var code = $('admin').value.trim();
+    if (!code) { $('msg').className = 'note bad'; $('msg').textContent = 'Enter the admin code.'; return; }
+    $('go').disabled = true; $('msg').className = 'note'; $('msg').textContent = 'Uploading…';
+    try {
+      var r = await fetch('/api/civvio-history', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ code: code, rows: rows, fileName: fileName }) });
+      var d = await r.json().catch(function () { return {}; });
+      if (!r.ok) { $('msg').className = 'note bad'; $('msg').textContent = d.error || 'Upload failed.'; $('go').disabled = false; return; }
+      $('msg').className = 'note ok'; $('msg').textContent = d.rows_added + ' past visits added to the DMQ dashboard.';
+    } catch (e) { $('msg').className = 'note bad'; $('msg').textContent = 'Could not reach the server.'; $('go').disabled = false; }
+  });
+})();
+</script>
+</body>
+</html>

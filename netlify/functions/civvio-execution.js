@@ -11,6 +11,7 @@ const jwt = require('./_lib/jwt');
 const { LEEGRA_ROLES } = require('./_data');
 const { blobsStore, getLiveVisits, getStores, getUsers, getPhoto } = require('./_lib/records');
 
+const supa = require('./_lib/supabase');
 const TENANT = 'CIV-088';
 const SAST_MS = 2 * 60 * 60 * 1000;
 const pad = n => String(n).padStart(2, '0');
@@ -79,6 +80,22 @@ exports.handler = async (event) => {
       photos,
     });
   }
+  // Past visits uploaded from the Excel template (civvio-history.js).
+  try {
+    const hist = blobsStore(`civvio-history-${TENANT}`);
+    const { blobs } = await hist.list();
+    const batches = await Promise.all(blobs.map(b => hist.get(b.key, { type: 'json' }).catch(() => null)));
+    batches.forEach((b, bi) => (b && Array.isArray(b.rows) ? b.rows : []).forEach((r, i) => {
+      const s = storeBy[r.storeCode] || {};
+      out.push({
+        id: `hist-${bi}-${i}`, source: 'history', storeCode: r.storeCode, storeName: s.name || r.storeName || r.storeCode,
+        channel: s.channel || r.channel || 'Other', region: s.region || r.region || 'Unassigned',
+        rep: r.rep || s.plannedRep || '', date: r.date, time: '', done: true,
+        facings: r.facings, returns: r.returns || '', damaged: r.damaged || '', additional: r.additional || '',
+        comment: r.comment || '', photos: [],
+      });
+    }));
+  } catch (e) { console.error('civvio history read failed', e && e.message); }
   out.sort((x, y) => (x.date + x.time < y.date + y.time ? 1 : -1));
 
   let views;
@@ -98,6 +115,7 @@ exports.handler = async (event) => {
   return json(200, {
     generatedAt: new Date().toISOString(),
     superUser: who.superUser,
+    photoStorage: supa.configured() ? 'supabase' : 'netlify',
     stores: stores.filter(s => s.dmqMonthly).map(s => ({ code: s.code, name: s.name, channel: s.channel || 'Other', region: s.region || 'Unassigned', plannedRep: s.plannedRep || '' })),
     visits: out,
     views,

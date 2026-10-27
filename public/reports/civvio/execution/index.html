@@ -158,6 +158,7 @@
     if (!r.ok) return;
     if (log) sessionStorage.setItem(KEY + '-logged', '1');
     data = await r.json();
+    if (data.superUser && $('sub')) $('sub').textContent = 'Monthly stand check · photos stored in ' + (data.photoStorage === 'supabase' ? 'Supabase' : 'Netlify (Supabase not connected)');
     render();
   }
   function start() {
@@ -264,8 +265,22 @@
   }
 
   if (DEMO) { start(); return; }
-  try { auth = JSON.parse(localStorage.getItem(KEY) || 'null'); } catch (e) { auth = null; }
-  // Opened from the Leegra Pulse app: reuse that sign-in, no second login.
+  // Opened from the Leegra Pulse app: the link carries the sign-in (#t=…), so no second login.
+  var hm = location.hash.match(/[#&]t=([^&]+)/);
+  if (hm) {
+    var em = location.hash.match(/[#&]e=([^&]+)/);
+    auth = { token: decodeURIComponent(hm[1]), email: em ? decodeURIComponent(em[1]) : '' };
+    localStorage.setItem(KEY, JSON.stringify(auth));
+    history.replaceState(null, '', location.pathname + location.search);
+  }
+  if (!auth) {
+    try {
+      var app0 = JSON.parse(localStorage.getItem('lp_session_v1') || 'null');
+      var s0 = app0 && app0.session;
+      if (s0 && s0.token && s0.role !== 'field_rep') auth = { token: s0.token, email: s0.email || '' };
+    } catch (e) { auth = null; }
+  }
+  if (!auth) { try { auth = JSON.parse(localStorage.getItem(KEY) || 'null'); } catch (e) { auth = null; } }
   if (!auth) {
     try {
       var app = JSON.parse(localStorage.getItem('lp_session_v1') || 'null');

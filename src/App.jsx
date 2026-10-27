@@ -48,6 +48,9 @@ const PH_CALL_SURVEYS = ['stock_pricing', 'execution_image', 'competitor_feedbac
 const HIDDEN_TENANT_CODES = ['SIR-014', 'BEU-305', 'TWR-260'];
 // Clients whose card opens their own dashboard instead of the generic one.
 const DIRECT_DASHBOARDS = { 'CIV-088': '/reports/civvio/execution/' };
+// DMQ dashboard opens already signed in: the app's token rides in the link hash.
+const withSignIn = (url, session) => (url && url.startsWith('/reports/civvio/execution') && session?.token
+  ? `${url}#t=${encodeURIComponent(session.token)}&e=${encodeURIComponent(session.email || '')}` : url);
 // Leegra Learning per client. DMQ gets its planograms only; everyone else keeps the default set.
 const TENANT_LEARNING = {
   'CIV-088': [
@@ -790,7 +793,7 @@ export default function App() {
           <div className="lp-muted" style={{ fontSize: 12 }}>All client accounts — select one to view its dashboard.</div>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12 }}>
             {session.tenants.filter(c => !HIDDEN_TENANT_CODES.includes(c.code)).map(c => (
-              <div key={c.code} className="lp-inner-card" style={{ cursor: 'pointer' }} onClick={() => DIRECT_DASHBOARDS[c.code] ? (window.location.href = DIRECT_DASHBOARDS[c.code]) : handleOpenClient(c.code)}>
+              <div key={c.code} className="lp-inner-card" style={{ cursor: 'pointer' }} onClick={() => DIRECT_DASHBOARDS[c.code] ? (window.location.href = withSignIn(DIRECT_DASHBOARDS[c.code], session)) : handleOpenClient(c.code)}>
                 <div className="lp-title" style={{ fontSize: 15 }}>{c.code === 'CIV-088' ? 'Civvio · DMQ' : c.name}</div>
                 <div className="lp-meta">{c.code}</div>
                 <div className="lp-tag lp-tag-accent2">{DIRECT_DASHBOARDS[c.code] ? 'Execution dashboard' : `${c.compliance} compliance`}</div>
@@ -1229,7 +1232,7 @@ export default function App() {
             <a href="#" aria-current={dashTab === 'staff' ? 'page' : undefined} style={dashTab === 'staff' ? undefined : { opacity: 0.6 }} onClick={(e) => { e.preventDefault(); setDashTab('staff'); }}>Staff</a>
           </nav>
           {CLIENT_REPORT_LINKS[client.code] && (
-            <a className="lp-tag lp-tag-outline" href={CLIENT_REPORT_LINKS[client.code]} target="_blank" rel="noreferrer">
+            <a className="lp-tag lp-tag-outline" href={withSignIn(CLIENT_REPORT_LINKS[client.code], session)} target="_blank" rel="noreferrer">
               View full report ↗
             </a>
           )}
