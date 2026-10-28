@@ -57,6 +57,8 @@ exports.handler = async (event) => {
   }
 
   const [visits, stores, users] = await Promise.all([getLiveVisits(TENANT), getStores(TENANT), getUsers(TENANT)]);
+  // Allocation: Cape Town → Enver, KZN → Kgothatso, everything else → Chris.
+  stores.forEach(s => { s.plannedRep = s.region === 'CPT' ? 'Enver' : s.region === 'KZN' ? 'Kgothatso' : 'Chris'; });
   const storeBy = Object.fromEntries(stores.map(s => [s.code, s]));
   const nameBy = Object.fromEntries(users.filter(u => u.email && u.name).map(u => [u.email.toLowerCase(), u.name]));
 
