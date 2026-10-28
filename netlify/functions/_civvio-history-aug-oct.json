@@ -1,0 +1,1062 @@
+{
+ "source": "DMQ-Past-Visits-Aug-Oct-All-Stores.xlsx",
+ "rows": [
+  {
+   "pending": true,
+   "month": "2026-08",
+   "storeCode": "DMQ-01",
+   "storeName": "Totalsports Westville Pavillion Durban",
+   "comment": "Busy uploading"
+  },
+  {
+   "pending": true,
+   "month": "2026-08",
+   "storeCode": "DMQ-02",
+   "storeName": "Totalsports Gateway Durban",
+   "comment": "Busy uploading"
+  },
+  {
+   "date": "2026-08-13",
+   "storeCode": "DMQ-03",
+   "storeName": "Totalsports Canal Walk Cape Town",
+   "channel": "Totalsports",
+   "region": "CPT",
+   "rep": "Enver",
+   "facings": null,
+   "returns": "",
+   "damaged": "",
+   "additional": "",
+   "comment": "Visited by Enver De Bryun. HYROX belt demand."
+  },
+  {
+   "date": "2026-08-21",
+   "storeCode": "DMQ-03",
+   "storeName": "Totalsports Canal Walk Cape Town",
+   "channel": "Totalsports",
+   "region": "CPT",
+   "rep": "Enver",
+   "facings": null,
+   "returns": "",
+   "damaged": "",
+   "additional": "No",
+   "comment": "Visited by Enver De Bryun. Replenished."
+  },
+  {
+   "pending": true,
+   "month": "2026-08",
+   "storeCode": "DMQ-04",
+   "storeName": "Totalsports Mall Of Africa Johannesburg",
+   "comment": "Busy uploading"
+  },
+  {
+   "pending": true,
+   "month": "2026-08",
+   "storeCode": "DMQ-05",
+   "storeName": "Totalsports East Rand Mall Boksburg",
+   "comment": "Busy uploading"
+  },
+  {
+   "pending": true,
+   "month": "2026-08",
+   "storeCode": "DMQ-06",
+   "storeName": "Totalsports Clearwaters Roodepoort",
+   "comment": "Busy uploading"
+  },
+  {
+   "date": "2026-08-11",
+   "storeCode": "DMQ-07",
+   "storeName": "Totalsports Tygervalley Bellville",
+   "channel": "Totalsports",
+   "region": "CPT",
+   "rep": "Enver",
+   "facings": null,
+   "returns": "",
+   "damaged": "",
+   "additional": "",
+   "comment": "Visited by Enver De Bryun. Peg length."
+  },
+  {
+   "pending": true,
+   "month": "2026-08",
+   "storeCode": "DMQ-08",
+   "storeName": "Totalsports Menlyn Park Pretoria",
+   "comment": "Busy uploading"
+  },
+  {
+   "date": "2026-08-27",
+   "storeCode": "DMQ-09",
+   "storeName": "Totalsports Somerset Mall Somerset West",
+   "channel": "Totalsports",
+   "region": "CPT",
+   "rep": "Enver",
+   "facings": null,
+   "returns": "",
+   "damaged": "",
+   "additional": "",
+   "comment": "Visited by Enver De Bryun. Replenished from DC."
+  },
+  {
+   "pending": true,
+   "month": "2026-08",
+   "storeCode": "DMQ-10",
+   "storeName": "Totalsposrts Fourways Mall Johannesburg",
+   "comment": "Busy uploading"
+  },
+  {
+   "pending": true,
+   "month": "2026-08",
+   "storeCode": "DMQ-11",
+   "storeName": "Totalsports Eastgate Johannesburg",
+   "comment": "Busy uploading"
+  },
+  {
+   "pending": true,
+   "month": "2026-08",
+   "storeCode": "DMQ-12",
+   "storeName": "Totalsports Waterfall Mall Rustenburg",
+   "comment": "Busy uploading"
+  },
+  {
+   "pending": true,
+   "month": "2026-08",
+   "storeCode": "DMQ-13",
+   "storeName": "Totalsports Cavendish Cape Town",
+   "comment": "Busy uploading"
+  },
+  {
+   "pending": true,
+   "month": "2026-08",
+   "storeCode": "DMQ-14",
+   "storeName": "Totalsports Amanzimtoti Galleria",
+   "comment": "Busy uploading"
+  },
+  {
+   "pending": true,
+   "month": "2026-08",
+   "storeCode": "DMQ-15",
+   "storeName": "Totalsports Cresta Johannesburg",
+   "comment": "Busy uploading"
+  },
+  {
+   "pending": true,
+   "month": "2026-08",
+   "storeCode": "DMQ-16",
+   "storeName": "Totalsports Vaal Mall Vanderbijlpark",
+   "comment": "Busy uploading"
+  },
+  {
+   "pending": true,
+   "month": "2026-08",
+   "storeCode": "DMQ-17",
+   "storeName": "Totalsports Centurion Pretoria",
+   "comment": "Busy uploading"
+  },
+  {
+   "pending": true,
+   "month": "2026-08",
+   "storeCode": "DMQ-18",
+   "storeName": "Totalsports Blue Route Cape Town",
+   "comment": "Busy uploading"
+  },
+  {
+   "pending": true,
+   "month": "2026-08",
+   "storeCode": "DMQ-19",
+   "storeName": "Totalsports Montana Pretoria",
+   "comment": "Busy uploading"
+  },
+  {
+   "pending": true,
+   "month": "2026-08",
+   "storeCode": "DMQ-20",
+   "storeName": "Totalsports Loch Logan Bloemfontein",
+   "comment": "Busy uploading"
+  },
+  {
+   "pending": true,
+   "month": "2026-08",
+   "storeCode": "DMQ-21",
+   "storeName": "Totalsports Paarl Mall Paarl",
+   "comment": "Busy uploading"
+  },
+  {
+   "pending": true,
+   "month": "2026-08",
+   "storeCode": "DMQ-22",
+   "storeName": "Totalsports Stellenbosch Eikestad",
+   "comment": "Busy uploading"
+  },
+  {
+   "pending": true,
+   "month": "2026-08",
+   "storeCode": "DMQ-23",
+   "storeName": "Mr Price Sport Westville Pavillion",
+   "comment": "Busy uploading"
+  },
+  {
+   "pending": true,
+   "month": "2026-08",
+   "storeCode": "DMQ-24",
+   "storeName": "Mr Price Sport Gateway Durban",
+   "comment": "Busy uploading"
+  },
+  {
+   "pending": true,
+   "month": "2026-08",
+   "storeCode": "DMQ-25",
+   "storeName": "Mr Price Sport Canal Walk Cape Town",
+   "comment": "Busy uploading"
+  },
+  {
+   "pending": true,
+   "month": "2026-08",
+   "storeCode": "DMQ-26",
+   "storeName": "Mr Price Sport Mall Of Africa Johannesburg",
+   "comment": "Busy uploading"
+  },
+  {
+   "pending": true,
+   "month": "2026-08",
+   "storeCode": "DMQ-27",
+   "storeName": "Mr Price Sport East Rand Mall Boksburg",
+   "comment": "Busy uploading"
+  },
+  {
+   "pending": true,
+   "month": "2026-08",
+   "storeCode": "DMQ-28",
+   "storeName": "Mr Price Sport Clearwaters Roodepoort",
+   "comment": "Busy uploading"
+  },
+  {
+   "date": "2026-08-11",
+   "storeCode": "DMQ-29",
+   "storeName": "Mr Price Sport Tygervalley Bellville",
+   "channel": "Mr Price Sport",
+   "region": "CPT",
+   "rep": "Enver",
+   "facings": null,
+   "returns": "",
+   "damaged": "",
+   "additional": "",
+   "comment": "Visited by Enver De Bryun. Peg length."
+  },
+  {
+   "pending": true,
+   "month": "2026-08",
+   "storeCode": "DMQ-30",
+   "storeName": "Mr Price Sport Menlyn Park Pretoria",
+   "comment": "Busy uploading"
+  },
+  {
+   "pending": true,
+   "month": "2026-08",
+   "storeCode": "DMQ-31",
+   "storeName": "Mr Price Sport Somerset Mall Somerset West",
+   "comment": "Busy uploading"
+  },
+  {
+   "pending": true,
+   "month": "2026-08",
+   "storeCode": "DMQ-32",
+   "storeName": "Mr Price Sport Fourways Mall Johannesburg",
+   "comment": "Busy uploading"
+  },
+  {
+   "pending": true,
+   "month": "2026-08",
+   "storeCode": "DMQ-33",
+   "storeName": "Mr Price Sport Sandotn City Johannesburg",
+   "comment": "Busy uploading"
+  },
+  {
+   "pending": true,
+   "month": "2026-08",
+   "storeCode": "DMQ-34",
+   "storeName": "Mr Price Sport Waterfall Mall Rustenburg",
+   "comment": "Busy uploading"
+  },
+  {
+   "pending": true,
+   "month": "2026-08",
+   "storeCode": "DMQ-35",
+   "storeName": "Mr Price Sport Cavendish Cape Town",
+   "comment": "Busy uploading"
+  },
+  {
+   "pending": true,
+   "month": "2026-08",
+   "storeCode": "DMQ-36",
+   "storeName": "Mr Price Sport Amanzimtoti Galleria",
+   "comment": "Busy uploading"
+  },
+  {
+   "pending": true,
+   "month": "2026-08",
+   "storeCode": "DMQ-37",
+   "storeName": "Mr Price Sport Cresta Johannesburg",
+   "comment": "Busy uploading"
+  },
+  {
+   "pending": true,
+   "month": "2026-08",
+   "storeCode": "DMQ-38",
+   "storeName": "Mr Price Sport Vaal Mall Vanderbijlpark",
+   "comment": "Busy uploading"
+  },
+  {
+   "pending": true,
+   "month": "2026-08",
+   "storeCode": "DMQ-39",
+   "storeName": "Mr Price Sport Centurion Pretoria",
+   "comment": "Busy uploading"
+  },
+  {
+   "pending": true,
+   "month": "2026-08",
+   "storeCode": "DMQ-40",
+   "storeName": "Mr Price Sport Blue Route Cape Town",
+   "comment": "Busy uploading"
+  },
+  {
+   "pending": true,
+   "month": "2026-08",
+   "storeCode": "DMQ-41",
+   "storeName": "Mr Price Sport The Grove Pretoria",
+   "comment": "Busy uploading"
+  },
+  {
+   "pending": true,
+   "month": "2026-08",
+   "storeCode": "DMQ-42",
+   "storeName": "Mr Price Sport Loch Logan Bloemfontein",
+   "comment": "Busy uploading"
+  },
+  {
+   "pending": true,
+   "month": "2026-08",
+   "storeCode": "DMQ-43",
+   "storeName": "Mr Price Sport Paarl Mall Paarl",
+   "comment": "Busy uploading"
+  },
+  {
+   "pending": true,
+   "month": "2026-08",
+   "storeCode": "DMQ-44",
+   "storeName": "Mr Price Sport Stellenbosch Eikestad",
+   "comment": "Busy uploading"
+  },
+  {
+   "date": "2026-09-30",
+   "storeCode": "DMQ-01",
+   "storeName": "Totalsports Westville Pavillion Durban",
+   "channel": "Totalsports",
+   "region": "KZN",
+   "rep": "Kgothatso",
+   "facings": null,
+   "returns": "",
+   "damaged": "",
+   "additional": "",
+   "comment": "Visited by Kgothatso Matlou. Photos sent."
+  },
+  {
+   "date": "2026-09-30",
+   "storeCode": "DMQ-02",
+   "storeName": "Totalsports Gateway Durban",
+   "channel": "Totalsports",
+   "region": "KZN",
+   "rep": "Kgothatso",
+   "facings": null,
+   "returns": "",
+   "damaged": "",
+   "additional": "",
+   "comment": "Visited by Kgothatso Matlou. Photos sent."
+  },
+  {
+   "pending": true,
+   "month": "2026-09",
+   "storeCode": "DMQ-03",
+   "storeName": "Totalsports Canal Walk Cape Town",
+   "comment": "Busy uploading"
+  },
+  {
+   "pending": true,
+   "month": "2026-09",
+   "storeCode": "DMQ-04",
+   "storeName": "Totalsports Mall Of Africa Johannesburg",
+   "comment": "Busy uploading"
+  },
+  {
+   "pending": true,
+   "month": "2026-09",
+   "storeCode": "DMQ-05",
+   "storeName": "Totalsports East Rand Mall Boksburg",
+   "comment": "Busy uploading"
+  },
+  {
+   "pending": true,
+   "month": "2026-09",
+   "storeCode": "DMQ-06",
+   "storeName": "Totalsports Clearwaters Roodepoort",
+   "comment": "Busy uploading"
+  },
+  {
+   "date": "2026-09-11",
+   "storeCode": "DMQ-07",
+   "storeName": "Totalsports Tygervalley Bellville",
+   "channel": "Totalsports",
+   "region": "CPT",
+   "rep": "Enver",
+   "facings": null,
+   "returns": "",
+   "damaged": "",
+   "additional": "",
+   "comment": "Visited by Enver De Bryun."
+  },
+  {
+   "pending": true,
+   "month": "2026-09",
+   "storeCode": "DMQ-08",
+   "storeName": "Totalsports Menlyn Park Pretoria",
+   "comment": "Busy uploading"
+  },
+  {
+   "date": "2026-09-15",
+   "storeCode": "DMQ-09",
+   "storeName": "Totalsports Somerset Mall Somerset West",
+   "channel": "Totalsports",
+   "region": "CPT",
+   "rep": "Enver",
+   "facings": null,
+   "returns": "",
+   "damaged": "",
+   "additional": "Yes",
+   "comment": "Visited by Enver De Bryun. Demand 18–32 kg, no stock."
+  },
+  {
+   "pending": true,
+   "month": "2026-09",
+   "storeCode": "DMQ-10",
+   "storeName": "Totalsposrts Fourways Mall Johannesburg",
+   "comment": "Busy uploading"
+  },
+  {
+   "pending": true,
+   "month": "2026-09",
+   "storeCode": "DMQ-11",
+   "storeName": "Totalsports Eastgate Johannesburg",
+   "comment": "Busy uploading"
+  },
+  {
+   "pending": true,
+   "month": "2026-09",
+   "storeCode": "DMQ-12",
+   "storeName": "Totalsports Waterfall Mall Rustenburg",
+   "comment": "Busy uploading"
+  },
+  {
+   "date": "2026-09-28",
+   "storeCode": "DMQ-13",
+   "storeName": "Totalsports Cavendish Cape Town",
+   "channel": "Totalsports",
+   "region": "CPT",
+   "rep": "Enver",
+   "facings": null,
+   "returns": "",
+   "damaged": "",
+   "additional": "",
+   "comment": "Visited by Enver De Bryun. Towels moved to eye level."
+  },
+  {
+   "date": "2026-09-30",
+   "storeCode": "DMQ-14",
+   "storeName": "Totalsports Amanzimtoti Galleria",
+   "channel": "Totalsports",
+   "region": "KZN",
+   "rep": "Kgothatso",
+   "facings": null,
+   "returns": "",
+   "damaged": "",
+   "additional": "",
+   "comment": "Visited by Kgothatso Matlou. Photos sent."
+  },
+  {
+   "pending": true,
+   "month": "2026-09",
+   "storeCode": "DMQ-15",
+   "storeName": "Totalsports Cresta Johannesburg",
+   "comment": "Busy uploading"
+  },
+  {
+   "pending": true,
+   "month": "2026-09",
+   "storeCode": "DMQ-16",
+   "storeName": "Totalsports Vaal Mall Vanderbijlpark",
+   "comment": "Busy uploading"
+  },
+  {
+   "pending": true,
+   "month": "2026-09",
+   "storeCode": "DMQ-17",
+   "storeName": "Totalsports Centurion Pretoria",
+   "comment": "Busy uploading"
+  },
+  {
+   "date": "2026-09-28",
+   "storeCode": "DMQ-18",
+   "storeName": "Totalsports Blue Route Cape Town",
+   "channel": "Totalsports",
+   "region": "CPT",
+   "rep": "Enver",
+   "facings": null,
+   "returns": "",
+   "damaged": "",
+   "additional": "",
+   "comment": "Visited by Enver De Bryun. Layout change."
+  },
+  {
+   "pending": true,
+   "month": "2026-09",
+   "storeCode": "DMQ-19",
+   "storeName": "Totalsports Montana Pretoria",
+   "comment": "Busy uploading"
+  },
+  {
+   "pending": true,
+   "month": "2026-09",
+   "storeCode": "DMQ-20",
+   "storeName": "Totalsports Loch Logan Bloemfontein",
+   "comment": "Busy uploading"
+  },
+  {
+   "pending": true,
+   "month": "2026-09",
+   "storeCode": "DMQ-21",
+   "storeName": "Totalsports Paarl Mall Paarl",
+   "comment": "Busy uploading"
+  },
+  {
+   "pending": true,
+   "month": "2026-09",
+   "storeCode": "DMQ-22",
+   "storeName": "Totalsports Stellenbosch Eikestad",
+   "comment": "Busy uploading"
+  },
+  {
+   "date": "2026-09-30",
+   "storeCode": "DMQ-23",
+   "storeName": "Mr Price Sport Westville Pavillion",
+   "channel": "Mr Price Sport",
+   "region": "KZN",
+   "rep": "Kgothatso",
+   "facings": null,
+   "returns": "",
+   "damaged": "",
+   "additional": "",
+   "comment": "Visited by Kgothatso Matlou. Photos sent."
+  },
+  {
+   "date": "2026-09-30",
+   "storeCode": "DMQ-24",
+   "storeName": "Mr Price Sport Gateway Durban",
+   "channel": "Mr Price Sport",
+   "region": "KZN",
+   "rep": "Kgothatso",
+   "facings": null,
+   "returns": "",
+   "damaged": "",
+   "additional": "",
+   "comment": "Visited by Kgothatso Matlou. Photos sent."
+  },
+  {
+   "date": "2026-09-09",
+   "storeCode": "DMQ-25",
+   "storeName": "Mr Price Sport Canal Walk Cape Town",
+   "channel": "Mr Price Sport",
+   "region": "CPT",
+   "rep": "Enver",
+   "facings": null,
+   "returns": "",
+   "damaged": "",
+   "additional": "",
+   "comment": "Visited by Enver De Bryun. Peg photo."
+  },
+  {
+   "pending": true,
+   "month": "2026-09",
+   "storeCode": "DMQ-26",
+   "storeName": "Mr Price Sport Mall Of Africa Johannesburg",
+   "comment": "Busy uploading"
+  },
+  {
+   "pending": true,
+   "month": "2026-09",
+   "storeCode": "DMQ-27",
+   "storeName": "Mr Price Sport East Rand Mall Boksburg",
+   "comment": "Busy uploading"
+  },
+  {
+   "pending": true,
+   "month": "2026-09",
+   "storeCode": "DMQ-28",
+   "storeName": "Mr Price Sport Clearwaters Roodepoort",
+   "comment": "Busy uploading"
+  },
+  {
+   "date": "2026-09-18",
+   "storeCode": "DMQ-29",
+   "storeName": "Mr Price Sport Tygervalley Bellville",
+   "channel": "Mr Price Sport",
+   "region": "CPT",
+   "rep": "Enver",
+   "facings": null,
+   "returns": "",
+   "damaged": "",
+   "additional": "",
+   "comment": "Visited by Enver De Bryun. New short arms – completed."
+  },
+  {
+   "pending": true,
+   "month": "2026-09",
+   "storeCode": "DMQ-30",
+   "storeName": "Mr Price Sport Menlyn Park Pretoria",
+   "comment": "Busy uploading"
+  },
+  {
+   "pending": true,
+   "month": "2026-09",
+   "storeCode": "DMQ-31",
+   "storeName": "Mr Price Sport Somerset Mall Somerset West",
+   "comment": "Busy uploading"
+  },
+  {
+   "pending": true,
+   "month": "2026-09",
+   "storeCode": "DMQ-32",
+   "storeName": "Mr Price Sport Fourways Mall Johannesburg",
+   "comment": "Busy uploading"
+  },
+  {
+   "pending": true,
+   "month": "2026-09",
+   "storeCode": "DMQ-33",
+   "storeName": "Mr Price Sport Sandotn City Johannesburg",
+   "comment": "Busy uploading"
+  },
+  {
+   "pending": true,
+   "month": "2026-09",
+   "storeCode": "DMQ-34",
+   "storeName": "Mr Price Sport Waterfall Mall Rustenburg",
+   "comment": "Busy uploading"
+  },
+  {
+   "pending": true,
+   "month": "2026-09",
+   "storeCode": "DMQ-35",
+   "storeName": "Mr Price Sport Cavendish Cape Town",
+   "comment": "Busy uploading"
+  },
+  {
+   "date": "2026-09-30",
+   "storeCode": "DMQ-36",
+   "storeName": "Mr Price Sport Amanzimtoti Galleria",
+   "channel": "Mr Price Sport",
+   "region": "KZN",
+   "rep": "Kgothatso",
+   "facings": null,
+   "returns": "",
+   "damaged": "",
+   "additional": "",
+   "comment": "Visited by Kgothatso Matlou. Photos sent."
+  },
+  {
+   "pending": true,
+   "month": "2026-09",
+   "storeCode": "DMQ-37",
+   "storeName": "Mr Price Sport Cresta Johannesburg",
+   "comment": "Busy uploading"
+  },
+  {
+   "pending": true,
+   "month": "2026-09",
+   "storeCode": "DMQ-38",
+   "storeName": "Mr Price Sport Vaal Mall Vanderbijlpark",
+   "comment": "Busy uploading"
+  },
+  {
+   "pending": true,
+   "month": "2026-09",
+   "storeCode": "DMQ-39",
+   "storeName": "Mr Price Sport Centurion Pretoria",
+   "comment": "Busy uploading"
+  },
+  {
+   "date": "2026-09-28",
+   "storeCode": "DMQ-40",
+   "storeName": "Mr Price Sport Blue Route Cape Town",
+   "channel": "Mr Price Sport",
+   "region": "CPT",
+   "rep": "Enver",
+   "facings": null,
+   "returns": "",
+   "damaged": "",
+   "additional": "No",
+   "comment": "Visited by Enver De Bryun. Neatened, all stock shown."
+  },
+  {
+   "date": "2026-09-28",
+   "storeCode": "DMQ-41",
+   "storeName": "Mr Price Sport The Grove Pretoria",
+   "channel": "Mr Price Sport",
+   "region": "GP",
+   "rep": "Chris",
+   "facings": null,
+   "returns": "No",
+   "damaged": "",
+   "additional": "",
+   "comment": "Visited by Mackenzie Gouws. Bigger stand requested."
+  },
+  {
+   "pending": true,
+   "month": "2026-09",
+   "storeCode": "DMQ-42",
+   "storeName": "Mr Price Sport Loch Logan Bloemfontein",
+   "comment": "Busy uploading"
+  },
+  {
+   "pending": true,
+   "month": "2026-09",
+   "storeCode": "DMQ-43",
+   "storeName": "Mr Price Sport Paarl Mall Paarl",
+   "comment": "Busy uploading"
+  },
+  {
+   "pending": true,
+   "month": "2026-09",
+   "storeCode": "DMQ-44",
+   "storeName": "Mr Price Sport Stellenbosch Eikestad",
+   "comment": "Busy uploading"
+  },
+  {
+   "pending": true,
+   "month": "2026-10",
+   "storeCode": "DMQ-01",
+   "storeName": "Totalsports Westville Pavillion Durban",
+   "comment": "Busy uploading"
+  },
+  {
+   "pending": true,
+   "month": "2026-10",
+   "storeCode": "DMQ-02",
+   "storeName": "Totalsports Gateway Durban",
+   "comment": "Busy uploading"
+  },
+  {
+   "pending": true,
+   "month": "2026-10",
+   "storeCode": "DMQ-03",
+   "storeName": "Totalsports Canal Walk Cape Town",
+   "comment": "Busy uploading"
+  },
+  {
+   "pending": true,
+   "month": "2026-10",
+   "storeCode": "DMQ-04",
+   "storeName": "Totalsports Mall Of Africa Johannesburg",
+   "comment": "Busy uploading"
+  },
+  {
+   "pending": true,
+   "month": "2026-10",
+   "storeCode": "DMQ-05",
+   "storeName": "Totalsports East Rand Mall Boksburg",
+   "comment": "Busy uploading"
+  },
+  {
+   "pending": true,
+   "month": "2026-10",
+   "storeCode": "DMQ-06",
+   "storeName": "Totalsports Clearwaters Roodepoort",
+   "comment": "Busy uploading"
+  },
+  {
+   "date": "2026-10-23",
+   "storeCode": "DMQ-07",
+   "storeName": "Totalsports Tygervalley Bellville",
+   "channel": "Totalsports",
+   "region": "CPT",
+   "rep": "Enver",
+   "facings": null,
+   "returns": "",
+   "damaged": "",
+   "additional": "",
+   "comment": "Visited by Enver De Bryun. Phones too big for arm pockets."
+  },
+  {
+   "pending": true,
+   "month": "2026-10",
+   "storeCode": "DMQ-08",
+   "storeName": "Totalsports Menlyn Park Pretoria",
+   "comment": "Busy uploading"
+  },
+  {
+   "pending": true,
+   "month": "2026-10",
+   "storeCode": "DMQ-09",
+   "storeName": "Totalsports Somerset Mall Somerset West",
+   "comment": "Busy uploading"
+  },
+  {
+   "pending": true,
+   "month": "2026-10",
+   "storeCode": "DMQ-10",
+   "storeName": "Totalsposrts Fourways Mall Johannesburg",
+   "comment": "Busy uploading"
+  },
+  {
+   "pending": true,
+   "month": "2026-10",
+   "storeCode": "DMQ-11",
+   "storeName": "Totalsports Eastgate Johannesburg",
+   "comment": "Busy uploading"
+  },
+  {
+   "pending": true,
+   "month": "2026-10",
+   "storeCode": "DMQ-12",
+   "storeName": "Totalsports Waterfall Mall Rustenburg",
+   "comment": "Busy uploading"
+  },
+  {
+   "pending": true,
+   "month": "2026-10",
+   "storeCode": "DMQ-13",
+   "storeName": "Totalsports Cavendish Cape Town",
+   "comment": "Busy uploading"
+  },
+  {
+   "pending": true,
+   "month": "2026-10",
+   "storeCode": "DMQ-14",
+   "storeName": "Totalsports Amanzimtoti Galleria",
+   "comment": "Busy uploading"
+  },
+  {
+   "pending": true,
+   "month": "2026-10",
+   "storeCode": "DMQ-15",
+   "storeName": "Totalsports Cresta Johannesburg",
+   "comment": "Busy uploading"
+  },
+  {
+   "pending": true,
+   "month": "2026-10",
+   "storeCode": "DMQ-16",
+   "storeName": "Totalsports Vaal Mall Vanderbijlpark",
+   "comment": "Busy uploading"
+  },
+  {
+   "pending": true,
+   "month": "2026-10",
+   "storeCode": "DMQ-17",
+   "storeName": "Totalsports Centurion Pretoria",
+   "comment": "Busy uploading"
+  },
+  {
+   "pending": true,
+   "month": "2026-10",
+   "storeCode": "DMQ-18",
+   "storeName": "Totalsports Blue Route Cape Town",
+   "comment": "Busy uploading"
+  },
+  {
+   "pending": true,
+   "month": "2026-10",
+   "storeCode": "DMQ-19",
+   "storeName": "Totalsports Montana Pretoria",
+   "comment": "Busy uploading"
+  },
+  {
+   "pending": true,
+   "month": "2026-10",
+   "storeCode": "DMQ-20",
+   "storeName": "Totalsports Loch Logan Bloemfontein",
+   "comment": "Busy uploading"
+  },
+  {
+   "pending": true,
+   "month": "2026-10",
+   "storeCode": "DMQ-21",
+   "storeName": "Totalsports Paarl Mall Paarl",
+   "comment": "Busy uploading"
+  },
+  {
+   "date": "2026-10-06",
+   "storeCode": "DMQ-22",
+   "storeName": "Totalsports Stellenbosch Eikestad",
+   "channel": "Totalsports",
+   "region": "CPT",
+   "rep": "Enver",
+   "facings": null,
+   "returns": "",
+   "damaged": "",
+   "additional": "Yes",
+   "comment": "Visited by Enver De Bryun. No towels/bottles."
+  },
+  {
+   "pending": true,
+   "month": "2026-10",
+   "storeCode": "DMQ-23",
+   "storeName": "Mr Price Sport Westville Pavillion",
+   "comment": "Busy uploading"
+  },
+  {
+   "pending": true,
+   "month": "2026-10",
+   "storeCode": "DMQ-24",
+   "storeName": "Mr Price Sport Gateway Durban",
+   "comment": "Busy uploading"
+  },
+  {
+   "pending": true,
+   "month": "2026-10",
+   "storeCode": "DMQ-25",
+   "storeName": "Mr Price Sport Canal Walk Cape Town",
+   "comment": "Busy uploading"
+  },
+  {
+   "pending": true,
+   "month": "2026-10",
+   "storeCode": "DMQ-26",
+   "storeName": "Mr Price Sport Mall Of Africa Johannesburg",
+   "comment": "Busy uploading"
+  },
+  {
+   "pending": true,
+   "month": "2026-10",
+   "storeCode": "DMQ-27",
+   "storeName": "Mr Price Sport East Rand Mall Boksburg",
+   "comment": "Busy uploading"
+  },
+  {
+   "pending": true,
+   "month": "2026-10",
+   "storeCode": "DMQ-28",
+   "storeName": "Mr Price Sport Clearwaters Roodepoort",
+   "comment": "Busy uploading"
+  },
+  {
+   "pending": true,
+   "month": "2026-10",
+   "storeCode": "DMQ-29",
+   "storeName": "Mr Price Sport Tygervalley Bellville",
+   "comment": "Busy uploading"
+  },
+  {
+   "pending": true,
+   "month": "2026-10",
+   "storeCode": "DMQ-30",
+   "storeName": "Mr Price Sport Menlyn Park Pretoria",
+   "comment": "Busy uploading"
+  },
+  {
+   "pending": true,
+   "month": "2026-10",
+   "storeCode": "DMQ-31",
+   "storeName": "Mr Price Sport Somerset Mall Somerset West",
+   "comment": "Busy uploading"
+  },
+  {
+   "pending": true,
+   "month": "2026-10",
+   "storeCode": "DMQ-32",
+   "storeName": "Mr Price Sport Fourways Mall Johannesburg",
+   "comment": "Busy uploading"
+  },
+  {
+   "pending": true,
+   "month": "2026-10",
+   "storeCode": "DMQ-33",
+   "storeName": "Mr Price Sport Sandotn City Johannesburg",
+   "comment": "Busy uploading"
+  },
+  {
+   "pending": true,
+   "month": "2026-10",
+   "storeCode": "DMQ-34",
+   "storeName": "Mr Price Sport Waterfall Mall Rustenburg",
+   "comment": "Busy uploading"
+  },
+  {
+   "pending": true,
+   "month": "2026-10",
+   "storeCode": "DMQ-35",
+   "storeName": "Mr Price Sport Cavendish Cape Town",
+   "comment": "Busy uploading"
+  },
+  {
+   "pending": true,
+   "month": "2026-10",
+   "storeCode": "DMQ-36",
+   "storeName": "Mr Price Sport Amanzimtoti Galleria",
+   "comment": "Busy uploading"
+  },
+  {
+   "pending": true,
+   "month": "2026-10",
+   "storeCode": "DMQ-37",
+   "storeName": "Mr Price Sport Cresta Johannesburg",
+   "comment": "Busy uploading"
+  },
+  {
+   "pending": true,
+   "month": "2026-10",
+   "storeCode": "DMQ-38",
+   "storeName": "Mr Price Sport Vaal Mall Vanderbijlpark",
+   "comment": "Busy uploading"
+  },
+  {
+   "pending": true,
+   "month": "2026-10",
+   "storeCode": "DMQ-39",
+   "storeName": "Mr Price Sport Centurion Pretoria",
+   "comment": "Busy uploading"
+  },
+  {
+   "pending": true,
+   "month": "2026-10",
+   "storeCode": "DMQ-40",
+   "storeName": "Mr Price Sport Blue Route Cape Town",
+   "comment": "Busy uploading"
+  },
+  {
+   "pending": true,
+   "month": "2026-10",
+   "storeCode": "DMQ-41",
+   "storeName": "Mr Price Sport The Grove Pretoria",
+   "comment": "Busy uploading"
+  },
+  {
+   "pending": true,
+   "month": "2026-10",
+   "storeCode": "DMQ-42",
+   "storeName": "Mr Price Sport Loch Logan Bloemfontein",
+   "comment": "Busy uploading"
+  },
+  {
+   "pending": true,
+   "month": "2026-10",
+   "storeCode": "DMQ-43",
+   "storeName": "Mr Price Sport Paarl Mall Paarl",
+   "comment": "Busy uploading"
+  },
+  {
+   "pending": true,
+   "month": "2026-10",
+   "storeCode": "DMQ-44",
+   "storeName": "Mr Price Sport Stellenbosch Eikestad",
+   "comment": "Busy uploading"
+  }
+ ]
+}

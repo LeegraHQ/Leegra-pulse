@@ -86,6 +86,8 @@ exports.handler = async (event) => {
     const hist = blobsStore(`civvio-history-${TENANT}`);
     const { blobs } = await hist.list();
     const batches = await Promise.all(blobs.map(b => hist.get(b.key, { type: 'json' }).catch(() => null)));
+    // Aug–Oct 2026 baseline shipped with the site (oldest, so any later Excel upload replaces it).
+    try { batches.push(require('./_civvio-history-aug-oct.json')); blobs.push({ key: '0000-baseline-aug-oct' }); } catch (e) {}
     // Newest upload wins: a store + date (or store + month placeholder) that
     // appears in a later batch replaces the earlier one, so re-uploading the
     // same file doesn't double up.
