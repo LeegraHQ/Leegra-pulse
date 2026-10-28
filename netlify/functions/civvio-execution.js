@@ -111,7 +111,7 @@ exports.handler = async (event) => {
       const first = !seen[r.storeCode]; seen[r.storeCode] = true;
       const ph = first ? (photoBy[r.activationStore] || []) : [];
       out.push({
-        id: `act-${i}`, source: 'activation', storeCode: r.storeCode, storeName: s.name || r.activationStore,
+        id: `act-${i}`, source: 'activation', storeCode: r.storeCode, activationStore: r.activationStore, storeName: s.name || r.activationStore,
         channel: s.channel || 'Other', region: s.region || 'Unassigned', rep: r.rep || '', date: r.date, time: '', done: true,
         facings: null, returns: '', damaged: '', additional: '',
         comment: ['Activation call', r.rating != null ? 'rating ' + r.rating + '/5' : '', ph[0] && ph[0].caption].filter(Boolean).join(' · '),

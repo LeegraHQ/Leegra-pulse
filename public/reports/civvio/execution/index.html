@@ -34,6 +34,13 @@
   td { padding:7px 8px; border-bottom:1px solid var(--line); vertical-align:top; }
   tr:last-child td { border-bottom:none; }
   .num { text-align:right; font-variant-numeric:tabular-nums; }
+  .notes { min-width:220px; max-width:320px; }
+  .note { padding:4px 0; border-bottom:1px dashed var(--line); }
+  .note:last-of-type { border-bottom:none; }
+  .note-by { font-size:11px; color:var(--muted); }
+  .note-form { display:flex; flex-direction:column; gap:6px; margin-top:6px; }
+  .note-form textarea { min-height:60px; resize:vertical; }
+  .note-add { margin-top:4px; padding:4px 10px; }
   .yes { color:var(--warn); font-weight:600; } .no { color:var(--muted); }
   .thumb { width:44px; height:44px; border-radius:6px; object-fit:cover; cursor:zoom-in; display:block; background:var(--surface-2); }
   .gallery { display:grid; grid-template-columns:repeat(auto-fill, minmax(200px, 1fr)); gap:14px; }
@@ -93,7 +100,6 @@
 
   <div class="kpis">
     <div class="card"><p class="kicker">Stores completed</p><div class="kpi-v" id="kDone">–</div><div class="bar"><div id="kBar" style="width:0"></div></div><div class="muted" id="kPct" style="margin-top:6px"></div></div>
-    <div class="card"><p class="kicker">Avg facings</p><div class="kpi-v" id="kFacings">–</div></div>
     <div class="card"><p class="kicker">Stock returns</p><div class="kpi-v" id="kReturns">–</div><div class="muted">stores reporting</div></div>
     <div class="card"><p class="kicker">Damaged stock</p><div class="kpi-v" id="kDamaged">–</div><div class="muted">stores reporting</div></div>
     <div class="card"><p class="kicker">Need more stock</p><div class="kpi-v" id="kAdditional">–</div><div class="muted">stores reporting</div></div>
@@ -166,6 +172,7 @@
     if (!r.ok) return;
     if (log) sessionStorage.setItem(KEY + '-logged', '1');
     data = await r.json();
+    await loadNotes();
     if (data.superUser && $('sub')) $('sub').textContent = 'Monthly stand check · photos stored in ' + (data.photoStorage === 'supabase' ? 'Supabase' : 'Netlify (Supabase not connected)');
     render();
   }
@@ -184,6 +191,52 @@
     el.innerHTML = (allLabel ? '<option value="">' + allLabel + '</option>' : '') + opts.map(function (o) { return '<option value="' + esc(o[0]) + '"' + (o[0] === val ? ' selected' : '') + '>' + esc(o[1]) + '</option>'; }).join('');
   }
   function uniq(a) { return a.filter(function (x, i) { return x && a.indexOf(x) === i; }).sort(); }
+
+  // ---- store notes (shared with everyone who can open this dashboard) ----
+  var notes = [], openNote = '', drafts = {};
+  async function loadNotes() {
+    try { var r = await fetch('/api/report-comments?tenant=CIV-088', { cache: 'no-store' }); if (r.ok) notes = (await r.json()).comments || []; } catch (e) {}
+  }
+  function notesFor(keys) {
+    keys = keys.filter(Boolean).map(function (k) { return String(k).toLowerCase(); });
+    return notes.filter(function (c) { return c.store && keys.indexOf(String(c.store).toLowerCase()) >= 0; });
+  }
+  function notesCell(code, altKeys) {
+    var list = notesFor([code].concat(altKeys || []));
+    var html = list.map(function (c) { return '<div class="note"><div>' + esc(c.text) + '</div><div class="note-by">' + esc(c.name) + ' · ' + esc(new Date(c.at).toLocaleDateString('en-ZA', { day: 'numeric', month: 'short', year: 'numeric' })) + '</div></div>'; }).join('');
+    if (openNote === code) {
+      var d = drafts[code] || {};
+      html += '<div class="note-form"><input class="input" data-note-name="' + esc(code) + '" placeholder="Your name" value="' + esc(d.name != null ? d.name : (localStorage.getItem(KEY + '-noteName') || '')) + '">' +
+        '<textarea class="input" data-note-text="' + esc(code) + '" placeholder="Comment on this store">' + esc(d.text || '') + '</textarea>' +
+        '<div style="display:flex;gap:6px"><button class="btn" data-note-save="' + esc(code) + '">Save</button><button class="btn ghost" data-note-cancel="1">Cancel</button></div><div class="note-by" data-note-err></div></div>';
+    } else html += '<button class="btn ghost note-add" data-note-open="' + esc(code) + '">+ Comment</button>';
+    return '<td class="notes">' + html + '</td>';
+  }
+  document.addEventListener('input', function (ev) {
+    var t = ev.target, k = t.getAttribute && (t.getAttribute('data-note-name') || t.getAttribute('data-note-text'));
+    if (!k) return;
+    drafts[k] = drafts[k] || {};
+    if (t.hasAttribute('data-note-name')) drafts[k].name = t.value; else drafts[k].text = t.value;
+  });
+  document.addEventListener('click', async function (ev) {
+    var b = ev.target.closest && ev.target.closest('[data-note-open],[data-note-cancel],[data-note-save]');
+    if (!b) return;
+    if (b.hasAttribute('data-note-open')) { openNote = b.getAttribute('data-note-open'); render(); var ta = document.querySelector('[data-note-text="' + openNote + '"]'); if (ta) ta.focus(); return; }
+    if (b.hasAttribute('data-note-cancel')) { openNote = ''; render(); return; }
+    var code = b.getAttribute('data-note-save'), box = b.closest('.note-form');
+    var name = box.querySelector('[data-note-name]').value.trim(), text = box.querySelector('[data-note-text]').value.trim();
+    var err = box.querySelector('[data-note-err]');
+    if (!name || !text) { err.textContent = 'Add your name and a comment.'; return; }
+    if (DEMO) { notes.unshift({ store: code, name: name, text: text, at: new Date().toISOString() }); openNote = ''; delete drafts[code]; render(); return; }
+    b.disabled = true; b.textContent = 'Saving…';
+    try {
+      var r = await fetch('/api/report-comments', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ tenant: 'CIV-088', store: code, name: name, text: text }) });
+      var d = await r.json().catch(function () { return {}; });
+      if (!r.ok) throw new Error(d.error || 'Could not save');
+      localStorage.setItem(KEY + '-noteName', name);
+      notes.unshift(d.comment); openNote = ''; delete drafts[code]; render();
+    } catch (x) { b.disabled = false; b.textContent = 'Save'; err.textContent = x.message || 'Could not save. Try again.'; }
+  });
 
   // ---- render ----
   function render() {
@@ -211,8 +264,6 @@
     $('kDone').textContent = doneStores.length + ' / ' + planned.length;
     $('kBar').style.width = pct + '%';
     $('kPct').textContent = pct + '% of planned stores';
-    var fac = done.map(function (v) { return v.facings; }).filter(function (n) { return n != null; });
-    $('kFacings').textContent = fac.length ? (fac.reduce(function (a, b) { return a + b; }, 0) / fac.length).toFixed(1) : '–';
     var countYes = function (k) { return uniq(done.filter(function (v) { return v[k] === 'Yes'; }).map(function (v) { return v.storeCode; })).length; };
     $('kReturns').textContent = countYes('returns');
     $('kDamaged').textContent = countYes('damaged');
@@ -228,12 +279,12 @@
     }
     split('channel', $('tChannel')); split('region', $('tRegion'));
 
-    $('tFeedback').innerHTML = '<tr><th>Date</th><th>Store</th><th>Channel</th><th>Region</th><th>Rep</th><th class="num">Facings</th><th>Returns</th><th>Damaged</th><th>More stock</th><th>Comment</th><th>Photo</th></tr>' +
+    $('tFeedback').innerHTML = '<tr><th>Date</th><th>Store</th><th>Channel</th><th>Region</th><th>Rep</th><th class="num">Facings</th><th>Returns</th><th>Damaged</th><th>More stock</th><th>Comment</th><th>Photo</th><th>Store comments</th></tr>' +
       (done.length ? done.map(function (v) {
         var p = v.photos[0];
         return '<tr><td style="white-space:nowrap">' + esc(v.date) + '<div class="muted">' + esc(v.time) + '</div></td><td>' + esc(v.storeName) + '</td><td>' + esc(v.channel) + '</td><td>' + esc(v.region) + '</td><td>' + esc(v.rep) + '</td><td class="num">' + (v.facings == null ? '–' : v.facings) + '</td><td>' + ynCell(v.returns) + '</td><td>' + ynCell(v.damaged) + '</td><td>' + ynCell(v.additional) + '</td><td style="min-width:180px">' + esc(v.comment || '') + '</td><td>' +
-          (p ? (DEMO ? '<div class="thumb"></div>' : '<img class="thumb" loading="lazy" src="' + esc(p.url || photoUrl(p.id)) + '" data-cap="' + esc(v.storeName + ' · ' + v.date + (v.comment ? ' · ' + v.comment : '')) + '" alt="">') : '') + '</td></tr>';
-      }).join('') : '<tr><td colspan="11" class="empty">No completed stand checks for this selection yet.</td></tr>');
+          (p ? (DEMO ? '<div class="thumb"></div>' : '<img class="thumb" loading="lazy" src="' + esc(p.url || photoUrl(p.id)) + '" data-cap="' + esc(v.storeName + ' · ' + v.date + (v.comment ? ' · ' + v.comment : '')) + '" alt="">') : '') + '</td>' + notesCell(v.storeCode, [v.storeName, v.activationStore]) + '</tr>';
+      }).join('') : '<tr><td colspan="12" class="empty">No completed stand checks for this selection yet.</td></tr>');
 
     var photos = [];
     done.forEach(function (v) { v.photos.forEach(function (p) { photos.push({ v: v, p: p }); }); });
@@ -245,8 +296,8 @@
 
     var monthDone = uniq(visits.filter(function (v) { return monthOf(v.date) === f.month && v.done; }).map(function (v) { return v.storeCode; }));
     var outstanding = planned.filter(function (s) { return monthDone.indexOf(s.code) < 0; });
-    $('tOutstanding').innerHTML = '<tr><th>Store</th><th>Channel</th><th>Region</th><th>Allocated to</th></tr>' +
-      (outstanding.length ? outstanding.map(function (s) { return '<tr><td>' + esc(s.name) + '</td><td>' + esc(s.channel) + '</td><td>' + esc(s.region) + '</td><td>' + esc(s.plannedRep || '') + '</td></tr>'; }).join('') : '<tr><td colspan="4" class="empty">Every planned store has been visited this month.</td></tr>');
+    $('tOutstanding').innerHTML = '<tr><th>Store</th><th>Channel</th><th>Region</th><th>Allocated to</th><th>Store comments</th></tr>' +
+      (outstanding.length ? outstanding.map(function (s) { return '<tr><td>' + esc(s.name) + '</td><td>' + esc(s.channel) + '</td><td>' + esc(s.region) + '</td><td>' + esc(s.plannedRep || '') + '</td>' + notesCell(s.code, [s.name]) + '</tr>'; }).join('') : '<tr><td colspan="5" class="empty">Every planned store has been visited this month.</td></tr>');
 
     if (data.superUser && data.views) {
       $('viewsCard').style.display = '';
