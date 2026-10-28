@@ -48,6 +48,13 @@
   .lightbox img { max-width:100%; max-height:84vh; border-radius:var(--radius-md); }
   .signin { max-width:380px; margin:80px auto; display:flex; flex-direction:column; gap:14px; }
   .err { color:var(--bad); font-size:12px; min-height:18px; }
+  .tabs { display:flex; gap:4px; padding:4px; background:var(--surface); border-radius:var(--radius-md); box-shadow:var(--shadow-md); align-self:flex-start; flex-wrap:wrap; }
+  .tab { font:inherit; font-size:12px; font-weight:600; cursor:pointer; padding:7px 14px; border-radius:6px; background:transparent; color:var(--muted); border:1px solid transparent; }
+  .tab:hover { color:var(--text); background:var(--surface-2); }
+  .tab.on { color:var(--accent); border-color:var(--accent); background:color-mix(in srgb, var(--accent) 10%, transparent); }
+  .tab:focus-visible { outline:2px solid var(--accent); outline-offset:2px; }
+  .view { display:flex; flex-direction:column; gap:14px; }
+  #actFrame { width:100%; border:0; display:block; min-height:600px; background:transparent; }
   .tag { font-size:10px; padding:2px 8px; border-radius:999px; background:color-mix(in srgb, var(--accent) 14%, transparent); color:var(--accent-300); }
 </style>
 </head>
@@ -71,11 +78,18 @@
     </div>
     <span id="demoTag" class="tag" style="display:none">Sample data</span>
     <a class="btn ghost" href="/" style="text-decoration:none">Leegra Pulse</a>
-    <a class="btn ghost" href="/reports/civvio/" style="text-decoration:none">Activation dashboard</a>
     <span class="muted" id="who"></span>
     <button class="btn ghost" id="out">Sign out</button>
   </header>
 
+  <div class="tabs" role="tablist">
+    <button class="tab on" data-tab="exec" role="tab">Stand execution</button>
+    <button class="tab" data-tab="act" role="tab">Activation</button>
+  </div>
+
+  <div class="view" id="viewAct" style="display:none"><iframe id="actFrame" title="Civvio activation dashboard"></iframe></div>
+
+  <div class="view" id="viewExec">
   <div class="card filters">
     <label>Month<select id="fMonth"></select></label>
     <label>Date<select id="fDate"></select></label>
@@ -104,6 +118,7 @@
   <div class="card"><p class="kicker">Still to visit this month</p><div class="scroll"><table id="tOutstanding"></table></div></div>
 
   <div class="card" id="viewsCard" style="display:none"><p class="kicker">Dashboard views · super users only</p><div class="scroll"><table id="tViews"></table></div></div>
+  </div>
 </div>
 
 <div class="lightbox" id="lb"><img id="lbImg" alt=""><div id="lbCap" class="muted" style="text-align:center;max-width:640px"></div></div>
@@ -114,7 +129,7 @@
   var KEY = 'civvio-exec-auth';
   var DEMO = /[?&]demo=1/.test(location.search);
   var MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
-  var auth = null, data = null, timer = null;
+  var auth = null, data = null, timer = null, pendingAct = false;
   var f = { month: '', date: '', channel: '', region: '', store: '' };
 
   function esc(s) { return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) { return { '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;' }[c]; }); }
@@ -166,6 +181,7 @@
     $('who').textContent = DEMO ? '' : auth.email;
     $('demoTag').style.display = DEMO ? '' : 'none';
     load(); clearInterval(timer); timer = setInterval(load, 90000);
+    pendingAct = localStorage.getItem('civvio-exec-tab') === 'act';
   }
 
   // ---- filters ----
@@ -179,6 +195,7 @@
 
   // ---- render ----
   function render() {
+    if (pendingAct) { pendingAct = false; setTimeout(function () { setTab('act'); }, 0); }
     var stores = data.stores || [], visits = data.visits || [];
     var nowM = new Date(Date.now() + 2 * 3600e3).toISOString().slice(0, 7);
     var months = uniq(visits.map(function (v) { return monthOf(v.date); }).concat([nowM])).reverse();
@@ -245,6 +262,32 @@
       $('tViews').innerHTML = '<tr><th>Email</th><th class="num">Views</th><th>Last visit</th></tr>' + (data.views.length ? data.views.map(function (p) { return '<tr><td>' + esc(p.email) + '</td><td class="num">' + p.count + '</td><td>' + esc(new Date(p.last).toLocaleString()) + '</td></tr>'; }).join('') : '<tr><td colspan="3" class="empty">No views yet.</td></tr>');
     } else $('viewsCard').style.display = 'none';
   }
+
+  // ---- tabs: Stand execution / Activation (activation dashboard embedded, same sign-in) ----
+  var TAB_KEY = 'civvio-exec-tab';
+  function setTab(t) {
+    document.querySelectorAll('.tab').forEach(function (b) { b.classList.toggle('on', b.getAttribute('data-tab') === t); b.setAttribute('aria-selected', b.getAttribute('data-tab') === t); });
+    $('viewExec').style.display = t === 'exec' ? '' : 'none';
+    $('viewAct').style.display = t === 'act' ? '' : 'none';
+    localStorage.setItem(TAB_KEY, t);
+    if (t === 'act' && !$('actFrame').getAttribute('src')) {
+      sessionStorage.setItem('civvio_embed_token', (auth && auth.token) || 'demo');
+      sessionStorage.setItem('civvio_embed_role', data && data.superUser ? 'leegra_super_admin' : 'client_viewer');
+      $('actFrame').src = '/reports/civvio/?embed=1';
+    }
+    if (t === 'act') sendViewport();
+  }
+  document.querySelectorAll('.tab').forEach(function (b) { b.addEventListener('click', function () { setTab(b.getAttribute('data-tab')); }); });
+  function sendViewport() {
+    var fr = $('actFrame'); if (!fr.contentWindow) return;
+    fr.contentWindow.postMessage({ civvioViewport: { top: Math.max(0, -fr.getBoundingClientRect().top), h: window.innerHeight } }, location.origin);
+  }
+  window.addEventListener('scroll', sendViewport, { passive: true });
+  window.addEventListener('resize', sendViewport);
+  $('actFrame').addEventListener('load', sendViewport);
+  window.addEventListener('message', function (e) {
+    if (e.origin === location.origin && e.data && e.data.civvioEmbedHeight) { $('actFrame').style.height = e.data.civvioEmbedHeight + 'px'; sendViewport(); }
+  });
 
   // ---- lightbox ----
   document.addEventListener('click', function (e) {

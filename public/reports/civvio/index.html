@@ -104,6 +104,54 @@
   .lightbox { position:fixed; inset:0; background:rgba(27,29,34,0.9); display:flex; align-items:center; justify-content:center; z-index:60; padding:32px; }
   .lightbox img { max-width:100%; max-height:80vh; border-radius:10px; }
   .lightbox-cap { color:#fff; font-size:13px; margin-top:12px; text-align:center; }
+  /* Embedded inside the DMQ Stand Execution dashboard (?embed=1): dark theme to match it. */
+  html.embed body { background:#14161c; color:#eef1e9; font-size:13px; }
+  html.embed .wrap { min-height:0; padding:0 0 8px; }
+  html.embed .header, html.embed .gate { display:none; }
+  html.embed .kpi-card, html.embed .card, html.embed .slicers { background:#21242c; border:0; border-radius:14px; box-shadow:0 0 0 1px #3a3d33, 0 6px 18px rgba(0,0,0,0.55); }
+  html.embed .kpi-row, html.embed .section-row-3 { gap:14px; }
+  html.embed .section-full, html.embed .kpi-row, html.embed .section-row-3, html.embed .card { margin-bottom:14px; }
+  html.embed .kpi-card { padding:16px 18px; }
+  html.embed .card-header { background:transparent; color:#d4fc7a; font-family:'Inter',sans-serif; font-weight:500; font-size:10px; letter-spacing:0.1em; text-transform:uppercase; padding:16px 18px 4px; }
+  html.embed .card-header .hint { color:#9397ab; text-transform:none; letter-spacing:0; font-size:11px; }
+  html.embed .card-body { padding:10px 18px 16px; }
+  html.embed .kpi-label, html.embed .slicer-label, html.embed .aug-item-label { color:#d4fc7a; letter-spacing:0.1em; font-weight:500; }
+  html.embed .kpi-value, html.embed .aug-item-value, html.embed .donut-hole-value { font-family:'Inter',sans-serif; font-weight:500; color:#eef1e9; }
+  html.embed .kpi-value { font-size:26px; letter-spacing:-0.01em; }
+  html.embed .kpi-value.accent { color:#b4fc0f; }
+  html.embed .card-sub, html.embed .muted, html.embed .donut-hole-label, html.embed .comment-meta, html.embed .comment-note, html.embed .note-sub, html.embed .aug-card div { color:#9397ab; }
+  html.embed .aug-item-value { color:#eef1e9 !important; }
+  html.embed table { font-size:13px; }
+  html.embed thead tr { background:transparent; color:#9397ab; }
+  html.embed th { font-weight:500; letter-spacing:0.06em; border-bottom:1px solid rgba(238,241,233,0.1); padding:8px 18px; }
+  html.embed td { padding:8px 18px; }
+  html.embed tbody tr { border-top:1px solid rgba(238,241,233,0.1); }
+  html.embed .empty-row td, html.embed .comment-empty { color:#9397ab; }
+  html.embed .pill { background:#2a2e37; color:#eef1e9; border-color:transparent; font-weight:500; }
+  html.embed .pill:hover { background:#343944; }
+  html.embed .pill.region-active, html.embed .pill.channel-active, html.embed .pill.status-active { background:rgba(180,252,15,0.12); color:#b4fc0f; border-color:#b4fc0f; }
+  html.embed .pill:focus-visible, html.embed .comment-input:focus-visible { outline-color:#b4fc0f; }
+  html.embed .photo-slot { background:#14161c; border-color:#3a3e48; color:#9397ab; }
+  html.embed .photo-slot.filled { border-color:transparent; }
+  html.embed .photo-store { color:#9397ab; }
+  html.embed .photo-caption, html.embed .legend-row, html.embed .comment-body, html.embed .note-title { color:#eef1e9; }
+  html.embed .photo-caption.placeholder { color:#6d7184; }
+  html.embed .progress-track, html.embed .bar-track { background:#2a2e37; }
+  html.embed .progress-fill, html.embed .bar-fill { background:#b4fc0f !important; }
+  html.embed .donut-hole { background:#21242c; }
+  html.embed .note-btn { background:transparent; border-color:rgba(238,241,233,0.16); color:#eef1e9; }
+  html.embed .note-btn:hover { border-color:#b4fc0f; color:#b4fc0f; }
+  html.embed .note-btn.has { background:rgba(255,184,107,0.12); border-color:transparent; color:#ffb86b; }
+  html.embed .note-box { background:#21242c; color:#eef1e9; }
+  html.embed .comment-input { background:#14161c; color:#eef1e9; border-color:rgba(238,241,233,0.16); }
+  html.embed .comment-btn { background:transparent; color:#b4fc0f; border:1px solid #b4fc0f; }
+  html.embed .comment-btn:hover { background:rgba(180,252,15,0.12); filter:none; }
+  html.embed .comment-item { border-top-color:rgba(238,241,233,0.1); }
+  html.embed .comment-scope { color:#ffb86b; }
+  html.embed .notice { background:#2a2e37; color:#ffb86b; border-color:transparent; }
+  html.embed .badge.editable:hover { box-shadow:0 0 0 2px rgba(180,252,15,0.35); }
+  /* The iframe is as tall as the page, so pin overlays to the part the parent is showing. */
+  html.embed .lightbox, html.embed .note-modal { inset:auto; left:0; right:0; top:var(--vp-top,0px); height:var(--vp-h,100vh); }
   .comment-form { display:flex; flex-direction:column; gap:8px; margin-bottom:14px; }
   .comment-input { border:1px solid #E1E6EB; border-radius:8px; padding:8px 10px; font-size:13px; font-family:inherit; color:#1B1D22; background:#fff; }
   .comment-input:focus-visible { outline:2px solid var(--accent); outline-offset:2px; }
@@ -233,7 +281,7 @@
   <div id="diag" style="font-family:ui-monospace,Menlo,monospace; font-size:11px; color:#5A6470; background:#fff; border:1px solid #E1E6EB; border-radius:10px; padding:10px 14px; margin-bottom:12px; white-space:pre-wrap;" hidden></div>
 
   <div class="card" style="margin-bottom:12px;">
-    <div class="card-header">Store Visit Photos <span class="hint" id="photo-hint"></span></div>
+    <div class="card-header">Store Visit Photos <button id="sync-photos" class="note-btn" style="margin-left:auto" hidden></button><span class="hint" id="photo-hint"></span></div>
     <div class="photo-grid" id="photo-grid"></div>
   </div>
 
@@ -327,9 +375,21 @@ const STORE_CALLS = [
 
 /* --------------------------------- session -------------------------------- */
 
+// ?embed=1 — shown inside the DMQ Stand Execution dashboard, which signs in for us.
+const EMBED = /[?&]embed=1/.test(location.search) && window.parent !== window;
+if (EMBED) {
+  document.documentElement.classList.add('embed');
+  const postH = () => window.parent.postMessage({ civvioEmbedHeight: document.documentElement.scrollHeight }, location.origin);
+  new ResizeObserver(postH).observe(document.body);
+  window.addEventListener('message', (e) => {
+    if (e.origin !== location.origin || !e.data || e.data.civvioViewport == null) return;
+    document.documentElement.style.setProperty('--vp-top', e.data.civvioViewport.top + 'px');
+    document.documentElement.style.setProperty('--vp-h', e.data.civvioViewport.h + 'px');
+  });
+}
 const session = {
-  token: sessionStorage.getItem('lp_token') || '',
-  role: sessionStorage.getItem('lp_role') || '',
+  token: (EMBED && sessionStorage.getItem('civvio_embed_token')) || sessionStorage.getItem('lp_token') || '',
+  role: (EMBED && sessionStorage.getItem('civvio_embed_role')) || sessionStorage.getItem('lp_role') || '',
   get isAdmin() { return this.role === 'leegra_super_admin'; },
 };
 
@@ -1115,6 +1175,48 @@ function openNoteBox(storeName) {
   if (first) first.focus();
 }
 
+// Photos that only live in this browser (uploaded before Supabase was connected,
+// or when an upload failed) — push them to Supabase so everyone keeps them.
+function localPhotoKeys() {
+  return Object.keys(photos).filter(k => photos[k] && photos[k].local && /^data:image\//.test(photos[k].url || ''));
+}
+function updateSyncButton() {
+  const btn = document.getElementById('sync-photos');
+  const n = localPhotoKeys().length;
+  btn.hidden = !(session.isAdmin && session.token && n);
+  btn.textContent = 'Save ' + n + ' browser photo' + (n === 1 ? '' : 's') + ' to Supabase';
+}
+async function syncLocalPhotos() {
+  const btn = document.getElementById('sync-photos');
+  const keys = localPhotoKeys();
+  let ok = 0, failed = [];
+  btn.disabled = true;
+  for (let i = 0; i < keys.length; i++) {
+    const k = keys[i], p = photos[k];
+    btn.textContent = 'Saving ' + (i + 1) + ' of ' + keys.length + '…';
+    const row = STORE_CALLS.find(r => r.store === k) || {};
+    try {
+      const res = await fetch('/api/photos', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + session.token },
+        body: JSON.stringify({ tenant: TENANT, store_code: k, visit_date: row.dateCompleted1 || (MONTH + '-01'), caption: p.caption || '', scope: 'visit', filename: k.replace(/\W+/g, '_') + '.jpg', content_type: 'image/jpeg', data_base64: p.url }),
+      });
+      if (!res.ok) { const d = await res.json().catch(() => ({})); failed.push(k + ' (' + res.status + ' ' + (d.error || '') + ')'); continue; }
+      const saved = await res.json();
+      photos[k] = { url: saved.url, caption: saved.caption || '', id: saved.id };
+      ok++;
+    } catch (e) { failed.push(k + ' (network)'); }
+  }
+  // Keep anything that failed in this browser; drop the ones now in Supabase.
+  const localOnly = {};
+  Object.entries(photos).forEach(([k, v]) => { if (v.local) localOnly[k] = v; });
+  try { localStorage.setItem(LOCAL_KEY, JSON.stringify(localOnly)); } catch (e) {}
+  btn.disabled = false;
+  render(); updateSyncButton();
+  notice(ok + ' photo' + (ok === 1 ? '' : 's') + ' saved to Supabase.' + (failed.length ? ' Not saved: ' + failed.join(', ') : ''));
+}
+document.getElementById('sync-photos').addEventListener('click', syncLocalPhotos);
+
 async function boot() {
   loadLocalPhotos();
   wireCommentForm();
@@ -1122,6 +1224,7 @@ async function boot() {
   await Promise.all([checkStorage(), loadRemotePhotos(), loadOverrides(), loadComments()]);
   render();
   diag();
+  updateSyncButton();
 }
 
 if (session.token) enterDashboard(); else showGate();
