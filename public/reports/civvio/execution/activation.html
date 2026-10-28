@@ -1,0 +1,1233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Civvio — Activation Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root { --primary-dark: #1B1D22; --accent: #D62828; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: #F4F6F8; color: #2C3138; font-family: 'Inter', system-ui, sans-serif; }
+  a { color: var(--accent); }
+  a:hover { color: #A81F1F; }
+  .wrap { min-height: 100vh; padding: 20px 28px 32px; }
+  .header { display:flex; align-items:center; gap:12px; justify-content:space-between; margin-bottom:14px; }
+  .header-left { display:flex; align-items:center; gap:10px; }
+  .header-left img { height:32px; width:auto; }
+  .title { font-family:'Poppins',sans-serif; font-weight:700; font-size:22px; color:var(--primary-dark); letter-spacing:-0.02em; }
+  .subtitle { font-size:12px; color:#7C8896; margin-top:2px; }
+  .header-right { display:flex; align-items:center; gap:8px; }
+  .date-chip { font-size:11px; color:#7C8896; background:#fff; border:1px solid #E1E6EB; border-radius:8px; padding:6px 10px; }
+  .role-chip { font-size:11px; font-weight:600; border-radius:8px; padding:6px 10px; }
+  .role-admin { background:#1B1D22; color:#fff; }
+  .role-viewer { background:#EEF1F4; color:#5A6470; border:1px solid #E1E6EB; }
+  .kpi-row { display:grid; grid-template-columns:repeat(4,1fr); gap:10px; margin-bottom:14px; }
+  .kpi-card { background:#fff; border:1px solid #E1E6EB; border-radius:10px; padding:10px 14px; }
+  .kpi-label { font-size:10px; text-transform:uppercase; letter-spacing:0.06em; color:#7C8896; font-weight:600; }
+  .kpi-value { font-family:'Poppins',sans-serif; font-size:20px; font-weight:700; margin-top:2px; }
+  .kpi-value.primary { color:var(--primary-dark); }
+  .kpi-value.accent { color:var(--accent); }
+  .section-full { margin-bottom:12px; }
+  .section-row-3 { display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px; margin-bottom:12px; }
+  .card { background:#fff; border:1px solid #E1E6EB; border-radius:10px; overflow:hidden; }
+  .card-header { background:var(--primary-dark); color:#fff; font-family:'Poppins',sans-serif; font-weight:600; font-size:12px; padding:8px 14px; display:flex; align-items:center; gap:10px; }
+  .card-header .hint { margin-left:auto; font-weight:400; font-size:10.5px; color:#B9BFC7; }
+  .card-body { padding:14px; }
+  .card-sub { font-size:10.5px; color:#7C8896; margin-bottom:10px; }
+  table { width:100%; border-collapse:collapse; font-size:12px; }
+  thead tr { background:#EEF1F4; color:#7C8896; text-transform:uppercase; font-size:10px; letter-spacing:0.04em; }
+  th { text-align:left; padding:6px 14px; font-weight:600; }
+  th.num, td.num { text-align:right; }
+  td { padding:6px 14px; }
+  tbody tr { border-top:1px solid #EDF0F3; }
+  tbody tr:first-child { border-top:none; }
+  .name-cell { font-weight:500; }
+  .muted { color:#5A6470; }
+  .badge { padding:2px 8px; border-radius:6px; font-size:10px; font-weight:600; display:inline-block; }
+  .badge.editable { cursor:pointer; }
+  .badge.editable:hover { box-shadow:0 0 0 2px rgba(27,29,34,0.12); }
+  .empty-row td { padding:14px; text-align:center; color:#B0B8C0; font-size:12px; }
+  .slicers { background:#fff; border:1px solid #E1E6EB; border-radius:10px; padding:12px 14px; display:flex; gap:24px; flex-wrap:wrap; }
+  .slicer-label { font-size:10px; text-transform:uppercase; letter-spacing:0.06em; color:#7C8896; font-weight:600; margin-bottom:6px; }
+  .pill-row { display:flex; gap:6px; flex-wrap:wrap; }
+  .pill { cursor:pointer; padding:5px 12px; border-radius:999px; font-size:12px; font-weight:600; background:#EEF1F4; color:#5A6470; border:1px solid #E1E6EB; user-select:none; }
+  .pill:focus-visible { outline:2px solid var(--accent); outline-offset:2px; }
+  .pill.region-active { background:var(--primary-dark); color:#fff; border-color:var(--primary-dark); }
+  .pill.channel-active { background:var(--accent); color:#fff; border-color:var(--accent); }
+  .pill.status-active { background:#1E8A4C; color:#fff; border-color:#1E8A4C; }
+  .photo-grid { padding:12px 14px; display:grid; grid-template-columns:repeat(auto-fill, minmax(150px, 1fr)); gap:12px; max-height:560px; overflow-y:auto; }
+  .photo-slot { width:100%; aspect-ratio:4/3; border-radius:8px; border:2px dashed #D8DEE4; background:#FAFBFC; display:flex; align-items:center; justify-content:center; text-align:center; color:#9AA5B1; font-size:10.5px; padding:8px; cursor:pointer; position:relative; overflow:hidden; }
+  .photo-slot.filled { border:1px solid #E1E6EB; cursor:zoom-in; }
+  .photo-slot img { width:100%; height:100%; object-fit:cover; display:block; }
+  .photo-store { font-size:10px; color:#9AA5B1; margin-top:5px; text-transform:uppercase; letter-spacing:0.04em; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .photo-caption { font-size:11px; color:#2C3138; margin-top:2px; line-height:1.35; }
+  .photo-caption[contenteditable="true"]:focus { outline:2px solid var(--accent); outline-offset:2px; border-radius:4px; }
+  .photo-caption.placeholder { color:#B0B8C0; font-style:italic; }
+  .photo-remove { position:absolute; top:5px; right:5px; background:rgba(27,29,34,0.78); color:#fff; border:none; border-radius:6px; font-size:10px; padding:3px 6px; cursor:pointer; display:none; }
+  .photo-slot.filled:hover .photo-remove { display:block; }
+  .progress-track { height:8px; background:#EEF1F4; border-radius:5px; overflow:hidden; }
+  .progress-fill { height:100%; border-radius:5px; }
+  .bar-row { margin-bottom:10px; }
+  .bar-row:last-child { margin-bottom:0; }
+  .bar-row-top { display:flex; justify-content:space-between; font-size:11.5px; margin-bottom:4px; }
+  .bar-track { height:16px; background:#EEF1F4; border-radius:5px; overflow:hidden; }
+  .bar-fill { height:100%; border-radius:5px; }
+  .donut-wrap { display:flex; align-items:center; gap:18px; }
+  .donut { width:120px; height:120px; border-radius:50%; position:relative; flex-shrink:0; }
+  .donut-hole { position:absolute; inset:16px; background:#fff; border-radius:50%; display:flex; align-items:center; justify-content:center; flex-direction:column; }
+  .donut-hole-value { font-family:'Poppins',sans-serif; font-size:18px; font-weight:700; color:var(--primary-dark); }
+  .donut-hole-label { font-size:8.5px; color:#7C8896; text-transform:uppercase; letter-spacing:0.3px; }
+  .legend-row { display:flex; align-items:center; gap:6px; font-size:11.5px; color:#3A4658; margin-bottom:6px; }
+  .legend-dot { width:9px; height:9px; border-radius:2px; flex-shrink:0; }
+  .notice { font-size:11px; color:#B5651D; background:#FDF1E4; border:1px solid #F2DFC6; border-radius:8px; padding:8px 12px; margin-bottom:12px; }
+  .aug-card { display:flex; align-items:center; gap:28px; padding:14px; flex-wrap:wrap; }
+  .aug-item-label { font-size:10px; text-transform:uppercase; letter-spacing:0.06em; color:#7C8896; font-weight:600; }
+  .aug-item-value { font-family:'Poppins',sans-serif; font-size:16px; font-weight:700; color:var(--primary-dark); margin-top:2px; }
+  .gate { position:fixed; inset:0; background:#1B1D22; display:flex; align-items:center; justify-content:center; z-index:50; padding:24px; }
+  /* display:flex above outranks the browser's [hidden] rule, so say it here —
+     without this the overlay stays on top of the dashboard after sign-in. */
+  .gate[hidden] { display:none; }
+  .gate-box { background:#fff; border-radius:14px; padding:28px; width:100%; max-width:380px; }
+  .gate-title { font-family:'Poppins',sans-serif; font-size:19px; font-weight:700; color:var(--primary-dark); }
+  .gate-sub { font-size:12px; color:#7C8896; margin-top:6px; line-height:1.5; }
+  .gate-label { font-size:10px; text-transform:uppercase; letter-spacing:0.06em; color:#7C8896; font-weight:600; margin:18px 0 6px; }
+  .gate-input { width:100%; padding:11px 13px; border:1px solid #E1E6EB; border-radius:9px; font-size:15px; font-family:'Inter',sans-serif; letter-spacing:0.06em; text-transform:uppercase; }
+  .gate-input:focus-visible { outline:2px solid var(--accent); outline-offset:2px; }
+  .gate-btn { width:100%; margin-top:14px; padding:11px; border:none; border-radius:9px; background:var(--accent); color:#fff; font-size:14px; font-weight:600; font-family:'Inter',sans-serif; cursor:pointer; }
+  .gate-btn:hover { background:#B92222; }
+  .gate-btn:active { background:#A81F1F; }
+  .gate-alt { margin-top:14px; font-size:11.5px; color:#7C8896; text-align:center; }
+  .gate-alt span { color:var(--accent); cursor:pointer; font-weight:600; }
+  .gate-error { font-size:12px; color:var(--accent); margin-top:10px; min-height:16px; }
+  .lightbox { position:fixed; inset:0; background:rgba(27,29,34,0.9); display:flex; align-items:center; justify-content:center; z-index:60; padding:32px; }
+  .lightbox img { max-width:100%; max-height:80vh; border-radius:10px; }
+  .lightbox-cap { color:#fff; font-size:13px; margin-top:12px; text-align:center; }
+  /* Embedded inside the DMQ Stand Execution dashboard (?embed=1): dark theme to match it. */
+  html.embed body { background:#14161c; color:#eef1e9; font-size:13px; }
+  html.embed .wrap { min-height:0; padding:0 0 8px; }
+  html.embed .header, html.embed .gate { display:none; }
+  html.embed .kpi-card, html.embed .card, html.embed .slicers { background:#21242c; border:0; border-radius:14px; box-shadow:0 0 0 1px #3a3d33, 0 6px 18px rgba(0,0,0,0.55); }
+  html.embed .kpi-row, html.embed .section-row-3 { gap:14px; }
+  html.embed .section-full, html.embed .kpi-row, html.embed .section-row-3, html.embed .card { margin-bottom:14px; }
+  html.embed .kpi-card { padding:16px 18px; }
+  html.embed .card-header { background:transparent; color:#d4fc7a; font-family:'Inter',sans-serif; font-weight:500; font-size:10px; letter-spacing:0.1em; text-transform:uppercase; padding:16px 18px 4px; }
+  html.embed .card-header .hint { color:#9397ab; text-transform:none; letter-spacing:0; font-size:11px; }
+  html.embed .card-body { padding:10px 18px 16px; }
+  html.embed .kpi-label, html.embed .slicer-label, html.embed .aug-item-label { color:#d4fc7a; letter-spacing:0.1em; font-weight:500; }
+  html.embed .kpi-value, html.embed .aug-item-value, html.embed .donut-hole-value { font-family:'Inter',sans-serif; font-weight:500; color:#eef1e9; }
+  html.embed .kpi-value { font-size:26px; letter-spacing:-0.01em; }
+  html.embed .kpi-value.accent { color:#b4fc0f; }
+  html.embed .card-sub, html.embed .muted, html.embed .donut-hole-label, html.embed .comment-meta, html.embed .comment-note, html.embed .note-sub, html.embed .aug-card div { color:#9397ab; }
+  html.embed .aug-item-value { color:#eef1e9 !important; }
+  html.embed table { font-size:13px; }
+  html.embed thead tr { background:transparent; color:#9397ab; }
+  html.embed th { font-weight:500; letter-spacing:0.06em; border-bottom:1px solid rgba(238,241,233,0.1); padding:8px 18px; }
+  html.embed td { padding:8px 18px; }
+  html.embed tbody tr { border-top:1px solid rgba(238,241,233,0.1); }
+  html.embed .empty-row td, html.embed .comment-empty { color:#9397ab; }
+  html.embed .pill { background:#2a2e37; color:#eef1e9; border-color:transparent; font-weight:500; }
+  html.embed .pill:hover { background:#343944; }
+  html.embed .pill.region-active, html.embed .pill.channel-active, html.embed .pill.status-active { background:rgba(180,252,15,0.12); color:#b4fc0f; border-color:#b4fc0f; }
+  html.embed .pill:focus-visible, html.embed .comment-input:focus-visible { outline-color:#b4fc0f; }
+  html.embed .photo-slot { background:#14161c; border-color:#3a3e48; color:#9397ab; }
+  html.embed .photo-slot.filled { border-color:transparent; }
+  html.embed .photo-store { color:#9397ab; }
+  html.embed .photo-caption, html.embed .legend-row, html.embed .comment-body, html.embed .note-title { color:#eef1e9; }
+  html.embed .photo-caption.placeholder { color:#6d7184; }
+  html.embed .progress-track, html.embed .bar-track { background:#2a2e37; }
+  html.embed .progress-fill, html.embed .bar-fill { background:#b4fc0f !important; }
+  html.embed .donut-hole { background:#21242c; }
+  html.embed .note-btn { background:transparent; border-color:rgba(238,241,233,0.16); color:#eef1e9; }
+  html.embed .note-btn:hover { border-color:#b4fc0f; color:#b4fc0f; }
+  html.embed .note-btn.has { background:rgba(255,184,107,0.12); border-color:transparent; color:#ffb86b; }
+  html.embed .note-box { background:#21242c; color:#eef1e9; }
+  html.embed .comment-input { background:#14161c; color:#eef1e9; border-color:rgba(238,241,233,0.16); }
+  html.embed .comment-btn { background:transparent; color:#b4fc0f; border:1px solid #b4fc0f; }
+  html.embed .comment-btn:hover { background:rgba(180,252,15,0.12); filter:none; }
+  html.embed .comment-item { border-top-color:rgba(238,241,233,0.1); }
+  html.embed .comment-scope { color:#ffb86b; }
+  html.embed .notice { background:#2a2e37; color:#ffb86b; border-color:transparent; }
+  html.embed .badge.editable:hover { box-shadow:0 0 0 2px rgba(180,252,15,0.35); }
+  /* The iframe is as tall as the page, so pin overlays to the part the parent is showing. */
+  html.embed .lightbox, html.embed .note-modal { inset:auto; left:0; right:0; top:var(--vp-top,0px); height:var(--vp-h,100vh); }
+  .comment-form { display:flex; flex-direction:column; gap:8px; margin-bottom:14px; }
+  .comment-input { border:1px solid #E1E6EB; border-radius:8px; padding:8px 10px; font-size:13px; font-family:inherit; color:#1B1D22; background:#fff; }
+  .comment-input:focus-visible { outline:2px solid var(--accent); outline-offset:2px; }
+  .comment-text { resize:vertical; min-height:58px; }
+  .comment-actions { display:flex; align-items:center; gap:10px; }
+  .comment-btn { margin-left:auto; border:0; background:var(--accent); color:#fff; font-weight:600; font-size:12.5px; padding:8px 14px; border-radius:8px; cursor:pointer; font-family:inherit; white-space:nowrap; line-height:1.2; }
+  .comment-btn:hover { filter:brightness(1.08); }
+  .comment-btn:active { filter:brightness(0.92); }
+  .comment-btn:disabled { opacity:0.45; cursor:default; filter:none; }
+  .comment-note { font-size:11.5px; color:#7C8896; }
+  .comment-error { font-size:11.5px; color:var(--accent); }
+  .comment-item { border-top:1px solid #EEF1F4; padding:10px 0; display:flex; flex-direction:column; gap:3px; }
+  .comment-item:first-child { border-top:0; }
+  .comment-meta { font-size:11px; color:#7C8896; }
+  .comment-body { font-size:13px; color:#1B1D22; white-space:pre-wrap; }
+  .comment-scope { font-size:11px; color:#B5651D; font-weight:600; }
+  .comment-empty { font-size:12px; color:#B0B8C0; padding:8px 0; }
+  .note-btn { border:1px solid #E1E6EB; background:#fff; border-radius:999px; font-size:11px; padding:3px 9px; cursor:pointer; color:#5A6470; font-family:inherit; white-space:nowrap; }
+  .note-btn:hover { border-color:var(--accent); color:var(--accent); }
+  .note-btn.has { background:#FDF1E4; border-color:#F2DFC6; color:#B5651D; font-weight:600; }
+  .note-modal { position:fixed; inset:0; background:rgba(27,29,34,0.55); display:flex; align-items:center; justify-content:center; z-index:70; padding:24px; }
+  .note-box { background:#fff; border-radius:12px; padding:18px; width:min(520px,100%); max-height:80vh; overflow:auto; }
+  .note-title { font-size:14px; font-weight:600; color:#1B1D22; }
+  .note-sub { font-size:11px; color:#7C8896; margin:2px 0 12px; }
+  .note-close { border:0; background:none; font-size:12px; color:#7C8896; cursor:pointer; font-family:inherit; padding:0; }
+</style>
+</head>
+<body>
+
+<div class="gate" id="gate" hidden>
+  <div class="gate-box">
+    <div class="gate-title">Civvio — Activation Dashboard</div>
+    <div class="gate-sub">Enter this month's access code. A new code is issued on the 1st of each month.</div>
+    <div class="gate-label" id="gate-label">Access code</div>
+    <input class="gate-input" id="gate-input" placeholder="Enter your code" autocomplete="off" spellcheck="false">
+    <input class="gate-input" id="gate-otp" placeholder="6-digit code" autocomplete="off" spellcheck="false" style="margin-top:10px;" hidden>
+    <button class="gate-btn" id="gate-btn">View dashboard</button>
+    <div class="gate-error" id="gate-error"></div>
+    <div class="gate-alt" id="gate-alt">Leegra staff? <span id="gate-switch">Sign in with your email</span></div>
+  </div>
+</div>
+
+<div class="wrap" id="wrap" hidden>
+  <div class="header">
+    <div class="header-left">
+      <img src="/reports/civvio/assets/civvio-logo.png" alt="Civvio">
+      <div>
+        <div class="title">Civvio — Activation Dashboard</div>
+        <div class="subtitle">Real DMQ data · Totalsports &amp; Mr Price Sport store call tracker</div>
+      </div>
+    </div>
+    <div class="header-right">
+      <div class="role-chip role-viewer" id="storage-chip" title="Where uploaded photos are stored">Checking photo storage…</div>
+      <div class="role-chip role-viewer" id="role-chip">View only</div>
+      <div class="date-chip">July 2026 · data as of Aug 11, 2026</div>
+    </div>
+  </div>
+
+  <div class="notice" id="notice" hidden></div>
+
+  <div class="slicers" style="margin-bottom:14px;">
+    <div><div class="slicer-label">Region</div><div class="pill-row" id="pills-region"></div></div>
+    <div><div class="slicer-label">Channel</div><div class="pill-row" id="pills-channel"></div></div>
+    <div><div class="slicer-label">Status</div><div class="pill-row" id="pills-status"></div></div>
+  </div>
+
+  <div class="kpi-row">
+    <div class="kpi-card"><div class="kpi-label">Store Calls Completed</div><div class="kpi-value primary" id="kpi-calls">0 / 0</div></div>
+    <div class="kpi-card"><div class="kpi-label">Store Coverage</div><div class="kpi-value accent" id="kpi-coverage">0%</div></div>
+    <div class="kpi-card"><div class="kpi-label">Manager Store Progress</div><div class="kpi-value primary" id="kpi-manager-progress">0 / 0</div></div>
+    <div class="kpi-card"><div class="kpi-label">Avg. Store Rating</div><div class="kpi-value accent" id="kpi-rating">–</div></div>
+  </div>
+
+  <div class="section-full">
+    <div class="card">
+      <div class="card-header">August 2026 — Planned Call Window</div>
+      <div class="aug-card">
+        <div><div class="aug-item-label">Window</div><div class="aug-item-value">1 – 30 August 2026</div></div>
+        <div><div class="aug-item-label">Stores scheduled</div><div class="aug-item-value">44</div></div>
+        <div><div class="aug-item-label">Status</div><div class="aug-item-value">Pending completion</div></div>
+        <div style="margin-left:auto; font-size:11px; color:#7C8896; max-width:340px;">Exact call dates appear here as managers complete August visits and the month is imported.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section-row-3">
+    <div class="card">
+      <div class="card-header">Manager Coverage</div>
+      <div class="card-body">
+        <div class="card-sub">Stores completed vs assigned, by manager</div>
+        <div id="chart-managers"></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header">Store Call Status</div>
+      <div class="card-body">
+        <div class="card-sub">Completed vs pending across all store calls</div>
+        <div id="chart-status"></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header">Avg. Rating by Channel</div>
+      <div class="card-body">
+        <div class="card-sub">Among completed store calls with a rating</div>
+        <div id="chart-rating"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section-full">
+    <div class="card">
+      <div class="card-header">Manager Coverage — Region &amp; Channel Detail</div>
+      <table><thead><tr><th>Manager</th><th>Region</th><th>Channel</th><th class="num">Stores Completed</th><th>Progress</th><th>Check Status</th></tr></thead><tbody id="tbl-managers"></tbody></table>
+    </div>
+  </div>
+
+  <div class="section-full">
+    <div class="card">
+      <div class="card-header">Store Calls &amp; Feedback <span class="hint" id="calls-hint"></span></div>
+      <table>
+        <thead><tr><th>Store</th><th>Region</th><th>Channel</th><th>Manager</th><th>Status</th><th>Date(s) Completed</th><th class="num">Rating</th><th>Notes</th></tr></thead>
+        <tbody id="tbl-calls"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div id="diag" style="font-family:ui-monospace,Menlo,monospace; font-size:11px; color:#5A6470; background:#fff; border:1px solid #E1E6EB; border-radius:10px; padding:10px 14px; margin-bottom:12px; white-space:pre-wrap;" hidden></div>
+
+  <div class="card" style="margin-bottom:12px;">
+    <div class="card-header">Store Visit Photos <button id="sync-photos" class="note-btn" style="margin-left:auto" hidden></button><span class="hint" id="photo-hint"></span></div>
+    <div class="photo-grid" id="photo-grid"></div>
+  </div>
+
+  <div class="card" style="margin-bottom:12px;">
+    <div class="card-header">Comments <span class="hint">Everyone sees these</span></div>
+    <div class="card-body">
+      <div class="card-sub">Notes on a single store sit with that store in the table above — this thread is for the month overall.</div>
+      <div class="comment-form">
+        <input class="comment-input" id="comment-name" placeholder="Your name" autocomplete="off" maxlength="60">
+        <textarea class="comment-input comment-text" id="comment-text" placeholder="Add a comment…" maxlength="2000"></textarea>
+        <div class="comment-actions">
+          <div class="comment-error" id="comment-error"></div>
+          <button class="comment-btn" id="comment-post">Post comment</button>
+        </div>
+      </div>
+      <div id="comment-list"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ---------------------------------------------------------------------------
+   Civvio activation dashboard.
+
+   Data: July 2026 import (civvio-activation-dashboard-import-template July 2026).
+   44 stores across Totalsports + Mr Price Sport, all calls completed.
+
+   Three things beyond a static report:
+   1. Photos persist. Uploads go to /api/photos (Supabase Storage) so they stay
+      in the dashboard for everyone. Until that backend is live they fall back
+      to this browser's local storage, so they at least survive a reload here.
+   2. Calls completed is editable by a Leegra admin — click a status badge.
+      Changes save to /api/store-calls and layer over the imported baseline.
+   3. Access is by monthly code (or Leegra staff email) — see the gate above.
+--------------------------------------------------------------------------- */
+
+const TENANT = 'CIV-088';
+const MONTH = '2026-07';
+
+const REGIONS = ['All', 'GP', 'CPT', 'KZN', 'FS', 'NW'];
+const CHANNELS = ['All', 'Totalsports', 'Mr Price Sport'];
+const STATUSES = ['All', 'Completed', 'Pending Completion'];
+
+const MANAGERS_BASE = [{"name":"Kgothatso Matlou","region":"KZN","channel":"Totalsports","storesToCover":3},{"name":"Enver de Bruyn","region":"CPT","channel":"Totalsports","storesToCover":7},{"name":"Alex Walker","region":"GP","channel":"Totalsports","storesToCover":6},{"name":"Mackenzie Gouws","region":"GP","channel":"Totalsports","storesToCover":3},{"name":"Alex Walker","region":"NW","channel":"Totalsports","storesToCover":1},{"name":"Elijah Sekgate","region":"GP","channel":"Totalsports","storesToCover":1},{"name":"Mackenzie Gouws","region":"FS","channel":"Totalsports","storesToCover":1},{"name":"Kgothatso Matlou","region":"KZN","channel":"Mr Price Sport","storesToCover":3},{"name":"Enver de Bruyn","region":"CPT","channel":"Mr Price Sport","storesToCover":7},{"name":"Alex Walker","region":"GP","channel":"Mr Price Sport","storesToCover":6},{"name":"Mackenzie Gouws","region":"GP","channel":"Mr Price Sport","storesToCover":3},{"name":"Alex Walker","region":"NW","channel":"Mr Price Sport","storesToCover":1},{"name":"Elijah Sekgate","region":"GP","channel":"Mr Price Sport","storesToCover":1},{"name":"Mackenzie Gouws","region":"FS","channel":"Mr Price Sport","storesToCover":1}];
+
+const STORE_CALLS = [
+{"store":"TOTALSPORTS WESTVILLE PAVILLION DURBAN 060650","region":"KZN","channel":"Totalsports","manager":"Kgothatso Matlou","callsPlanned":1,"callsAchieved":1,"dateCompleted1":"2026-07-24","dateCompleted2":null,"status":"Completed","rating":4},
+{"store":"TOTALSPORTS GATEWAY DURBAN 060656","region":"KZN","channel":"Totalsports","manager":"Kgothatso Matlou","callsPlanned":1,"callsAchieved":1,"dateCompleted1":"2026-07-17","dateCompleted2":null,"status":"Completed","rating":4},
+{"store":"TOTALSPORTS CANAL WALK CAPE TOWN 060672","region":"CPT","channel":"Totalsports","manager":"Enver de Bruyn","callsPlanned":1,"callsAchieved":2,"dateCompleted1":"2026-07-02","dateCompleted2":"2026-07-13","status":"Completed","rating":4},
+{"store":"TOTALSPORTS MALL OF AFRICA JOHANNESBURG 060502","region":"GP","channel":"Totalsports","manager":"Alex Walker","callsPlanned":1,"callsAchieved":1,"dateCompleted1":"2026-07-27","dateCompleted2":null,"status":"Completed","rating":3},
+{"store":"TOTALSPORTS EAST RAND MALL BOKSBURG 060772","region":"GP","channel":"Totalsports","manager":"Alex Walker","callsPlanned":1,"callsAchieved":1,"dateCompleted1":"2026-07-17","dateCompleted2":null,"status":"Completed","rating":3},
+{"store":"TOTALSPORTS CLEARWATERS ROODEPOORT 060778","region":"GP","channel":"Totalsports","manager":"Alex Walker","callsPlanned":1,"callsAchieved":1,"dateCompleted1":"2026-07-13","dateCompleted2":null,"status":"Completed","rating":3},
+{"store":"TOTALSPORTS TYGERVALLEY BELLVILLE 060670","region":"CPT","channel":"Totalsports","manager":"Enver de Bruyn","callsPlanned":1,"callsAchieved":1,"dateCompleted1":"2026-07-27","dateCompleted2":null,"status":"Completed","rating":4},
+{"store":"TOTALSPORTS MENLYN PARK PRETORIA 060757","region":"GP","channel":"Totalsports","manager":"Mackenzie Gouws","callsPlanned":1,"callsAchieved":1,"dateCompleted1":"2026-07-15","dateCompleted2":null,"status":"Completed","rating":4},
+{"store":"TOTALSPORTS SOMERSET MALL SOMERSET WEST 060668","region":"CPT","channel":"Totalsports","manager":"Enver de Bruyn","callsPlanned":1,"callsAchieved":1,"dateCompleted1":"2026-07-27","dateCompleted2":null,"status":"Completed","rating":4},
+{"store":"TOTALSPOSRTS FOURWAYS MALL JOHANNESBURG 060756","region":"GP","channel":"Totalsports","manager":"Alex Walker","callsPlanned":1,"callsAchieved":1,"dateCompleted1":"2026-07-13","dateCompleted2":null,"status":"Completed","rating":4},
+{"store":"TOTALSPORTS EASTGATE JOHANNESBURG 060762","region":"GP","channel":"Totalsports","manager":"Alex Walker","callsPlanned":1,"callsAchieved":1,"dateCompleted1":"2026-07-17","dateCompleted2":null,"status":"Completed","rating":3},
+{"store":"TOTALSPORTS WATERFALL MALL RUSTENBURG 060742","region":"NW","channel":"Totalsports","manager":"Alex Walker","callsPlanned":1,"callsAchieved":1,"dateCompleted1":"2026-07-03","dateCompleted2":null,"status":"Completed","rating":3},
+{"store":"TOTALSPORTS CAVENDISH CAPE TOWN 060661","region":"CPT","channel":"Totalsports","manager":"Enver de Bruyn","callsPlanned":1,"callsAchieved":1,"dateCompleted1":"2026-07-27","dateCompleted2":null,"status":"Completed","rating":4},
+{"store":"TOTALSPORTS AMANZIMTOTI GALLERIA AMANZIMTOTI 060697","region":"KZN","channel":"Totalsports","manager":"Kgothatso Matlou","callsPlanned":1,"callsAchieved":1,"dateCompleted1":"2026-07-17","dateCompleted2":null,"status":"Completed","rating":3},
+{"store":"TOTALSPORTS CRESTA JOHANNESBURG 060739","region":"GP","channel":"Totalsports","manager":"Alex Walker","callsPlanned":1,"callsAchieved":1,"dateCompleted1":"2026-07-13","dateCompleted2":null,"status":"Completed","rating":4},
+{"store":"TOTALSPORTS VAAL MALL VANDERBIJLPARK 060775","region":"GP","channel":"Totalsports","manager":"Elijah Sekgate","callsPlanned":1,"callsAchieved":1,"dateCompleted1":"2026-07-27","dateCompleted2":null,"status":"Completed","rating":4},
+{"store":"TOTALSPORTS CENTURION PRETORIA 060752","region":"GP","channel":"Totalsports","manager":"Mackenzie Gouws","callsPlanned":1,"callsAchieved":1,"dateCompleted1":"2026-07-27","dateCompleted2":null,"status":"Completed","rating":4},
+{"store":"TOTALSPORTS BLUE ROUTE CAPE TOWN 060662","region":"CPT","channel":"Totalsports","manager":"Enver de Bruyn","callsPlanned":1,"callsAchieved":1,"dateCompleted1":"2026-07-07","dateCompleted2":null,"status":"Completed","rating":3},
+{"store":"TOTALSPORTS MONTANA PRETORIA 060759","region":"GP","channel":"Totalsports","manager":"Mackenzie Gouws","callsPlanned":1,"callsAchieved":1,"dateCompleted1":"2026-07-15","dateCompleted2":null,"status":"Completed","rating":4},
+{"store":"TOTALSPORTS LOCH LOGAN BLOEMFONTEIN 060780","region":"FS","channel":"Totalsports","manager":"Mackenzie Gouws","callsPlanned":1,"callsAchieved":1,"dateCompleted1":"2026-07-04","dateCompleted2":null,"status":"Completed","rating":4},
+{"store":"TOTALSPORTS PAARL MALL PAARL 060679","region":"CPT","channel":"Totalsports","manager":"Enver de Bruyn","callsPlanned":1,"callsAchieved":1,"dateCompleted1":"2026-07-23","dateCompleted2":null,"status":"Completed","rating":3},
+{"store":"TOTALSPORTS STELLENBOSCH EIKESTAD STELLENBOSCH 060677","region":"CPT","channel":"Totalsports","manager":"Enver de Bruyn","callsPlanned":1,"callsAchieved":1,"dateCompleted1":"2026-07-17","dateCompleted2":null,"status":"Completed","rating":3},
+{"store":"MR Price Sport WESTVILLE PAVILLION DURBAN 060650","region":"KZN","channel":"Mr Price Sport","manager":"Kgothatso Matlou","callsPlanned":1,"callsAchieved":1,"dateCompleted1":"2026-07-24","dateCompleted2":null,"status":"Completed","rating":3},
+{"store":"MR Price Sport GATEWAY DURBAN 060656","region":"KZN","channel":"Mr Price Sport","manager":"Kgothatso Matlou","callsPlanned":1,"callsAchieved":1,"dateCompleted1":"2026-07-17","dateCompleted2":null,"status":"Completed","rating":3},
+{"store":"Mr Price Sport CANAL WALK CAPE TOWN 060672","region":"CPT","channel":"Mr Price Sport","manager":"Enver de Bruyn","callsPlanned":1,"callsAchieved":1,"dateCompleted1":"2026-07-08","dateCompleted2":null,"status":"Completed","rating":3},
+{"store":"Mr Price Sport MALL OF AFRICA JOHANNESBURG 060502","region":"GP","channel":"Mr Price Sport","manager":"Alex Walker","callsPlanned":1,"callsAchieved":1,"dateCompleted1":"2026-07-13","dateCompleted2":null,"status":"Completed","rating":4},
+{"store":"Mr Price Sport EAST RAND MALL BOKSBURG 060772","region":"GP","channel":"Mr Price Sport","manager":"Alex Walker","callsPlanned":1,"callsAchieved":1,"dateCompleted1":"2026-07-13","dateCompleted2":null,"status":"Completed","rating":4},
+{"store":"Mr Price Sport CLEARWATERS ROODEPOORT 060778","region":"GP","channel":"Mr Price Sport","manager":"Alex Walker","callsPlanned":1,"callsAchieved":1,"dateCompleted1":"2026-07-13","dateCompleted2":null,"status":"Completed","rating":4},
+{"store":"Mr Price Sport TYGERVALLEY BELLVILLE 060670","region":"CPT","channel":"Mr Price Sport","manager":"Enver de Bruyn","callsPlanned":1,"callsAchieved":1,"dateCompleted1":"2026-07-02","dateCompleted2":null,"status":"Completed","rating":3},
+{"store":"Mr Price Sport MENLYN PARK PRETORIA 060757","region":"GP","channel":"Mr Price Sport","manager":"Mackenzie Gouws","callsPlanned":1,"callsAchieved":1,"dateCompleted1":"2026-07-15","dateCompleted2":null,"status":"Completed","rating":3},
+{"store":"Mr Price Sport SOMERSET MALL SOMERSET WEST 060668","region":"CPT","channel":"Mr Price Sport","manager":"Enver de Bruyn","callsPlanned":1,"callsAchieved":1,"dateCompleted1":"2026-07-27","dateCompleted2":null,"status":"Completed","rating":3},
+{"store":"Mr Price Sport FOURWAYS MALL JOHANNESBURG 060756","region":"GP","channel":"Mr Price Sport","manager":"Alex Walker","callsPlanned":1,"callsAchieved":1,"dateCompleted1":"2026-07-13","dateCompleted2":null,"status":"Completed","rating":4},
+{"store":"Mr Price Sport SANDTON CITY JOHANNESBURG 060762","region":"GP","channel":"Mr Price Sport","manager":"Alex Walker","callsPlanned":1,"callsAchieved":1,"dateCompleted1":"2026-07-08","dateCompleted2":null,"status":"Completed","rating":4},
+{"store":"Mr Price Sport WATERFALL MALL RUSTENBURG 060742","region":"NW","channel":"Mr Price Sport","manager":"Alex Walker","callsPlanned":1,"callsAchieved":1,"dateCompleted1":"2026-07-03","dateCompleted2":null,"status":"Completed","rating":4},
+{"store":"Mr Price Sport CAVENDISH CAPE TOWN 060661","region":"CPT","channel":"Mr Price Sport","manager":"Enver de Bruyn","callsPlanned":1,"callsAchieved":1,"dateCompleted1":"2026-07-27","dateCompleted2":null,"status":"Completed","rating":4},
+{"store":"Mr Price Sport AMANZIMTOTI GALLERIA AMANZIMTOTI 060697","region":"KZN","channel":"Mr Price Sport","manager":"Kgothatso Matlou","callsPlanned":1,"callsAchieved":1,"dateCompleted1":"2026-07-24","dateCompleted2":null,"status":"Completed","rating":3},
+{"store":"Mr Price Sport CRESTA JOHANNESBURG 060739","region":"GP","channel":"Mr Price Sport","manager":"Alex Walker","callsPlanned":1,"callsAchieved":1,"dateCompleted1":"2026-07-13","dateCompleted2":null,"status":"Completed","rating":4},
+{"store":"Mr Price Sport VAAL MALL VANDERBIJLPARK 060775","region":"GP","channel":"Mr Price Sport","manager":"Elijah Sekgate","callsPlanned":1,"callsAchieved":1,"dateCompleted1":"2026-07-27","dateCompleted2":null,"status":"Completed","rating":4},
+{"store":"Mr Price Sport CENTURION PRETORIA 060752","region":"GP","channel":"Mr Price Sport","manager":"Mackenzie Gouws","callsPlanned":1,"callsAchieved":1,"dateCompleted1":"2026-07-13","dateCompleted2":null,"status":"Completed","rating":4},
+{"store":"Mr Price Sport BLUE ROUTE CAPE TOWN 060662","region":"CPT","channel":"Mr Price Sport","manager":"Enver de Bruyn","callsPlanned":1,"callsAchieved":1,"dateCompleted1":"2026-07-27","dateCompleted2":null,"status":"Completed","rating":4},
+{"store":"Mr Price Sport THE GROVE PRETORIA 060759","region":"GP","channel":"Mr Price Sport","manager":"Mackenzie Gouws","callsPlanned":1,"callsAchieved":1,"dateCompleted1":"2026-07-23","dateCompleted2":null,"status":"Completed","rating":3},
+{"store":"Mr Price Sport LOCH LOGAN BLOEMFONTEIN 060780","region":"FS","channel":"Mr Price Sport","manager":"Mackenzie Gouws","callsPlanned":1,"callsAchieved":1,"dateCompleted1":"2026-07-04","dateCompleted2":null,"status":"Completed","rating":3},
+{"store":"Mr Price Sport PAARL MALL PAARL 060679","region":"CPT","channel":"Mr Price Sport","manager":"Enver de Bruyn","callsPlanned":1,"callsAchieved":1,"dateCompleted1":"2026-07-23","dateCompleted2":null,"status":"Completed","rating":3},
+{"store":"Mr Price Sport STELLENBOSCH EIKESTAD STELLENBOSCH 060677","region":"CPT","channel":"Mr Price Sport","manager":"Enver de Bruyn","callsPlanned":1,"callsAchieved":1,"dateCompleted1":"2026-07-17","dateCompleted2":null,"status":"Completed","rating":4}];
+
+/* --------------------------------- session -------------------------------- */
+
+// ?embed=1 — shown inside the DMQ Stand Execution dashboard, which signs in for us.
+const EMBED = /[?&]embed=1/.test(location.search) && window.parent !== window;
+if (EMBED) {
+  document.documentElement.classList.add('embed');
+  const postH = () => window.parent.postMessage({ civvioEmbedHeight: document.documentElement.scrollHeight }, location.origin);
+  new ResizeObserver(postH).observe(document.body);
+  window.addEventListener('message', (e) => {
+    if (e.origin !== location.origin || !e.data || e.data.civvioViewport == null) return;
+    document.documentElement.style.setProperty('--vp-top', e.data.civvioViewport.top + 'px');
+    document.documentElement.style.setProperty('--vp-h', e.data.civvioViewport.h + 'px');
+  });
+}
+const session = {
+  token: (EMBED && sessionStorage.getItem('civvio_embed_token')) || sessionStorage.getItem('lp_token') || '',
+  role: (EMBED && sessionStorage.getItem('civvio_embed_role')) || sessionStorage.getItem('lp_role') || '',
+  get isAdmin() { return this.role === 'leegra_super_admin'; },
+};
+
+const gate = document.getElementById('gate');
+const wrap = document.getElementById('wrap');
+let gateMode = 'code';
+let otpSent = false;
+
+function showGate() {
+  gate.hidden = false;
+  wrap.hidden = true;
+  document.getElementById('gate-input').focus();
+}
+function enterDashboard() {
+  gate.hidden = true;
+  wrap.hidden = false;
+  const chip = document.getElementById('role-chip');
+  chip.textContent = session.isAdmin ? 'Leegra admin — editing on' : 'View only';
+  chip.className = 'role-chip ' + (session.isAdmin ? 'role-admin' : 'role-viewer');
+  document.getElementById('calls-hint').textContent = session.isAdmin ? 'Click a status badge to change it' : '';
+  document.getElementById('photo-hint').textContent = session.isAdmin ? 'Click a tile to upload · click a caption to edit' : '';
+  boot();
+}
+
+document.getElementById('gate-switch').addEventListener('click', () => {
+  gateMode = gateMode === 'code' ? 'email' : 'code';
+  otpSent = false;
+  const input = document.getElementById('gate-input');
+  const otp = document.getElementById('gate-otp');
+  otp.hidden = true; otp.value = '';
+  document.getElementById('gate-label').textContent = gateMode === 'code' ? 'Access code' : 'Leegra email address';
+  input.placeholder = gateMode === 'code' ? 'Enter your code' : 'name@leegra.co.za';
+  input.style.textTransform = gateMode === 'code' ? 'uppercase' : 'none';
+  input.value = '';
+  document.getElementById('gate-btn').textContent = gateMode === 'code' ? 'View dashboard' : 'Email me a code';
+  document.getElementById('gate-switch').textContent = gateMode === 'code' ? 'Sign in with your email' : 'Use an access code instead';
+  document.getElementById('gate-error').textContent = '';
+  input.focus();
+});
+
+// Leegra staff sign in the way the rest of the app does: email first, then the
+// 6-digit code that lands in their inbox.
+async function requestOtp(email) {
+  const err = document.getElementById('gate-error');
+  err.textContent = 'Sending…';
+  try {
+    const res = await fetch('/api/auth-request-code', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email }),
+    });
+    if (res.status === 404) { openReadOnly(); return; }
+    otpSent = true;
+    document.getElementById('gate-otp').hidden = false;
+    document.getElementById('gate-otp').focus();
+    document.getElementById('gate-btn').textContent = 'Sign in';
+    err.textContent = 'Code sent — check your email.';
+  } catch (e) { openReadOnly(); }
+}
+
+// The access codes are checked here in the page too, so a dead or slow backend
+// can't lock anyone out of a read-only report. The server is still the real
+// gate for anything that writes (photos, edits) — it re-checks every request.
+//
+// They are stored as SHA-256 HASHES, not plaintext: a code written into a
+// public HTML file is readable by anyone who views source, and Netlify's
+// secret scanner (rightly) fails any build whose output contains a live
+// environment value. Hashes compare exactly the same way and leak nothing.
+//
+// To change a code: update ACCESS_CODE_CURRENT / ADMIN_ACCESS_CODE in the
+// Netlify env vars — that is the real code — then regenerate the matching
+// hash here so the offline fallback stays in step. Until it is regenerated
+// the new code still works whenever the backend is reachable.
+const LOCAL_CODE_HASHES = {
+  // ACCESS_CODE_CURRENT — shared access code, read-only viewer
+  viewer: 'b01672c37b296eaf3f1854d10e9c2b8a6c96f77c739f9982d03e59f3e9696521',
+  // ADMIN_ACCESS_CODE — admin rights
+  admin: '7be5485a4715c5e765f27669d59d1fd3ed1714beb63a37d2934ff7010a504d4b',
+};
+
+async function hashCode(value) {
+  const bytes = new TextEncoder().encode(String(value || '').trim().toUpperCase());
+  const digest = await crypto.subtle.digest('SHA-256', bytes);
+  return [...new Uint8Array(digest)].map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
+async function submitGate() {
+  const value = document.getElementById('gate-input').value.trim();
+  const err = document.getElementById('gate-error');
+  if (!value) { err.textContent = 'Enter your ' + (gateMode === 'code' ? 'access code' : 'email address') + '.'; return; }
+  if (gateMode === 'email' && !otpSent) { requestOtp(value); return; }
+
+  // Right code → in you go, immediately. The backend is then asked in the
+  // background to upgrade the session (real role, stored photos).
+  const typedHash = gateMode === 'code' ? await hashCode(value) : null;
+  if (gateMode === 'code' && (typedHash === LOCAL_CODE_HASHES.viewer || typedHash === LOCAL_CODE_HASHES.admin)) {
+    // Read-only unless the admin code was used — a fallback should never hand
+    // out more rights than the server would.
+    session.role = typedHash === LOCAL_CODE_HASHES.admin ? 'leegra_super_admin' : 'client_viewer';
+    err.textContent = '';
+    enterDashboard();
+    upgradeSession(value);
+    return;
+  }
+
+  err.textContent = 'Checking…';
+  const body = gateMode === 'code'
+    ? { access_code: value }
+    : { email: value, code: document.getElementById('gate-otp').value.trim() };
+  try {
+    // Netlify functions can hang; without a deadline the box would just sit on
+    // "Checking…" forever.
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 15000);
+    let res;
+    try {
+      res = await fetch('/api/auth-login', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body), signal: controller.signal,
+      });
+    } finally { clearTimeout(timer); }
+    const raw = await res.text();
+    let data = {};
+    try { data = JSON.parse(raw); } catch (e) { /* not JSON */ }
+    const isJson = (res.headers.get('content-type') || '').includes('application/json');
+    // No backend. Staff can still fall through to the read-only report; a wrong
+    // code cannot — the local code check above is what keeps holders unlocked
+    // when the server is down, so opening here would just be a bypass.
+    if (res.status === 404 || res.status === 405 || !isJson) {
+      if (gateMode === 'code') { err.textContent = 'That code is not valid.'; return; }
+      openReadOnly(); return;
+    }
+    if (!res.ok) {
+      err.textContent = (data.error || 'Sign-in failed') + ' [' + res.status + ']';
+      return;
+    }
+    if (data.needsTenantChoice) {
+      err.textContent = 'That account is attached to several clients — use the main app to sign in.';
+      return;
+    }
+    if (!data.token) {
+      err.textContent = 'Signed in but no session came back [' + res.status + ']. ' + raw.slice(0, 120);
+      return;
+    }
+    session.token = data.token; session.role = data.role;
+    sessionStorage.setItem('lp_token', data.token);
+    sessionStorage.setItem('lp_role', data.role);
+    err.textContent = '';
+    enterDashboard();
+  } catch (e) {
+    const aborted = e && e.name === 'AbortError';
+    if (gateMode === 'code') {
+      err.textContent = aborted
+        ? 'That code could not be checked — the sign-in service did not answer.'
+        : 'That code is not valid.';
+      return;
+    }
+    err.textContent = aborted
+      ? 'The sign-in service did not answer within 15 seconds.'
+      : 'Could not reach the sign-in service: ' + (e && e.message ? e.message : e);
+    openReadOnly();
+  }
+}
+
+// Backend not deployed yet — let the report through read-only rather than
+// locking everyone out of a static page.
+function openReadOnly() {
+  document.getElementById('gate-error').textContent = '';
+  session.role = 'client_viewer';
+  enterDashboard();
+  notice('Sign-in service is not deployed yet, so the dashboard opened in view-only mode. Deploy the Netlify Functions to turn the monthly code on.');
+}
+document.getElementById('gate-btn').addEventListener('click', submitGate);
+document.getElementById('gate-input').addEventListener('keydown', e => { if (e.key === 'Enter') submitGate(); });
+document.getElementById('gate-otp').addEventListener('keydown', e => { if (e.key === 'Enter') submitGate(); });
+
+// Ask the backend for a real token once we're already inside. If it answers,
+// photos and edits start saving properly; if it doesn't, the dashboard stays
+// usable with local storage.
+async function upgradeSession(code) {
+  try {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 12000);
+    let res;
+    try {
+      res = await fetch('/api/auth-login', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ access_code: code }), signal: controller.signal,
+      });
+    } finally { clearTimeout(timer); }
+    const raw = await res.text();
+    let data = null;
+    try { data = JSON.parse(raw); } catch (e) { /* not JSON at all */ }
+    if (!data) {
+      // An HTML body here means the redirect fell through to the SPA, i.e. the
+      // function isn't deployed.
+      authProbe = res.status + ' — no JSON in response: "' + raw.slice(0, 60).replace(/\s+/g, ' ') + '"';
+      diag();
+      return;
+    }
+    if (!res.ok) {
+      const detail = data;
+      authProbe = res.status + ' ' + (detail.error || 'no reason given');
+      diag();
+      adminNotice(
+        'Signed in locally, but the server did not accept this code (' + res.status + ': ' + (detail.error || 'no reason given') + '), so photos and edits cannot be saved. Check ACCESS_CODE_CURRENT and ADMIN_ACCESS_CODE in Netlify.',
+        'Photos are not available right now.');
+      return;
+    }
+    authProbe = 'ok — token received';
+    session.token = data.token; session.role = data.role;
+    sessionStorage.setItem('lp_token', data.token);
+    sessionStorage.setItem('lp_role', data.role);
+    boot();
+  } catch (e) { /* stay in local mode */ }
+}
+
+let lastUploadError = '';
+let authProbe = 'not attempted';
+
+function diag() {
+  const el = document.getElementById('diag');
+  if (!el) return;
+  if (!session.isAdmin) { el.hidden = true; el.textContent = ''; return; }
+  el.hidden = false;
+  el.textContent = [
+    'session role: ' + (session.role || 'none'),
+    'server token: ' + (session.token ? 'yes (' + session.token.slice(0, 12) + '…)' : 'NO — uploads cannot be saved'),
+    'photo storage: ' + (photosRemote ? 'Supabase (shared)' : 'this browser only'),
+    'photos loaded: ' + Object.keys(photos).length,
+    'last upload error: ' + (lastUploadError || 'none'),
+    'auth-login: ' + authProbe,
+  ].join('   ·   ');
+}
+
+function notice(text) {
+  const el = document.getElementById('notice');
+  el.textContent = text; el.hidden = false;
+}
+
+// Configuration problems: spelled out for Leegra, softened for the client.
+function adminNotice(text, viewerText) {
+  if (session.isAdmin) { notice(text); return; }
+  if (viewerText) notice(viewerText);
+  else document.getElementById('notice').hidden = true;
+}
+
+/* ---------------------------------- photos -------------------------------- */
+// photos[storeKey] = { url, caption, id, local }
+const photos = {};
+const LOCAL_KEY = 'civvio_photos_' + MONTH;
+let photosRemote = false;
+
+function loadLocalPhotos() {
+  try {
+    const raw = localStorage.getItem(LOCAL_KEY);
+    if (raw) Object.assign(photos, JSON.parse(raw));
+  } catch (e) { /* storage unavailable */ }
+}
+function saveLocalPhotos() {
+  if (photosRemote) return;
+  const localOnly = {};
+  Object.entries(photos).forEach(([k, v]) => { if (v.local) localOnly[k] = v; });
+  try { localStorage.setItem(LOCAL_KEY, JSON.stringify(localOnly)); }
+  catch (e) { adminNotice('This browser ran out of local storage for photos. Connect Supabase so photos are stored properly.'); }
+}
+
+async function loadRemotePhotos() {
+  if (!session.token) return;
+  try {
+    const res = await fetch('/api/photos?tenant=' + TENANT + '&month=' + MONTH, { headers: { Authorization: 'Bearer ' + session.token } });
+    if (!res.ok) return;
+    const rows = await res.json();
+    if (!Array.isArray(rows)) return;
+    photosRemote = true;
+    rows.forEach(r => { if (r.store_code) photos[r.store_code] = { url: r.url, caption: r.caption || '', id: r.id }; });
+  } catch (e) { /* offline or backend absent — local fallback stands */ }
+}
+
+function fileToDataUrl(file) {
+  return new Promise((resolve, reject) => {
+    const r = new FileReader();
+    r.onload = () => resolve(r.result);
+    r.onerror = reject;
+    r.readAsDataURL(file);
+  });
+}
+
+// Downscale before storing so a phone photo doesn't blow past storage limits.
+async function shrink(file, maxEdge) {
+  const dataUrl = await fileToDataUrl(file);
+  const img = new Image();
+  await new Promise((res, rej) => { img.onload = res; img.onerror = rej; img.src = dataUrl; });
+  const scale = Math.min(1, maxEdge / Math.max(img.width, img.height));
+  const c = document.createElement('canvas');
+  c.width = Math.round(img.width * scale); c.height = Math.round(img.height * scale);
+  c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+  return c.toDataURL('image/jpeg', 0.82);
+}
+
+async function uploadPhoto(storeKey, file, row) {
+  const dataUrl = await shrink(file, 1400);
+  photos[storeKey] = { url: dataUrl, caption: photos[storeKey] ? photos[storeKey].caption : '', local: true };
+  render();
+  // No token means the sign-in never reached the server, so there is nothing
+  // to upload with — say so rather than quietly saving to this browser.
+  if (!session.token) {
+    saveLocalPhotos();
+    lastUploadError = 'no server token — sign-in was not confirmed';
+    adminNotice('Photo saved in this browser only — this session was not confirmed by the server, so it cannot upload. Sign out and sign in again with your admin code, and check ADMIN_ACCESS_CODE is set in Netlify.');
+    diag();
+    return;
+  }
+  try {
+    const res = await fetch('/api/photos', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + session.token },
+      body: JSON.stringify({
+        tenant: TENANT, store_code: storeKey, visit_date: row.dateCompleted1 || null,
+        caption: photos[storeKey].caption, scope: 'visit',
+        filename: file.name, content_type: 'image/jpeg', data_base64: dataUrl,
+      }),
+    });
+    if (res.ok) {
+      const saved = await res.json();
+      photos[storeKey] = { url: saved.url, caption: saved.caption || '', id: saved.id };
+      photosRemote = true;
+      lastUploadError = '';
+      render();
+      diag();
+      return;
+    }
+    const detail = await res.json().catch(() => ({}));
+    saveLocalPhotos();
+    lastUploadError = res.status + ' ' + (detail.error || 'no reason given');
+    notice('Upload refused (' + res.status + '): ' + (detail.error || 'no reason given') + ' — the photo is saved in this browser only.');
+    diag();
+    return;
+  } catch (e) {
+    saveLocalPhotos();
+    lastUploadError = String(e && e.message ? e.message : e);
+    notice('Upload failed: ' + (e && e.message ? e.message : e) + ' — the photo is saved in this browser only.');
+    diag();
+    return;
+  }
+}
+
+async function saveCaption(storeKey, caption) {
+  if (!photos[storeKey]) return;
+  photos[storeKey].caption = caption;
+  if (photos[storeKey].local || !session.token) { saveLocalPhotos(); return; }
+  try {
+    await fetch('/api/photos', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + session.token },
+      body: JSON.stringify({ id: photos[storeKey].id, caption }),
+    });
+  } catch (e) { /* keep the local value */ }
+}
+
+function openLightbox(url, caption) {
+  const box = document.createElement('div');
+  box.className = 'lightbox';
+  const img = document.createElement('img');
+  img.src = url;
+  const cap = document.createElement('div');
+  cap.className = 'lightbox-cap';
+  cap.textContent = caption || '';
+  const inner = document.createElement('div');
+  inner.appendChild(img); inner.appendChild(cap);
+  box.appendChild(inner);
+  box.addEventListener('click', () => box.remove());
+  document.body.appendChild(box);
+}
+
+/* ------------------------------ call overrides ---------------------------- */
+
+const overrides = {};
+
+async function loadOverrides() {
+  if (!session.token) return;
+  try {
+    const res = await fetch('/api/store-calls?tenant=' + TENANT + '&month=' + MONTH, { headers: { Authorization: 'Bearer ' + session.token } });
+    if (!res.ok) return;
+    const rows = await res.json();
+    if (Array.isArray(rows)) rows.forEach(r => { overrides[r.store] = r; });
+  } catch (e) { /* baseline stands */ }
+}
+
+async function toggleStatus(row) {
+  if (!session.isAdmin) return;
+  const nextStatus = row.status === 'Completed' ? 'Pending Completion' : 'Completed';
+  const patch = {
+    tenant: TENANT, month: MONTH, store: row.store,
+    status: nextStatus,
+    calls_achieved: nextStatus === 'Completed' ? Math.max(1, row.callsAchieved) : 0,
+    date_completed_1: nextStatus === 'Completed' ? (row.dateCompleted1 || new Date().toISOString().slice(0, 10)) : null,
+  };
+  overrides[row.store] = {
+    store: row.store, status: patch.status,
+    calls_achieved: patch.calls_achieved, date_completed_1: patch.date_completed_1,
+    rating: row.rating,
+  };
+  render();
+  try {
+    await fetch('/api/store-calls', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + session.token },
+      body: JSON.stringify(patch),
+    });
+  } catch (e) {
+    notice('That change could not be saved to the database — it is showing here but will reset on reload.');
+  }
+}
+
+function resolvedCalls() {
+  return STORE_CALLS.map(r => {
+    const o = overrides[r.store];
+    if (!o) return r;
+    return Object.assign({}, r, {
+      status: o.status ?? r.status,
+      callsAchieved: o.calls_achieved ?? r.callsAchieved,
+      dateCompleted1: o.date_completed_1 ?? r.dateCompleted1,
+      rating: o.rating ?? r.rating,
+    });
+  });
+}
+
+function resolvedManagers(calls) {
+  return MANAGERS_BASE.map(m => {
+    const mine = calls.filter(c => c.manager === m.name && c.region === m.region && c.channel === m.channel);
+    const done = mine.filter(c => c.status === 'Completed').length;
+    return Object.assign({}, m, {
+      storesCompleted: done,
+      checkStatus: done >= m.storesToCover ? 'Completed' : 'Pending Completion',
+    });
+  });
+}
+
+/* ---------------------------------- render -------------------------------- */
+
+let state = { region: 'All', channel: 'All', status: 'All' };
+const matchesM = row => (state.region === 'All' || row.region === state.region) && (state.channel === 'All' || row.channel === state.channel);
+const matchesC = row => matchesM(row) && (state.status === 'All' || row.status === state.status);
+function esc(s) { const d = document.createElement('div'); d.textContent = s == null ? '' : s; return d.innerHTML; }
+const statusStyle = { 'Completed': ['#E8F7EE', '#1E8A4C'], 'Pending Completion': ['#FDF1E4', '#B5651D'] };
+
+function render() {
+  const all = resolvedCalls();
+  const calls = all.filter(matchesC);
+  const managers = resolvedManagers(all).filter(matchesM);
+
+  const plannedTotal = calls.reduce((s, r) => s + r.callsPlanned, 0);
+  const achievedTotal = calls.reduce((s, r) => s + r.callsAchieved, 0);
+  document.getElementById('kpi-calls').textContent = achievedTotal + ' / ' + plannedTotal;
+
+  const completedCalls = calls.filter(r => r.status === 'Completed').length;
+  const coveragePct = calls.length ? Math.round((completedCalls / calls.length) * 100) : 0;
+  document.getElementById('kpi-coverage').textContent = coveragePct + '%';
+
+  const toCoverTotal = managers.reduce((s, r) => s + r.storesToCover, 0);
+  const completedTotal = managers.reduce((s, r) => s + r.storesCompleted, 0);
+  document.getElementById('kpi-manager-progress').textContent = completedTotal + ' / ' + toCoverTotal;
+
+  const rated = calls.filter(r => r.rating != null);
+  const avgRating = rated.length ? rated.reduce((s, r) => s + r.rating, 0) / rated.length : null;
+  document.getElementById('kpi-rating').textContent = avgRating != null ? avgRating.toFixed(1) + ' / 5' : '–';
+
+  const byManager = {};
+  managers.forEach(m => {
+    if (!byManager[m.name]) byManager[m.name] = { toCover: 0, completed: 0 };
+    byManager[m.name].toCover += m.storesToCover;
+    byManager[m.name].completed += m.storesCompleted;
+  });
+  document.getElementById('chart-managers').innerHTML = Object.entries(byManager).length
+    ? Object.entries(byManager).map(([name, v]) => {
+        const pct = v.toCover ? Math.round((v.completed / v.toCover) * 100) : 0;
+        const color = pct >= 80 ? '#1E8A4C' : pct >= 40 ? '#B5651D' : '#C0432F';
+        return '<div class="bar-row"><div class="bar-row-top"><span>' + esc(name) + '</span><span style="font-weight:600;">' + v.completed + ' / ' + v.toCover + ' · ' + pct + '%</span></div><div class="bar-track"><div class="bar-fill" style="width:' + pct + '%;background:' + color + '"></div></div></div>';
+      }).join('')
+    : '<div style="padding:14px;text-align:center;color:#B0B8C0;">No managers match the selected filters.</div>';
+
+  const pendingCalls = calls.length - completedCalls;
+  const completedPct = calls.length ? (completedCalls / calls.length) * 100 : 0;
+  document.getElementById('chart-status').innerHTML =
+    '<div class="donut-wrap"><div class="donut" style="background: conic-gradient(#1E8A4C 0% ' + completedPct.toFixed(1) + '%, #EEF1F4 ' + completedPct.toFixed(1) + '% 100%);"><div class="donut-hole"><div class="donut-hole-value">' + calls.length + '</div><div class="donut-hole-label">Store Calls</div></div></div><div>' +
+    '<div class="legend-row"><span class="legend-dot" style="background:#1E8A4C"></span>Completed (' + completedCalls + ')</div>' +
+    '<div class="legend-row"><span class="legend-dot" style="background:#EEF1F4;border:1px solid #D8DEE4"></span>Pending (' + pendingCalls + ')</div></div></div>';
+
+  document.getElementById('chart-rating').innerHTML = ['Totalsports', 'Mr Price Sport'].map(ch => {
+    const chCalls = calls.filter(r => r.channel === ch && r.rating != null);
+    const avg = chCalls.length ? chCalls.reduce((s, r) => s + r.rating, 0) / chCalls.length : 0;
+    const color = ch === 'Totalsports' ? '#1B1D22' : '#D62828';
+    return '<div class="bar-row"><div class="bar-row-top"><span>' + esc(ch) + '</span><span style="font-weight:600;">' + (chCalls.length ? avg.toFixed(1) + ' / 5' : '—') + '</span></div><div class="bar-track"><div class="bar-fill" style="width:' + ((avg / 5) * 100) + '%;background:' + color + '"></div></div></div>';
+  }).join('');
+
+  document.getElementById('tbl-managers').innerHTML = managers.length ? managers.map(r => {
+    const pct = r.storesToCover ? Math.round((r.storesCompleted / r.storesToCover) * 100) : 0;
+    const barColor = pct >= 80 ? '#1E8A4C' : pct >= 40 ? '#B5651D' : '#C0432F';
+    const [bg, color] = statusStyle[r.checkStatus];
+    return '<tr><td class="name-cell">' + esc(r.name) + '</td><td class="muted">' + esc(r.region) + '</td><td class="muted">' + esc(r.channel) + '</td><td class="num">' + r.storesCompleted + ' / ' + r.storesToCover + '</td><td style="min-width:120px;"><div class="progress-track"><div class="progress-fill" style="width:' + pct + '%;background:' + barColor + '"></div></div></td><td><span class="badge" style="background:' + bg + ';color:' + color + '">' + esc(r.checkStatus) + '</span></td></tr>';
+  }).join('') : '<tr class="empty-row"><td colspan="6">No managers match the selected filters.</td></tr>';
+
+  const callsBody = document.getElementById('tbl-calls');
+  callsBody.innerHTML = calls.length ? calls.map((r, i) => {
+    const [bg, color] = statusStyle[r.status];
+    const dates = [r.dateCompleted1, r.dateCompleted2].filter(Boolean).join(', ') || '—';
+    const ratingColor = r.rating == null ? '#B0B8C0' : r.rating >= 4 ? '#1B1D22' : r.rating >= 3 ? '#B5651D' : '#C0432F';
+    const ratingLabel = r.rating == null ? '—' : r.rating.toFixed(1) + ' ★';
+    const noteCount = notesFor(r.store).length;
+    const noteLabel = noteCount ? noteCount + (noteCount > 1 ? ' notes' : ' note') : 'Add note';
+    const noteCell = '<td><button class="note-btn' + (noteCount ? ' has' : '') + '" data-note="' + esc(r.store) + '">' + noteLabel + '</button></td>';
+    return '<tr><td class="name-cell">' + esc(r.store) + '</td><td class="muted">' + esc(r.region) + '</td><td class="muted">' + esc(r.channel) + '</td><td class="muted">' + esc(r.manager) + '</td><td><span class="badge' + (session.isAdmin ? ' editable' : '') + '" data-store="' + esc(r.store) + '" style="background:' + bg + ';color:' + color + '">' + esc(r.status) + '</span></td><td class="muted" style="white-space:nowrap">' + esc(dates) + '</td><td class="num" style="font-weight:600;color:' + ratingColor + '">' + ratingLabel + '</td>' + noteCell + '</tr>';
+  }).join('') : '<tr class="empty-row"><td colspan="8">No store calls match the selected filters.</td></tr>';
+
+  callsBody.querySelectorAll('[data-note]').forEach(el => {
+    el.addEventListener('click', () => openNoteBox(el.dataset.note));
+  });
+
+  if (session.isAdmin) {
+    callsBody.querySelectorAll('.badge.editable').forEach(el => {
+      el.addEventListener('click', () => {
+        const row = all.find(r => r.store === el.dataset.store);
+        if (row) toggleStatus(row);
+      });
+    });
+  }
+
+  renderPhotos(calls);
+  renderPills();
+}
+
+function renderPhotos(calls) {
+  const grid = document.getElementById('photo-grid');
+  if (!calls.length) {
+    grid.innerHTML = '<div style="padding:14px;text-align:center;color:#B0B8C0;">No stores match the selected filters.</div>';
+    return;
+  }
+  grid.innerHTML = calls.map(r => {
+    const p = photos[r.store];
+    const inner = p
+      ? '<img src="' + p.url + '" alt="' + esc(r.store) + '">' + (session.isAdmin ? '<button class="photo-remove" data-remove="' + esc(r.store) + '">Replace</button>' : '')
+      : '📷<br>' + (session.isAdmin ? 'Add photo' : 'No photo yet');
+    const capText = p && p.caption ? esc(p.caption) : (session.isAdmin && p ? 'Add a caption' : '');
+    const capClass = 'photo-caption' + (p && p.caption ? '' : ' placeholder');
+    return '<div><div class="photo-slot' + (p ? ' filled' : '') + '" data-store="' + esc(r.store) + '">' + inner + '</div>' +
+      '<div class="photo-store" title="' + esc(r.store) + '">' + esc(r.store) + '</div>' +
+      (p ? '<div class="' + capClass + '" data-caption="' + esc(r.store) + '"' + (session.isAdmin ? ' contenteditable="true"' : '') + '>' + capText + '</div>' : '') +
+      '</div>';
+  }).join('');
+
+  grid.querySelectorAll('.photo-slot').forEach(slot => {
+    const store = slot.dataset.store;
+    slot.addEventListener('click', e => {
+      if (e.target.dataset.remove) return;
+      const p = photos[store];
+      if (p && !session.isAdmin) { openLightbox(p.url, p.caption); return; }
+      if (p) { openLightbox(p.url, p.caption); return; }
+      if (!session.isAdmin) return;
+      pickFile(store);
+    });
+  });
+  grid.querySelectorAll('[data-remove]').forEach(btn => {
+    btn.addEventListener('click', e => { e.stopPropagation(); pickFile(btn.dataset.remove); });
+  });
+  grid.querySelectorAll('[data-caption]').forEach(el => {
+    el.addEventListener('focus', () => { if (el.classList.contains('placeholder')) { el.textContent = ''; el.classList.remove('placeholder'); } });
+    el.addEventListener('blur', () => saveCaption(el.dataset.caption, el.textContent.trim()));
+    el.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); el.blur(); } });
+  });
+}
+
+function pickFile(store) {
+  const input = document.createElement('input');
+  input.type = 'file'; input.accept = 'image/*';
+  input.onchange = () => {
+    const file = input.files[0];
+    if (!file) return;
+    const row = STORE_CALLS.find(r => r.store === store);
+    uploadPhoto(store, file, row || {});
+  };
+  input.click();
+}
+
+function renderPills() {
+  const mk = (list, active, attr, cls) => list.map(v =>
+    '<div class="pill ' + (v === active ? cls : '') + '" tabindex="0" data-' + attr + '="' + esc(v) + '">' + esc(v) + '</div>').join('');
+  const regionBody = document.getElementById('pills-region');
+  const channelBody = document.getElementById('pills-channel');
+  const statusBody = document.getElementById('pills-status');
+  regionBody.innerHTML = mk(REGIONS, state.region, 'region', 'region-active');
+  channelBody.innerHTML = mk(CHANNELS, state.channel, 'channel', 'channel-active');
+  statusBody.innerHTML = mk(STATUSES, state.status, 'status', 'status-active');
+  regionBody.querySelectorAll('.pill').forEach(el => el.addEventListener('click', () => { state.region = el.dataset.region; render(); }));
+  channelBody.querySelectorAll('.pill').forEach(el => el.addEventListener('click', () => { state.channel = el.dataset.channel; render(); }));
+  statusBody.querySelectorAll('.pill').forEach(el => el.addEventListener('click', () => { state.status = el.dataset.status; render(); }));
+}
+
+async function checkStorage() {
+  const chip = document.getElementById('storage-chip');
+  try {
+    const res = await fetch('/api/health');
+    if (!res.ok || !(res.headers.get('content-type') || '').includes('application/json')) throw new Error('no backend');
+    const data = await res.json();
+    if (data.photos_persist) {
+      chip.textContent = 'Photos: saved for everyone';
+      chip.style.background = '#E8F7EE'; chip.style.color = '#1E8A4C'; chip.style.borderColor = '#CDEBD9';
+      photosRemote = true;
+      // Drop the pre-Supabase browser cache: it can't be seen by anyone else,
+      // and it's what triggers the "ran out of local storage" warning.
+      try { localStorage.removeItem(LOCAL_KEY); } catch (e) { /* nothing to clear */ }
+      document.getElementById('notice').hidden = true;
+    } else {
+      chip.textContent = 'Photos: this browser only';
+      chip.style.background = '#FDF1E4'; chip.style.color = '#B5651D'; chip.style.borderColor = '#F2DFC6';
+      if (session.isAdmin) chip.title = data.summary || '';
+    }
+  } catch (e) {
+    chip.textContent = 'Photos: this browser only';
+    chip.style.background = '#FDF1E4'; chip.style.color = '#B5651D'; chip.style.borderColor = '#F2DFC6';
+    chip.title = session.isAdmin
+      ? 'Storage backend not deployed yet — photos stay on this machine.'
+      : 'Photos are not available right now.';
+  }
+}
+
+/* --------------------------------- comments ------------------------------- */
+// One append-only thread per client, served by /api/report-comments. A comment
+// with `store` set is a note on that store (shown in the Notes column of the
+// store table); an empty `store` is the general thread at the bottom of the
+// page. Everyone who gets past the gate can read and post — same audience the
+// rest of the dashboard already has.
+
+const NAME_KEY = 'civvio_comment_name';
+let comments = [];
+let commentsRemote = false;
+
+const notesFor = store => comments.filter(c => c.store === store);
+
+function commentWhen(iso) {
+  const d = new Date(iso);
+  if (isNaN(d)) return '';
+  return d.toLocaleDateString([], { day: 'numeric', month: 'short' }) + ' · ' +
+    d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+}
+
+async function loadComments() {
+  try {
+    const res = await fetch('/api/report-comments?tenant=' + TENANT);
+    if (!res.ok || !(res.headers.get('content-type') || '').includes('application/json')) throw new Error('no backend');
+    const data = await res.json();
+    comments = Array.isArray(data.comments) ? data.comments : [];
+    commentsRemote = !data.error;
+  } catch (e) {
+    comments = [];
+    commentsRemote = false;
+  }
+  renderComments();
+}
+
+async function postComment(storeName, name, text) {
+  const res = await fetch('/api/report-comments', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ tenant: TENANT, store: storeName || '', name: name, text: text }),
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok || !data.comment) throw new Error(data.error || 'That comment could not be saved. Try again in a moment.');
+  comments.unshift(data.comment);
+  try { localStorage.setItem(NAME_KEY, name); } catch (e) { /* storage unavailable */ }
+}
+
+function commentHtml(c, withScope) {
+  return '<div class="comment-item">' +
+    (withScope && c.store ? '<div class="comment-scope">' + esc(c.store) + '</div>' : '') +
+    '<div class="comment-meta">' + esc(c.name) + ' · ' + commentWhen(c.at) + '</div>' +
+    '<div class="comment-body">' + esc(c.text) + '</div>' +
+    '</div>';
+}
+
+function renderComments() {
+  const list = document.getElementById('comment-list');
+  if (!list) return;
+  const general = comments.filter(c => !c.store);
+  list.innerHTML = general.length
+    ? general.map(c => commentHtml(c, false)).join('')
+    : '<div class="comment-empty">' + (commentsRemote ? 'No comments yet.' : 'Comments are not reachable right now — try reloading in a moment.') + '</div>';
+  const btn = document.getElementById('comment-post');
+  if (btn) btn.disabled = !commentsRemote;
+  const nameInput = document.getElementById('comment-name');
+  if (nameInput && !nameInput.value) {
+    try { nameInput.value = localStorage.getItem(NAME_KEY) || ''; } catch (e) { /* storage unavailable */ }
+  }
+}
+
+function wireCommentForm() {
+  const btn = document.getElementById('comment-post');
+  if (!btn) return;
+  btn.addEventListener('click', async () => {
+    const nameEl = document.getElementById('comment-name');
+    const textEl = document.getElementById('comment-text');
+    const err = document.getElementById('comment-error');
+    const name = nameEl.value.trim();
+    const text = textEl.value.trim();
+    err.textContent = '';
+    if (!name) { err.textContent = 'Add your name first.'; nameEl.focus(); return; }
+    if (!text) { err.textContent = 'Write a comment first.'; textEl.focus(); return; }
+    btn.disabled = true;
+    btn.textContent = 'Posting…';
+    try {
+      await postComment('', name, text);
+      textEl.value = '';
+      renderComments();
+    } catch (e) {
+      err.textContent = e.message;
+    } finally {
+      btn.disabled = false;
+      btn.textContent = 'Post comment';
+    }
+  });
+}
+
+// Per-store notes: the Notes column opens this box for one store.
+function openNoteBox(storeName) {
+  const modal = document.createElement('div');
+  modal.className = 'note-modal';
+  const box = document.createElement('div');
+  box.className = 'note-box';
+  modal.appendChild(box);
+
+  function draw() {
+    const notes = notesFor(storeName);
+    box.innerHTML =
+      '<div style="display:flex;align-items:flex-start;gap:10px">' +
+        '<div style="flex:1"><div class="note-title">' + esc(storeName) + '</div>' +
+        '<div class="note-sub">Notes on this store, visible to everyone who opens the dashboard.</div></div>' +
+        '<button class="note-close" data-close>Close</button>' +
+      '</div>' +
+      '<div class="comment-form">' +
+        '<input class="comment-input" data-note-name placeholder="Your name" autocomplete="off" maxlength="60">' +
+        '<textarea class="comment-input comment-text" data-note-text placeholder="Add a note about this store…" maxlength="2000"></textarea>' +
+        '<div class="comment-actions"><div class="comment-error" data-note-error></div>' +
+        '<button class="comment-btn" data-note-post' + (commentsRemote ? '' : ' disabled') + '>Post note</button></div>' +
+      '</div>' +
+      (notes.length ? notes.map(c => commentHtml(c, false)).join('')
+        : '<div class="comment-empty">' + (commentsRemote ? 'No notes on this store yet.' : 'Notes are not reachable right now.') + '</div>');
+
+    const nameEl = box.querySelector('[data-note-name]');
+    try { nameEl.value = localStorage.getItem(NAME_KEY) || ''; } catch (e) { /* storage unavailable */ }
+    box.querySelector('[data-close]').addEventListener('click', close);
+    const postBtn = box.querySelector('[data-note-post]');
+    postBtn.addEventListener('click', async () => {
+      const textEl = box.querySelector('[data-note-text]');
+      const err = box.querySelector('[data-note-error]');
+      const name = nameEl.value.trim();
+      const text = textEl.value.trim();
+      err.textContent = '';
+      if (!name) { err.textContent = 'Add your name first.'; nameEl.focus(); return; }
+      if (!text) { err.textContent = 'Write a note first.'; textEl.focus(); return; }
+      postBtn.disabled = true;
+      postBtn.textContent = 'Posting…';
+      try {
+        await postComment(storeName, name, text);
+        draw();
+        render();
+      } catch (e) {
+        err.textContent = e.message;
+        postBtn.disabled = false;
+        postBtn.textContent = 'Post note';
+      }
+    });
+  }
+
+  function close() {
+    modal.remove();
+    document.removeEventListener('keydown', onKey);
+  }
+  function onKey(e) { if (e.key === 'Escape') close(); }
+
+  modal.addEventListener('click', e => { if (e.target === modal) close(); });
+  document.addEventListener('keydown', onKey);
+  draw();
+  document.body.appendChild(modal);
+  const first = box.querySelector('[data-note-text]');
+  if (first) first.focus();
+}
+
+// Photos that only live in this browser (uploaded before Supabase was connected,
+// or when an upload failed) — push them to Supabase so everyone keeps them.
+function localPhotoKeys() {
+  return Object.keys(photos).filter(k => photos[k] && photos[k].local && /^data:image\//.test(photos[k].url || ''));
+}
+function updateSyncButton() {
+  const btn = document.getElementById('sync-photos');
+  const n = localPhotoKeys().length;
+  btn.hidden = !(session.isAdmin && session.token && n);
+  btn.textContent = 'Save ' + n + ' browser photo' + (n === 1 ? '' : 's') + ' to Supabase';
+}
+async function syncLocalPhotos() {
+  const btn = document.getElementById('sync-photos');
+  const keys = localPhotoKeys();
+  let ok = 0, failed = [];
+  btn.disabled = true;
+  for (let i = 0; i < keys.length; i++) {
+    const k = keys[i], p = photos[k];
+    btn.textContent = 'Saving ' + (i + 1) + ' of ' + keys.length + '…';
+    const row = STORE_CALLS.find(r => r.store === k) || {};
+    try {
+      const res = await fetch('/api/photos', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + session.token },
+        body: JSON.stringify({ tenant: TENANT, store_code: k, visit_date: row.dateCompleted1 || (MONTH + '-01'), caption: p.caption || '', scope: 'visit', filename: k.replace(/\W+/g, '_') + '.jpg', content_type: 'image/jpeg', data_base64: p.url }),
+      });
+      if (!res.ok) { const d = await res.json().catch(() => ({})); failed.push(k + ' (' + res.status + ' ' + (d.error || '') + ')'); continue; }
+      const saved = await res.json();
+      photos[k] = { url: saved.url, caption: saved.caption || '', id: saved.id };
+      ok++;
+    } catch (e) { failed.push(k + ' (network)'); }
+  }
+  // Keep anything that failed in this browser; drop the ones now in Supabase.
+  const localOnly = {};
+  Object.entries(photos).forEach(([k, v]) => { if (v.local) localOnly[k] = v; });
+  try { localStorage.setItem(LOCAL_KEY, JSON.stringify(localOnly)); } catch (e) {}
+  btn.disabled = false;
+  render(); updateSyncButton();
+  notice(ok + ' photo' + (ok === 1 ? '' : 's') + ' saved to Supabase.' + (failed.length ? ' Not saved: ' + failed.join(', ') : ''));
+}
+document.getElementById('sync-photos').addEventListener('click', syncLocalPhotos);
+
+async function boot() {
+  loadLocalPhotos();
+  wireCommentForm();
+  render();
+  await Promise.all([checkStorage(), loadRemotePhotos(), loadOverrides(), loadComments()]);
+  render();
+  diag();
+  updateSyncButton();
+}
+
+if (session.token) enterDashboard(); else showGate();
+</script>
+</body>
+</html>
