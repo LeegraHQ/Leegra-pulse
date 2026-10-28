@@ -96,6 +96,29 @@ exports.handler = async (event) => {
       });
     }));
   } catch (e) { console.error('civvio history read failed', e && e.message); }
+  // July 2026 store calls from the old activation dashboard, with their photos
+  // (Supabase visit_photos, keyed by the activation store name).
+  try {
+    const july = require('./_civvio-activation-july.json');
+    let photoBy = {};
+    if (supa.configured()) {
+      const rows = await supa.select('visit_photos', '?select=id,store_code,url,caption,taken_at&tenant_code=eq.' + TENANT + '&month=eq.' + july.month + '&order=taken_at.desc');
+      for (const p of rows || []) if (p.store_code && p.url) (photoBy[p.store_code] = photoBy[p.store_code] || []).push({ id: 'act-' + p.id, url: p.url, caption: p.caption || '' });
+    }
+    const seen = {};
+    july.rows.forEach((r, i) => {
+      const s = storeBy[r.storeCode] || {};
+      const first = !seen[r.storeCode]; seen[r.storeCode] = true;
+      const ph = first ? (photoBy[r.activationStore] || []) : [];
+      out.push({
+        id: `act-${i}`, source: 'activation', storeCode: r.storeCode, storeName: s.name || r.activationStore,
+        channel: s.channel || 'Other', region: s.region || 'Unassigned', rep: r.rep || '', date: r.date, time: '', done: true,
+        facings: null, returns: '', damaged: '', additional: '',
+        comment: ['Activation call', r.rating != null ? 'rating ' + r.rating + '/5' : '', ph[0] && ph[0].caption].filter(Boolean).join(' · '),
+        photos: ph.map(p => ({ id: p.id, url: p.url })),
+      });
+    });
+  } catch (e) { console.error('civvio july activation merge failed', e && e.message); }
   out.sort((x, y) => (x.date + x.time < y.date + y.time ? 1 : -1));
 
   let views;

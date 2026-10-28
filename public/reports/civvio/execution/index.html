@@ -232,14 +232,14 @@
       (done.length ? done.map(function (v) {
         var p = v.photos[0];
         return '<tr><td style="white-space:nowrap">' + esc(v.date) + '<div class="muted">' + esc(v.time) + '</div></td><td>' + esc(v.storeName) + '</td><td>' + esc(v.channel) + '</td><td>' + esc(v.region) + '</td><td>' + esc(v.rep) + '</td><td class="num">' + (v.facings == null ? '–' : v.facings) + '</td><td>' + ynCell(v.returns) + '</td><td>' + ynCell(v.damaged) + '</td><td>' + ynCell(v.additional) + '</td><td style="min-width:180px">' + esc(v.comment || '') + '</td><td>' +
-          (p ? (DEMO ? '<div class="thumb"></div>' : '<img class="thumb" loading="lazy" src="' + photoUrl(p.id) + '" data-cap="' + esc(v.storeName + ' · ' + v.date + (v.comment ? ' · ' + v.comment : '')) + '" alt="">') : '') + '</td></tr>';
+          (p ? (DEMO ? '<div class="thumb"></div>' : '<img class="thumb" loading="lazy" src="' + esc(p.url || photoUrl(p.id)) + '" data-cap="' + esc(v.storeName + ' · ' + v.date + (v.comment ? ' · ' + v.comment : '')) + '" alt="">') : '') + '</td></tr>';
       }).join('') : '<tr><td colspan="11" class="empty">No completed stand checks for this selection yet.</td></tr>');
 
     var photos = [];
     done.forEach(function (v) { v.photos.forEach(function (p) { photos.push({ v: v, p: p }); }); });
     $('gallery').innerHTML = photos.length ? photos.map(function (x) {
       var cap = x.v.storeName + ' · ' + x.v.date + (x.v.comment ? ' · ' + x.v.comment : '');
-      return '<div class="ph">' + (DEMO ? '<div style="aspect-ratio:4/3;border-radius:8px;background:var(--surface-2);display:flex;align-items:center;justify-content:center" class="muted">Stand photo</div>' : '<img loading="lazy" src="' + photoUrl(x.p.id) + '" data-cap="' + esc(cap) + '" alt="' + esc(x.v.storeName) + '">') +
+      return '<div class="ph">' + (DEMO ? '<div style="aspect-ratio:4/3;border-radius:8px;background:var(--surface-2);display:flex;align-items:center;justify-content:center" class="muted">Stand photo</div>' : '<img loading="lazy" src="' + esc(x.p.url || photoUrl(x.p.id)) + '" data-cap="' + esc(cap) + '" alt="' + esc(x.v.storeName) + '">') +
         '<div class="ph-store">' + esc(x.v.storeName) + '</div><div class="ph-meta">' + esc(x.v.date + ' ' + x.v.time + ' · ' + x.v.rep + ' · ' + x.v.region) + '</div>' + (x.v.comment ? '<div class="ph-comment">' + esc(x.v.comment) + '</div>' : '') + '</div>';
     }).join('') : '<div class="empty">No photos for this selection yet.</div>';
 

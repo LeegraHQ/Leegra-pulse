@@ -1,0 +1,366 @@
+{
+ "source": "Civvio activation dashboard · July 2026 import",
+ "month": "2026-07",
+ "rows": [
+  {
+   "date": "2026-07-24",
+   "storeCode": "DMQ-01",
+   "activationStore": "TOTALSPORTS WESTVILLE PAVILLION DURBAN 060650",
+   "rep": "Kgothatso Matlou",
+   "rating": 4,
+   "status": "Completed"
+  },
+  {
+   "date": "2026-07-17",
+   "storeCode": "DMQ-02",
+   "activationStore": "TOTALSPORTS GATEWAY DURBAN 060656",
+   "rep": "Kgothatso Matlou",
+   "rating": 4,
+   "status": "Completed"
+  },
+  {
+   "date": "2026-07-02",
+   "storeCode": "DMQ-03",
+   "activationStore": "TOTALSPORTS CANAL WALK CAPE TOWN 060672",
+   "rep": "Enver de Bruyn",
+   "rating": 4,
+   "status": "Completed"
+  },
+  {
+   "date": "2026-07-13",
+   "storeCode": "DMQ-03",
+   "activationStore": "TOTALSPORTS CANAL WALK CAPE TOWN 060672",
+   "rep": "Enver de Bruyn",
+   "rating": 4,
+   "status": "Completed"
+  },
+  {
+   "date": "2026-07-27",
+   "storeCode": "DMQ-04",
+   "activationStore": "TOTALSPORTS MALL OF AFRICA JOHANNESBURG 060502",
+   "rep": "Alex Walker",
+   "rating": 3,
+   "status": "Completed"
+  },
+  {
+   "date": "2026-07-17",
+   "storeCode": "DMQ-05",
+   "activationStore": "TOTALSPORTS EAST RAND MALL BOKSBURG 060772",
+   "rep": "Alex Walker",
+   "rating": 3,
+   "status": "Completed"
+  },
+  {
+   "date": "2026-07-13",
+   "storeCode": "DMQ-06",
+   "activationStore": "TOTALSPORTS CLEARWATERS ROODEPOORT 060778",
+   "rep": "Alex Walker",
+   "rating": 3,
+   "status": "Completed"
+  },
+  {
+   "date": "2026-07-27",
+   "storeCode": "DMQ-07",
+   "activationStore": "TOTALSPORTS TYGERVALLEY BELLVILLE 060670",
+   "rep": "Enver de Bruyn",
+   "rating": 4,
+   "status": "Completed"
+  },
+  {
+   "date": "2026-07-15",
+   "storeCode": "DMQ-08",
+   "activationStore": "TOTALSPORTS MENLYN PARK PRETORIA 060757",
+   "rep": "Mackenzie Gouws",
+   "rating": 4,
+   "status": "Completed"
+  },
+  {
+   "date": "2026-07-27",
+   "storeCode": "DMQ-09",
+   "activationStore": "TOTALSPORTS SOMERSET MALL SOMERSET WEST 060668",
+   "rep": "Enver de Bruyn",
+   "rating": 4,
+   "status": "Completed"
+  },
+  {
+   "date": "2026-07-13",
+   "storeCode": "DMQ-10",
+   "activationStore": "TOTALSPOSRTS FOURWAYS MALL JOHANNESBURG 060756",
+   "rep": "Alex Walker",
+   "rating": 4,
+   "status": "Completed"
+  },
+  {
+   "date": "2026-07-17",
+   "storeCode": "DMQ-11",
+   "activationStore": "TOTALSPORTS EASTGATE JOHANNESBURG 060762",
+   "rep": "Alex Walker",
+   "rating": 3,
+   "status": "Completed"
+  },
+  {
+   "date": "2026-07-03",
+   "storeCode": "DMQ-12",
+   "activationStore": "TOTALSPORTS WATERFALL MALL RUSTENBURG 060742",
+   "rep": "Alex Walker",
+   "rating": 3,
+   "status": "Completed"
+  },
+  {
+   "date": "2026-07-27",
+   "storeCode": "DMQ-13",
+   "activationStore": "TOTALSPORTS CAVENDISH CAPE TOWN 060661",
+   "rep": "Enver de Bruyn",
+   "rating": 4,
+   "status": "Completed"
+  },
+  {
+   "date": "2026-07-17",
+   "storeCode": "DMQ-14",
+   "activationStore": "TOTALSPORTS AMANZIMTOTI GALLERIA AMANZIMTOTI 060697",
+   "rep": "Kgothatso Matlou",
+   "rating": 3,
+   "status": "Completed"
+  },
+  {
+   "date": "2026-07-13",
+   "storeCode": "DMQ-15",
+   "activationStore": "TOTALSPORTS CRESTA JOHANNESBURG 060739",
+   "rep": "Alex Walker",
+   "rating": 4,
+   "status": "Completed"
+  },
+  {
+   "date": "2026-07-27",
+   "storeCode": "DMQ-16",
+   "activationStore": "TOTALSPORTS VAAL MALL VANDERBIJLPARK 060775",
+   "rep": "Elijah Sekgate",
+   "rating": 4,
+   "status": "Completed"
+  },
+  {
+   "date": "2026-07-27",
+   "storeCode": "DMQ-17",
+   "activationStore": "TOTALSPORTS CENTURION PRETORIA 060752",
+   "rep": "Mackenzie Gouws",
+   "rating": 4,
+   "status": "Completed"
+  },
+  {
+   "date": "2026-07-07",
+   "storeCode": "DMQ-18",
+   "activationStore": "TOTALSPORTS BLUE ROUTE CAPE TOWN 060662",
+   "rep": "Enver de Bruyn",
+   "rating": 3,
+   "status": "Completed"
+  },
+  {
+   "date": "2026-07-15",
+   "storeCode": "DMQ-19",
+   "activationStore": "TOTALSPORTS MONTANA PRETORIA 060759",
+   "rep": "Mackenzie Gouws",
+   "rating": 4,
+   "status": "Completed"
+  },
+  {
+   "date": "2026-07-04",
+   "storeCode": "DMQ-20",
+   "activationStore": "TOTALSPORTS LOCH LOGAN BLOEMFONTEIN 060780",
+   "rep": "Mackenzie Gouws",
+   "rating": 4,
+   "status": "Completed"
+  },
+  {
+   "date": "2026-07-23",
+   "storeCode": "DMQ-21",
+   "activationStore": "TOTALSPORTS PAARL MALL PAARL 060679",
+   "rep": "Enver de Bruyn",
+   "rating": 3,
+   "status": "Completed"
+  },
+  {
+   "date": "2026-07-17",
+   "storeCode": "DMQ-22",
+   "activationStore": "TOTALSPORTS STELLENBOSCH EIKESTAD STELLENBOSCH 060677",
+   "rep": "Enver de Bruyn",
+   "rating": 3,
+   "status": "Completed"
+  },
+  {
+   "date": "2026-07-24",
+   "storeCode": "DMQ-23",
+   "activationStore": "MR Price Sport WESTVILLE PAVILLION DURBAN 060650",
+   "rep": "Kgothatso Matlou",
+   "rating": 3,
+   "status": "Completed"
+  },
+  {
+   "date": "2026-07-17",
+   "storeCode": "DMQ-24",
+   "activationStore": "MR Price Sport GATEWAY DURBAN 060656",
+   "rep": "Kgothatso Matlou",
+   "rating": 3,
+   "status": "Completed"
+  },
+  {
+   "date": "2026-07-08",
+   "storeCode": "DMQ-25",
+   "activationStore": "Mr Price Sport CANAL WALK CAPE TOWN 060672",
+   "rep": "Enver de Bruyn",
+   "rating": 3,
+   "status": "Completed"
+  },
+  {
+   "date": "2026-07-13",
+   "storeCode": "DMQ-26",
+   "activationStore": "Mr Price Sport MALL OF AFRICA JOHANNESBURG 060502",
+   "rep": "Alex Walker",
+   "rating": 4,
+   "status": "Completed"
+  },
+  {
+   "date": "2026-07-13",
+   "storeCode": "DMQ-27",
+   "activationStore": "Mr Price Sport EAST RAND MALL BOKSBURG 060772",
+   "rep": "Alex Walker",
+   "rating": 4,
+   "status": "Completed"
+  },
+  {
+   "date": "2026-07-13",
+   "storeCode": "DMQ-28",
+   "activationStore": "Mr Price Sport CLEARWATERS ROODEPOORT 060778",
+   "rep": "Alex Walker",
+   "rating": 4,
+   "status": "Completed"
+  },
+  {
+   "date": "2026-07-02",
+   "storeCode": "DMQ-29",
+   "activationStore": "Mr Price Sport TYGERVALLEY BELLVILLE 060670",
+   "rep": "Enver de Bruyn",
+   "rating": 3,
+   "status": "Completed"
+  },
+  {
+   "date": "2026-07-15",
+   "storeCode": "DMQ-30",
+   "activationStore": "Mr Price Sport MENLYN PARK PRETORIA 060757",
+   "rep": "Mackenzie Gouws",
+   "rating": 3,
+   "status": "Completed"
+  },
+  {
+   "date": "2026-07-27",
+   "storeCode": "DMQ-31",
+   "activationStore": "Mr Price Sport SOMERSET MALL SOMERSET WEST 060668",
+   "rep": "Enver de Bruyn",
+   "rating": 3,
+   "status": "Completed"
+  },
+  {
+   "date": "2026-07-13",
+   "storeCode": "DMQ-32",
+   "activationStore": "Mr Price Sport FOURWAYS MALL JOHANNESBURG 060756",
+   "rep": "Alex Walker",
+   "rating": 4,
+   "status": "Completed"
+  },
+  {
+   "date": "2026-07-08",
+   "storeCode": "DMQ-33",
+   "activationStore": "Mr Price Sport SANDTON CITY JOHANNESBURG 060762",
+   "rep": "Alex Walker",
+   "rating": 4,
+   "status": "Completed"
+  },
+  {
+   "date": "2026-07-03",
+   "storeCode": "DMQ-34",
+   "activationStore": "Mr Price Sport WATERFALL MALL RUSTENBURG 060742",
+   "rep": "Alex Walker",
+   "rating": 4,
+   "status": "Completed"
+  },
+  {
+   "date": "2026-07-27",
+   "storeCode": "DMQ-35",
+   "activationStore": "Mr Price Sport CAVENDISH CAPE TOWN 060661",
+   "rep": "Enver de Bruyn",
+   "rating": 4,
+   "status": "Completed"
+  },
+  {
+   "date": "2026-07-24",
+   "storeCode": "DMQ-36",
+   "activationStore": "Mr Price Sport AMANZIMTOTI GALLERIA AMANZIMTOTI 060697",
+   "rep": "Kgothatso Matlou",
+   "rating": 3,
+   "status": "Completed"
+  },
+  {
+   "date": "2026-07-13",
+   "storeCode": "DMQ-37",
+   "activationStore": "Mr Price Sport CRESTA JOHANNESBURG 060739",
+   "rep": "Alex Walker",
+   "rating": 4,
+   "status": "Completed"
+  },
+  {
+   "date": "2026-07-27",
+   "storeCode": "DMQ-38",
+   "activationStore": "Mr Price Sport VAAL MALL VANDERBIJLPARK 060775",
+   "rep": "Elijah Sekgate",
+   "rating": 4,
+   "status": "Completed"
+  },
+  {
+   "date": "2026-07-13",
+   "storeCode": "DMQ-39",
+   "activationStore": "Mr Price Sport CENTURION PRETORIA 060752",
+   "rep": "Mackenzie Gouws",
+   "rating": 4,
+   "status": "Completed"
+  },
+  {
+   "date": "2026-07-27",
+   "storeCode": "DMQ-40",
+   "activationStore": "Mr Price Sport BLUE ROUTE CAPE TOWN 060662",
+   "rep": "Enver de Bruyn",
+   "rating": 4,
+   "status": "Completed"
+  },
+  {
+   "date": "2026-07-23",
+   "storeCode": "DMQ-41",
+   "activationStore": "Mr Price Sport THE GROVE PRETORIA 060759",
+   "rep": "Mackenzie Gouws",
+   "rating": 3,
+   "status": "Completed"
+  },
+  {
+   "date": "2026-07-04",
+   "storeCode": "DMQ-42",
+   "activationStore": "Mr Price Sport LOCH LOGAN BLOEMFONTEIN 060780",
+   "rep": "Mackenzie Gouws",
+   "rating": 3,
+   "status": "Completed"
+  },
+  {
+   "date": "2026-07-23",
+   "storeCode": "DMQ-43",
+   "activationStore": "Mr Price Sport PAARL MALL PAARL 060679",
+   "rep": "Enver de Bruyn",
+   "rating": 3,
+   "status": "Completed"
+  },
+  {
+   "date": "2026-07-17",
+   "storeCode": "DMQ-44",
+   "activationStore": "Mr Price Sport STELLENBOSCH EIKESTAD STELLENBOSCH 060677",
+   "rep": "Enver de Bruyn",
+   "rating": 4,
+   "status": "Completed"
+  }
+ ]
+}
