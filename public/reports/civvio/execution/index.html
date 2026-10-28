@@ -82,13 +82,6 @@
     <button class="btn ghost" id="out">Sign out</button>
   </header>
 
-  <div class="tabs" role="tablist">
-    <button class="tab on" data-tab="exec" role="tab">Stand execution</button>
-    <button class="tab" data-tab="act" role="tab">Activation</button>
-  </div>
-
-  <div class="view" id="viewAct" style="display:none"><iframe id="actFrame" title="Civvio activation dashboard"></iframe></div>
-
   <div class="view" id="viewExec">
   <div class="card filters">
     <label>Month<select id="fMonth"></select></label>
@@ -181,7 +174,6 @@
     $('who').textContent = DEMO ? '' : auth.email;
     $('demoTag').style.display = DEMO ? '' : 'none';
     load(); clearInterval(timer); timer = setInterval(load, 90000);
-    pendingAct = localStorage.getItem('civvio-exec-tab') === 'act';
   }
 
   // ---- filters ----
@@ -195,7 +187,6 @@
 
   // ---- render ----
   function render() {
-    if (pendingAct) { pendingAct = false; setTimeout(function () { setTab('act'); }, 0); }
     var stores = data.stores || [], visits = data.visits || [];
     var nowM = new Date(Date.now() + 2 * 3600e3).toISOString().slice(0, 7);
     var months = uniq(visits.map(function (v) { return monthOf(v.date); }).concat([nowM])).reverse();
@@ -262,35 +253,6 @@
       $('tViews').innerHTML = '<tr><th>Email</th><th class="num">Views</th><th>Last visit</th></tr>' + (data.views.length ? data.views.map(function (p) { return '<tr><td>' + esc(p.email) + '</td><td class="num">' + p.count + '</td><td>' + esc(new Date(p.last).toLocaleString()) + '</td></tr>'; }).join('') : '<tr><td colspan="3" class="empty">No views yet.</td></tr>');
     } else $('viewsCard').style.display = 'none';
   }
-
-  // ---- tabs: Stand execution / Activation (activation dashboard embedded, same sign-in) ----
-  var TAB_KEY = 'civvio-exec-tab';
-  var NESTED = window.top !== window;
-  if (NESTED) document.querySelector('.tabs').style.display = 'none';
-  function setTab(t) {
-    if (NESTED) t = 'exec';
-    document.querySelectorAll('.tab').forEach(function (b) { b.classList.toggle('on', b.getAttribute('data-tab') === t); b.setAttribute('aria-selected', b.getAttribute('data-tab') === t); });
-    $('viewExec').style.display = t === 'exec' ? '' : 'none';
-    $('viewAct').style.display = t === 'act' ? '' : 'none';
-    localStorage.setItem(TAB_KEY, t);
-    if (t === 'act' && !$('actFrame').getAttribute('src')) {
-      sessionStorage.setItem('civvio_embed_token', (auth && auth.token) || 'demo');
-      sessionStorage.setItem('civvio_embed_role', data && data.superUser ? 'leegra_super_admin' : 'client_viewer');
-      $('actFrame').src = '/reports/civvio/execution/activation.html?embed=1';
-    }
-    if (t === 'act') sendViewport();
-  }
-  document.querySelectorAll('.tab').forEach(function (b) { b.addEventListener('click', function () { setTab(b.getAttribute('data-tab')); }); });
-  function sendViewport() {
-    var fr = $('actFrame'); if (!fr.contentWindow) return;
-    fr.contentWindow.postMessage({ civvioViewport: { top: Math.max(0, -fr.getBoundingClientRect().top), h: window.innerHeight } }, location.origin);
-  }
-  window.addEventListener('scroll', sendViewport, { passive: true });
-  window.addEventListener('resize', sendViewport);
-  $('actFrame').addEventListener('load', sendViewport);
-  window.addEventListener('message', function (e) {
-    if (e.origin === location.origin && e.data && e.data.civvioEmbedHeight) { $('actFrame').style.height = e.data.civvioEmbedHeight + 'px'; sendViewport(); }
-  });
 
   // ---- lightbox ----
   document.addEventListener('click', function (e) {
