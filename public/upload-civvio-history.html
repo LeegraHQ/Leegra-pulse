@@ -30,12 +30,20 @@
   <div class="card">
     <img src="/logos/civvio-logo.png" alt="Civvio" height="26" style="align-self:flex-start">
     <div><p class="kicker">DMQ / Civvio · CIV-088</p><h1>Upload past store visits</h1></div>
-    <p>Use the DMQ-Past-Visits-Template.xlsx file. Rows without a visit date are skipped. Each upload is added to what is already there.</p>
+    <p>Use the DMQ-Past-Visits-Template.xlsx file. Rows with a Month but no visit date show as "Busy uploading" under Still to visit. Uploading an updated file replaces matching rows.</p>
     <label>Admin access code<input id="admin" class="input" type="password" autocomplete="off"></label>
     <label>Excel file<input id="file" class="input" type="file" accept=".xlsx,.xls,.csv"></label>
     <div id="preview" class="note"></div>
     <button id="go" class="btn" disabled>Upload</button>
     <div id="msg" class="note"></div>
+    <div style="border-top:1px solid color-mix(in srgb, var(--text) 12%, transparent);padding-top:14px;display:flex;flex-direction:column;gap:10px">
+      <div><p class="kicker">Step 2 · optional</p><h1 style="font-size:16px">Past visit photos</h1></div>
+      <p style="margin:0">Pick one or more photos, then set the store and visit date for each. If the file name has the store code and date (e.g. <b>DMQ-05 2026-08-14.jpg</b>) they fill in automatically. Photos go to Supabase and appear on the visit with the same store and date.</p>
+      <label>Photos<input id="photos" class="input" type="file" accept="image/*" multiple></label>
+      <div id="phList" style="display:flex;flex-direction:column;gap:8px"></div>
+      <button id="phGo" class="btn" disabled>Upload photos</button>
+      <div id="phMsg" class="note"></div>
+    </div>
     <a href="/reports/civvio/execution/">Open the DMQ dashboard</a>
   </div>
 </main>
@@ -63,15 +71,78 @@
     var raw = XLSX.utils.sheet_to_json(sheet, { defval: '' });
     rows = raw.map(function (r) {
       return {
-        date: toIso(pick(r, 'visit date')), storeCode: String(pick(r, 'store code')).trim(),
+        date: toIso(pick(r, 'visit date')), storeCode: String(pick(r, 'store code')).trim(), month: String(pick(r, 'month')).trim().slice(0, 7),
         storeName: pick(r, 'store name'), channel: pick(r, 'channel'), region: pick(r, 'region'), rep: pick(r, 'rep'),
         facings: pick(r, 'facings'), returns: pick(r, 'stock returns'), damaged: pick(r, 'damaged'),
         additional: pick(r, 'additional'), comment: pick(r, 'comment'),
       };
-    }).filter(function (r) { return r.date && r.storeCode; });
-    $('preview').textContent = rows.length + ' visit' + (rows.length === 1 ? '' : 's') + ' ready to upload (' + (raw.length - rows.length) + ' rows without a date skipped).';
+    }).filter(function (r) { return r.storeCode && (r.date || /^\d{4}-\d{2}$/.test(r.month)); });
+    var nv = rows.filter(function (r) { return r.date; }).length, np = rows.length - nv;
+    $('preview').textContent = nv + ' visit' + (nv === 1 ? '' : 's') + ' ready to upload' + (np ? ', plus ' + np + ' stores marked "Busy uploading"' : '') + '.';
     $('go').disabled = !rows.length;
   });
+  // ---- past visit photos ----
+  var STORES = [["DMQ-01","Totalsports Westville Pavillion Durban"],["DMQ-02","Totalsports Gateway Durban"],["DMQ-03","Totalsports Canal Walk Cape Town"],["DMQ-04","Totalsports Mall Of Africa Johannesburg"],["DMQ-05","Totalsports East Rand Mall Boksburg"],["DMQ-06","Totalsports Clearwaters Roodepoort"],["DMQ-07","Totalsports Tygervalley Bellville"],["DMQ-08","Totalsports Menlyn Park Pretoria"],["DMQ-09","Totalsports Somerset Mall Somerset West"],["DMQ-10","Totalsposrts Fourways Mall Johannesburg"],["DMQ-11","Totalsports Eastgate Johannesburg"],["DMQ-12","Totalsports Waterfall Mall Rustenburg"],["DMQ-13","Totalsports Cavendish Cape Town"],["DMQ-14","Totalsports Amanzimtoti Galleria"],["DMQ-15","Totalsports Cresta Johannesburg"],["DMQ-16","Totalsports Vaal Mall Vanderbijlpark"],["DMQ-17","Totalsports Centurion Pretoria"],["DMQ-18","Totalsports Blue Route Cape Town"],["DMQ-19","Totalsports Montana Pretoria"],["DMQ-20","Totalsports Loch Logan Bloemfontein"],["DMQ-21","Totalsports Paarl Mall Paarl"],["DMQ-22","Totalsports Stellenbosch Eikestad"],["DMQ-23","Mr Price Sport Westville Pavillion"],["DMQ-24","Mr Price Sport Gateway Durban"],["DMQ-25","Mr Price Sport Canal Walk Cape Town"],["DMQ-26","Mr Price Sport Mall Of Africa Johannesburg"],["DMQ-27","Mr Price Sport East Rand Mall Boksburg"],["DMQ-28","Mr Price Sport Clearwaters Roodepoort"],["DMQ-29","Mr Price Sport Tygervalley Bellville"],["DMQ-30","Mr Price Sport Menlyn Park Pretoria"],["DMQ-31","Mr Price Sport Somerset Mall Somerset West"],["DMQ-32","Mr Price Sport Fourways Mall Johannesburg"],["DMQ-33","Mr Price Sport Sandotn City Johannesburg"],["DMQ-34","Mr Price Sport Waterfall Mall Rustenburg"],["DMQ-35","Mr Price Sport Cavendish Cape Town"],["DMQ-36","Mr Price Sport Amanzimtoti Galleria"],["DMQ-37","Mr Price Sport Cresta Johannesburg"],["DMQ-38","Mr Price Sport Vaal Mall Vanderbijlpark"],["DMQ-39","Mr Price Sport Centurion Pretoria"],["DMQ-40","Mr Price Sport Blue Route Cape Town"],["DMQ-41","Mr Price Sport The Grove Pretoria"],["DMQ-42","Mr Price Sport Loch Logan Bloemfontein"],["DMQ-43","Mr Price Sport Paarl Mall Paarl"],["DMQ-44","Mr Price Sport Stellenbosch Eikestad"]];
+  var pics = [];
+  function esc(s) { return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
+  function guessStore(name) { var m = name.match(/DMQ[\s_-]?(\d{1,2})/i); return m ? 'DMQ-' + pad(Number(m[1])) : ''; }
+  function guessDate(name, store, file) {
+    var d = toIso((name.match(/(\d{4}[-_.]\d{1,2}[-_.]\d{1,2})/) || [])[1] ? name.match(/(\d{4}[-_.]\d{1,2}[-_.]\d{1,2})/)[1].replace(/_/g, '-') : '');
+    if (d) return d;
+    var ds = rows.filter(function (r) { return r.storeCode.toUpperCase() === store; }).map(function (r) { return r.date; });
+    if (ds.length === 1) return ds[0];
+    return '';
+  }
+  async function shrink(file) {
+    var url = await new Promise(function (res, rej) { var r = new FileReader(); r.onload = function () { res(r.result); }; r.onerror = rej; r.readAsDataURL(file); });
+    var img = new Image(); await new Promise(function (res, rej) { img.onload = res; img.onerror = rej; img.src = url; });
+    var sc = Math.min(1, 1600 / Math.max(img.width, img.height)), c = document.createElement('canvas');
+    c.width = Math.round(img.width * sc); c.height = Math.round(img.height * sc);
+    c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+    return c.toDataURL('image/jpeg', 0.82);
+  }
+  function drawPics() {
+    $('phList').innerHTML = pics.map(function (p, i) {
+      return '<div style="display:grid;grid-template-columns:56px minmax(0,1fr) 140px 24px;gap:8px;align-items:center">' +
+        '<img src="' + p.preview + '" style="width:56px;height:56px;object-fit:cover;border-radius:6px" alt="">' +
+        '<select class="input" data-i="' + i + '" data-k="store"><option value="">Store…</option>' + STORES.map(function (s) { return '<option value="' + s[0] + '"' + (s[0] === p.store ? ' selected' : '') + '>' + esc(s[0] + ' · ' + s[1]) + '</option>'; }).join('') + '</select>' +
+        '<input class="input" type="date" data-i="' + i + '" data-k="date" value="' + esc(p.date) + '">' +
+        '<span title="' + esc(p.status || '') + '">' + (p.done ? '✓' : p.status ? '!' : '') + '</span></div>';
+    }).join('');
+    $('phGo').disabled = !pics.some(function (p) { return !p.done; });
+  }
+  $('phList').addEventListener('change', function (e) {
+    var i = e.target.getAttribute('data-i'), k = e.target.getAttribute('data-k');
+    if (i != null) pics[i][k] = e.target.value;
+  });
+  $('photos').addEventListener('change', async function () {
+    var files = Array.prototype.slice.call(this.files); $('phMsg').textContent = 'Preparing ' + files.length + ' photo(s)…';
+    for (var i = 0; i < files.length; i++) {
+      var f = files[i], store = guessStore(f.name);
+      try { var data = await shrink(f); pics.push({ name: f.name, store: store, date: guessDate(f.name, store, f), data: data, preview: data }); } catch (e) {}
+    }
+    $('phMsg').textContent = ''; this.value = ''; drawPics();
+  });
+  $('phGo').addEventListener('click', async function () {
+    var code = $('admin').value.trim();
+    if (!code) { $('phMsg').className = 'note bad'; $('phMsg').textContent = 'Enter the admin code at the top.'; return; }
+    var todo = pics.filter(function (p) { return !p.done; });
+    var missing = todo.filter(function (p) { return !p.store || !p.date; }).length;
+    if (missing) { $('phMsg').className = 'note bad'; $('phMsg').textContent = missing + ' photo(s) still need a store and date.'; return; }
+    $('phGo').disabled = true; var ok = 0, bad = 0;
+    for (var i = 0; i < todo.length; i++) {
+      var p = todo[i]; $('phMsg').className = 'note'; $('phMsg').textContent = 'Uploading ' + (i + 1) + ' of ' + todo.length + '…';
+      try {
+        var r = await fetch('/api/civvio-history-photo', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ code: code, storeCode: p.store, date: p.date, dataUrl: p.data }) });
+        var d = await r.json().catch(function () { return {}; });
+        if (r.ok) { p.done = true; p.status = ''; ok++; } else { p.status = d.error || ('Error ' + r.status); bad++; if (r.status === 403) break; }
+      } catch (e) { p.status = 'Network error'; bad++; }
+    }
+    drawPics();
+    $('phMsg').className = 'note ' + (bad ? 'bad' : 'ok');
+    $('phMsg').textContent = ok + ' photo(s) uploaded.' + (bad ? ' ' + bad + ' failed — hover the ! for the reason, fix and click Upload again.' : '');
+  });
+
   $('go').addEventListener('click', async function () {
     var code = $('admin').value.trim();
     if (!code) { $('msg').className = 'note bad'; $('msg').textContent = 'Enter the admin code.'; return; }
@@ -80,7 +151,7 @@
       var r = await fetch('/api/civvio-history', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ code: code, rows: rows, fileName: fileName }) });
       var d = await r.json().catch(function () { return {}; });
       if (!r.ok) { $('msg').className = 'note bad'; $('msg').textContent = d.error || 'Upload failed.'; $('go').disabled = false; return; }
-      $('msg').className = 'note ok'; $('msg').textContent = d.rows_added + ' past visits added to the DMQ dashboard.';
+      $('msg').className = 'note ok'; $('msg').textContent = d.rows_added + ' past visits added to the DMQ dashboard' + (d.pending ? ', ' + d.pending + ' stores marked "Busy uploading"' : '') + '. Uploading the same file again replaces, it does not double up.';
     } catch (e) { $('msg').className = 'note bad'; $('msg').textContent = 'Could not reach the server.'; $('go').disabled = false; }
   });
 })();

@@ -279,12 +279,19 @@
     }
     split('channel', $('tChannel')); split('region', $('tRegion'));
 
+    var busy = f.date ? [] : planned.filter(function (s) { return doneStores.indexOf(s.code) < 0; }).map(function (s) {
+      var p = (data.pendingNotes || []).filter(function (x) { return x.storeCode === s.code && x.month === f.month; })[0];
+      return p ? { s: s, note: p.comment } : null;
+    }).filter(Boolean);
+    var busyHtml = busy.map(function (b) {
+      return '<tr><td class="muted">–</td><td>' + esc(b.s.name) + '</td><td>' + esc(b.s.channel) + '</td><td>' + esc(b.s.region) + '</td><td>' + esc(b.s.plannedRep || '') + '</td><td class="num muted">–</td><td class="muted">–</td><td class="muted">–</td><td class="muted">–</td><td><span style="display:inline-block;padding:2px 8px;border-radius:999px;font-size:11px;font-weight:600;color:var(--accent-300);border:1px solid color-mix(in srgb, var(--accent) 45%, transparent)">' + esc(b.note) + '</span></td><td class="muted">Busy uploading</td>' + notesCell(b.s.code, [b.s.name]) + '</tr>';
+    }).join('');
     $('tFeedback').innerHTML = '<tr><th>Date</th><th>Store</th><th>Channel</th><th>Region</th><th>Rep</th><th class="num">Facings</th><th>Returns</th><th>Damaged</th><th>More stock</th><th>Comment</th><th>Photo</th><th>Store comments</th></tr>' +
       (done.length ? done.map(function (v) {
         var p = v.photos[0];
         return '<tr><td style="white-space:nowrap">' + esc(v.date) + '<div class="muted">' + esc(v.time) + '</div></td><td>' + esc(v.storeName) + '</td><td>' + esc(v.channel) + '</td><td>' + esc(v.region) + '</td><td>' + esc(v.rep) + '</td><td class="num">' + (v.facings == null ? '–' : v.facings) + '</td><td>' + ynCell(v.returns) + '</td><td>' + ynCell(v.damaged) + '</td><td>' + ynCell(v.additional) + '</td><td style="min-width:180px">' + esc(v.comment || '') + '</td><td>' +
           (p ? (DEMO ? '<div class="thumb"></div>' : '<img class="thumb" loading="lazy" src="' + esc(p.url || photoUrl(p.id)) + '" data-cap="' + esc(v.storeName + ' · ' + v.date + (v.comment ? ' · ' + v.comment : '')) + '" alt="">') : '') + '</td>' + notesCell(v.storeCode, [v.storeName, v.activationStore]) + '</tr>';
-      }).join('') : '<tr><td colspan="12" class="empty">No completed stand checks for this selection yet.</td></tr>');
+      }).join('') + busyHtml : (busyHtml || '<tr><td colspan="12" class="empty">No completed stand checks for this selection yet.</td></tr>'));
 
     var photos = [];
     done.forEach(function (v) { v.photos.forEach(function (p) { photos.push({ v: v, p: p }); }); });
@@ -295,9 +302,10 @@
     }).join('') : '<div class="empty">No photos for this selection yet.</div>';
 
     var monthDone = uniq(visits.filter(function (v) { return monthOf(v.date) === f.month && v.done; }).map(function (v) { return v.storeCode; }));
+    var pendingFor = function (code) { var p = (data.pendingNotes || []).filter(function (x) { return x.storeCode === code && x.month === f.month; })[0]; return p ? p.comment : ''; };
     var outstanding = planned.filter(function (s) { return monthDone.indexOf(s.code) < 0; });
-    $('tOutstanding').innerHTML = '<tr><th>Store</th><th>Channel</th><th>Region</th><th>Allocated to</th><th>Store comments</th></tr>' +
-      (outstanding.length ? outstanding.map(function (s) { return '<tr><td>' + esc(s.name) + '</td><td>' + esc(s.channel) + '</td><td>' + esc(s.region) + '</td><td>' + esc(s.plannedRep || '') + '</td>' + notesCell(s.code, [s.name]) + '</tr>'; }).join('') : '<tr><td colspan="5" class="empty">Every planned store has been visited this month.</td></tr>');
+    $('tOutstanding').innerHTML = '<tr><th>Store</th><th>Channel</th><th>Region</th><th>Allocated to</th><th>Status</th><th>Store comments</th></tr>' +
+      (outstanding.length ? outstanding.map(function (s) { return '<tr><td>' + esc(s.name) + '</td><td>' + esc(s.channel) + '</td><td>' + esc(s.region) + '</td><td>' + esc(s.plannedRep || '') + '</td><td>' + esc(pendingFor(s.code)) + '</td>' + notesCell(s.code, [s.name]) + '</tr>'; }).join('') : '<tr><td colspan="6" class="empty">Every planned store has been visited this month.</td></tr>');
 
     if (data.superUser && data.views) {
       $('viewsCard').style.display = '';

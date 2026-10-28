@@ -80,13 +80,27 @@ exports.handler = async (event) => {
       photos,
     });
   }
+  const pendingNotes = [];
   // Past visits uploaded from the Excel template (civvio-history.js).
   try {
     const hist = blobsStore(`civvio-history-${TENANT}`);
     const { blobs } = await hist.list();
     const batches = await Promise.all(blobs.map(b => hist.get(b.key, { type: 'json' }).catch(() => null)));
-    batches.forEach((b, bi) => (b && Array.isArray(b.rows) ? b.rows : []).forEach((r, i) => {
+    // Newest upload wins: a store + date (or store + month placeholder) that
+    // appears in a later batch replaces the earlier one, so re-uploading the
+    // same file doesn't double up.
+    const seenKey = {};
+    const ordered = batches.map((b, bi) => ({ b, bi, key: blobs[bi].key })).sort((x, y) => (x.key < y.key ? 1 : -1));
+    ordered.forEach(({ b, bi }) => (b && Array.isArray(b.rows) ? b.rows : []).forEach((r, i) => {
       const s = storeBy[r.storeCode] || {};
+      if (r.pending) {
+        const k = 'P|' + r.storeCode + '|' + r.month;
+        if (seenKey[k]) return; seenKey[k] = true;
+        pendingNotes.push({ storeCode: r.storeCode, month: r.month, comment: r.comment || 'Busy uploading' });
+        return;
+      }
+      const k = 'V|' + r.storeCode + '|' + r.date;
+      if (seenKey[k] != null && seenKey[k] !== bi) return; seenKey[k] = bi;
       out.push({
         id: `hist-${bi}-${i}`, source: 'history', storeCode: r.storeCode, storeName: s.name || r.storeName || r.storeCode,
         channel: s.channel || r.channel || 'Other', region: s.region || r.region || 'Unassigned',
@@ -110,6 +124,9 @@ exports.handler = async (event) => {
       const s = storeBy[r.storeCode] || {};
       const first = !seen[r.storeCode]; seen[r.storeCode] = true;
       const ph = first ? (photoBy[r.activationStore] || []) : [];
+      // Same store + date already uploaded from Excel: keep that row, add the July photos to it.
+      const dup = out.find(v => v.source === 'history' && v.storeCode === r.storeCode && v.date === r.date);
+      if (dup) { ph.forEach(p => dup.photos.push({ id: p.id, url: p.url })); return; }
       out.push({
         id: `act-${i}`, source: 'activation', storeCode: r.storeCode, activationStore: r.activationStore, storeName: s.name || r.activationStore,
         channel: s.channel || 'Other', region: s.region || 'Unassigned', rep: r.rep || '', date: r.date, time: '', done: true,
@@ -119,6 +136,28 @@ exports.handler = async (event) => {
       });
     });
   } catch (e) { console.error('civvio july activation merge failed', e && e.message); }
+  // Photos uploaded for past visits (civvio-history-photo.js): attach to the
+  // visit with the same store + date; if there is none, show them on their own.
+  try {
+    const hp = blobsStore(`civvio-history-photos-${TENANT}`);
+    const { blobs } = await hp.list();
+    const metas = (await Promise.all(blobs.map(b => hp.get(b.key, { type: 'json' }).catch(() => null)))).filter(Boolean);
+    const extra = {};
+    for (const p of metas) {
+      const match = out.find(v => v.source === 'history' && v.storeCode === p.storeCode && v.date === p.date)
+        || out.find(v => v.storeCode === p.storeCode && v.date === p.date);
+      if (match) { match.photos.push({ id: p.id }); continue; }
+      const k = p.storeCode + '|' + p.date;
+      if (!extra[k]) {
+        const s = storeBy[p.storeCode] || {};
+        extra[k] = { id: 'histph-' + k, source: 'history', storeCode: p.storeCode, storeName: s.name || p.storeCode,
+          channel: s.channel || 'Other', region: s.region || 'Unassigned', rep: s.plannedRep || '', date: p.date, time: '', done: true,
+          facings: null, returns: '', damaged: '', additional: '', comment: p.caption || '', photos: [] };
+        out.push(extra[k]);
+      }
+      extra[k].photos.push({ id: p.id });
+    }
+  } catch (e) { console.error('civvio history photos read failed', e && e.message); }
   out.sort((x, y) => (x.date + x.time < y.date + y.time ? 1 : -1));
 
   let views;
@@ -141,6 +180,7 @@ exports.handler = async (event) => {
     photoStorage: supa.configured() ? 'supabase' : 'netlify',
     stores: stores.filter(s => s.dmqMonthly).map(s => ({ code: s.code, name: s.name, channel: s.channel || 'Other', region: s.region || 'Unassigned', plannedRep: s.plannedRep || '' })),
     visits: out,
+    pendingNotes: pendingNotes.filter(p => !out.some(v => v.done && v.storeCode === p.storeCode && String(v.date).slice(0, 7) === p.month)),
     views,
   });
 };
