@@ -47,7 +47,7 @@ const PH_CALL_SURVEYS = ['stock_pricing', 'execution_image', 'competitor_feedbac
 // Removed from the super-user client list.
 const HIDDEN_TENANT_CODES = ['SIR-014', 'BEU-305', 'TWR-260'];
 // Clients whose card opens their own dashboard instead of the generic one.
-const DIRECT_DASHBOARDS = { 'CIV-088': '/reports/civvio/execution/' };
+const DIRECT_DASHBOARDS = { 'CIV-088': '/reports/civvio/execution/', 'HAT-009': '/reports/hatfield/' };
 // DMQ dashboard opens already signed in: the app's token rides in the link hash.
 const withSignIn = (url, session) => (url && url.startsWith('/reports/civvio/execution') && session?.token
   ? `${url}#t=${encodeURIComponent(session.token)}&e=${encodeURIComponent(session.email || '')}` : url);
@@ -796,7 +796,7 @@ export default function App() {
               <div key={c.code} className="lp-inner-card" style={{ cursor: 'pointer' }} onClick={() => DIRECT_DASHBOARDS[c.code] ? (window.location.href = withSignIn(DIRECT_DASHBOARDS[c.code], session)) : handleOpenClient(c.code)}>
                 <div className="lp-title" style={{ fontSize: 15 }}>{c.code === 'CIV-088' ? 'Civvio · DMQ' : c.name}</div>
                 <div className="lp-meta">{c.code}</div>
-                <div className="lp-tag lp-tag-accent2">{DIRECT_DASHBOARDS[c.code] ? 'Execution dashboard' : `${c.compliance} compliance`}</div>
+                <div className="lp-tag lp-tag-accent2">{c.code === 'HAT-009' ? 'Audit dashboard' : DIRECT_DASHBOARDS[c.code] ? 'Execution dashboard' : `${c.compliance} compliance`}</div>
               </div>
             ))}
           </div>
