@@ -1,0 +1,414 @@
+{
+ "addedAt": "2026-11-02T12:00:00.000Z",
+ "base": "/reports/civvio/visit-photos/",
+ "photos": [
+  {
+   "storeCode": "DMQ-23",
+   "month": "2026-09",
+   "file": "DMQ-23-2026-09-1.jpg",
+   "source": "Mpr Price Sport Pavillion Sept .jpeg"
+  },
+  {
+   "storeCode": "DMQ-24",
+   "month": "2026-09",
+   "file": "DMQ-24-2026-09-1.jpg",
+   "source": "Mr Pirce Sport Gateway Sept.jpeg"
+  },
+  {
+   "storeCode": "DMQ-40",
+   "month": "2026-09",
+   "file": "DMQ-40-2026-09-1.jpg",
+   "source": "Mr Price Sport Bluer Route Mall Sept.jpeg"
+  },
+  {
+   "storeCode": "DMQ-25",
+   "month": "2026-08",
+   "file": "DMQ-25-2026-08-1.jpg",
+   "source": "Mr Price Sport Canal Walk Aug 2.jpeg"
+  },
+  {
+   "storeCode": "DMQ-25",
+   "month": "2026-08",
+   "file": "DMQ-25-2026-08-2.jpg",
+   "source": "Mr Price Sport Canalwalk Aug .jpeg"
+  },
+  {
+   "storeCode": "DMQ-25",
+   "month": "2026-08",
+   "file": "DMQ-25-2026-08-3.jpg",
+   "source": "Mr Price Sport Canalwalk Aug.jpeg"
+  },
+  {
+   "storeCode": "DMQ-27",
+   "month": "2026-09",
+   "file": "DMQ-27-2026-09-1.jpg",
+   "source": "Mr Price Sport East Rand Mall Sept.jpeg"
+  },
+  {
+   "storeCode": "DMQ-36",
+   "month": "2026-09",
+   "file": "DMQ-36-2026-09-1.jpg",
+   "source": "Mr Price Sport Galleria Sept.jpeg"
+  },
+  {
+   "storeCode": "DMQ-41",
+   "month": "2026-10",
+   "file": "DMQ-41-2026-10-1.jpg",
+   "source": "Mr Price Sport Grove 2.jpeg"
+  },
+  {
+   "storeCode": "DMQ-41",
+   "month": "2026-10",
+   "file": "DMQ-41-2026-10-2.jpg",
+   "source": "Mr Price Sport Grove 4 .jpeg"
+  },
+  {
+   "storeCode": "DMQ-41",
+   "month": "2026-10",
+   "file": "DMQ-41-2026-10-3.jpg",
+   "source": "Mr Price Sport Grove.jpeg"
+  },
+  {
+   "storeCode": "DMQ-42",
+   "month": "2026-09",
+   "file": "DMQ-42-2026-09-1.jpg",
+   "source": "Mr Price Sport Loch Logan Sept.jpeg"
+  },
+  {
+   "storeCode": "DMQ-26",
+   "month": "2026-09",
+   "file": "DMQ-26-2026-09-1.jpg",
+   "source": "Mr Price Sport Mall Of Africa Sept.jpeg"
+  },
+  {
+   "storeCode": "DMQ-23",
+   "month": "2026-09",
+   "file": "DMQ-23-2026-09-2.jpg",
+   "source": "Mr Price Sport Pavllion Sept.jpeg"
+  },
+  {
+   "storeCode": "DMQ-29",
+   "month": "2026-08",
+   "file": "DMQ-29-2026-08-1.jpg",
+   "source": "Mr Price Sport Tygervalley Aug 2.jpeg"
+  },
+  {
+   "storeCode": "DMQ-29",
+   "month": "2026-08",
+   "file": "DMQ-29-2026-08-2.jpg",
+   "source": "Mr Price Sport Tygervalley Aug.jpeg"
+  },
+  {
+   "storeCode": "DMQ-29",
+   "month": "2026-09",
+   "file": "DMQ-29-2026-09-1.jpg",
+   "source": "Mr Price Sport Tygervalley Sept .jpeg"
+  },
+  {
+   "storeCode": "DMQ-29",
+   "month": "2026-09",
+   "file": "DMQ-29-2026-09-2.jpg",
+   "source": "Mr Price Sport Tygervalley Sept 2.jpeg"
+  },
+  {
+   "storeCode": "DMQ-03",
+   "month": "2026-08",
+   "file": "DMQ-03-2026-08-1.jpg",
+   "source": "Total Sport Canalwalk Aug .jpeg"
+  },
+  {
+   "storeCode": "DMQ-18",
+   "month": "2026-09",
+   "file": "DMQ-18-2026-09-1.jpg",
+   "source": "Totalsport Blue Route Mall Sept .jpeg"
+  },
+  {
+   "storeCode": "DMQ-13",
+   "month": "2026-10",
+   "file": "DMQ-13-2026-10-1.jpg",
+   "source": "Totalsport Cavendish October.jpeg"
+  },
+  {
+   "storeCode": "DMQ-09",
+   "month": "2026-08",
+   "file": "DMQ-09-2026-08-1.jpg",
+   "source": "Totalsport Somerset Mall Aug .jpeg"
+  },
+  {
+   "storeCode": "DMQ-07",
+   "month": "2026-09",
+   "file": "DMQ-07-2026-09-1.jpg",
+   "source": "Totalsport Tygervalley Sept 2.jpeg"
+  },
+  {
+   "storeCode": "DMQ-03",
+   "month": "2026-08",
+   "file": "DMQ-03-2026-08-2.jpg",
+   "source": "Totalsports Canal Walk Aug 2 .jpeg"
+  },
+  {
+   "storeCode": "DMQ-03",
+   "month": "2026-08",
+   "file": "DMQ-03-2026-08-3.jpg",
+   "source": "Totalsports Canalwalk Aug 2.jpeg"
+  },
+  {
+   "storeCode": "DMQ-03",
+   "month": "2026-08",
+   "file": "DMQ-03-2026-08-4.jpg",
+   "source": "Totalsports Canalwalk Aug.jpeg"
+  },
+  {
+   "storeCode": "DMQ-13",
+   "month": "2026-09",
+   "file": "DMQ-13-2026-09-1.jpg",
+   "source": "Totalsports Cavendish Sept.jpeg"
+  },
+  {
+   "storeCode": "DMQ-17",
+   "month": "2026-10",
+   "file": "DMQ-17-2026-10-1.jpg",
+   "source": "Totalsports Centurion .jpeg"
+  },
+  {
+   "storeCode": "DMQ-17",
+   "month": "2026-10",
+   "file": "DMQ-17-2026-10-2.jpg",
+   "source": "Totalsports Centurion 2.jpeg"
+  },
+  {
+   "storeCode": "DMQ-17",
+   "month": "2026-10",
+   "file": "DMQ-17-2026-10-3.jpg",
+   "source": "Totalsports Centurion 3 .jpeg"
+  },
+  {
+   "storeCode": "DMQ-05",
+   "month": "2026-08",
+   "file": "DMQ-05-2026-08-1.jpg",
+   "source": "Totalsports East Rand Mall Aug .jpeg"
+  },
+  {
+   "storeCode": "DMQ-05",
+   "month": "2026-09",
+   "file": "DMQ-05-2026-09-1.jpg",
+   "source": "Totalsports East Rand Mall Sept.jpeg"
+  },
+  {
+   "storeCode": "DMQ-02",
+   "month": "2026-09",
+   "file": "DMQ-02-2026-09-1.jpg",
+   "source": "Totalsports Gateway Sept .jpeg"
+  },
+  {
+   "storeCode": "DMQ-04",
+   "month": "2026-09",
+   "file": "DMQ-04-2026-09-1.jpg",
+   "source": "Totalsports Mall of Africa Sept.jpeg"
+  },
+  {
+   "storeCode": "DMQ-08",
+   "month": "2026-10",
+   "file": "DMQ-08-2026-10-1.jpg",
+   "source": "Totalsports Menlyn 2 .jpeg"
+  },
+  {
+   "storeCode": "DMQ-08",
+   "month": "2026-10",
+   "file": "DMQ-08-2026-10-2.jpg",
+   "source": "Totalsports Menlyn.jpeg"
+  },
+  {
+   "storeCode": "DMQ-19",
+   "month": "2026-08",
+   "file": "DMQ-19-2026-08-1.jpg",
+   "source": "Totalsports Montana Aug .jpeg"
+  },
+  {
+   "storeCode": "DMQ-19",
+   "month": "2026-09",
+   "file": "DMQ-19-2026-09-1.jpg",
+   "source": "Totalsports Montana Sept.jpeg"
+  },
+  {
+   "storeCode": "DMQ-01",
+   "month": "2026-09",
+   "file": "DMQ-01-2026-09-1.jpg",
+   "source": "Totalsports Pavilion Sept.jpeg"
+  },
+  {
+   "storeCode": "DMQ-09",
+   "month": "2026-09",
+   "file": "DMQ-09-2026-09-1.jpg",
+   "source": "Totalsports Somerset Mall Sept .jpeg"
+  },
+  {
+   "storeCode": "DMQ-22",
+   "month": "2026-10",
+   "file": "DMQ-22-2026-10-1.jpg",
+   "source": "Totalsports Stellenbosch Oct.jpeg"
+  },
+  {
+   "storeCode": "DMQ-07",
+   "month": "2026-08",
+   "file": "DMQ-07-2026-08-1.jpg",
+   "source": "Totalsports Tygervalley Aug.jpeg"
+  },
+  {
+   "storeCode": "DMQ-07",
+   "month": "2026-09",
+   "file": "DMQ-07-2026-09-2.jpg",
+   "source": "Totalsports Tygervalley Sept.jpeg"
+  },
+  {
+   "storeCode": "DMQ-12",
+   "month": "2026-08",
+   "file": "DMQ-12-2026-08-1.jpg",
+   "source": "Totalsports Waterfall Mall Aug .jpeg"
+  },
+  {
+   "storeCode": "DMQ-12",
+   "month": "2026-09",
+   "file": "DMQ-12-2026-09-1.jpg",
+   "source": "Totalsports Waterfall Mall Sept.jpeg"
+  },
+  {
+   "storeCode": "DMQ-07",
+   "month": "2026-10",
+   "file": "DMQ-07-2026-10-1.jpg",
+   "source": "Totasports Tygervalley Oct.jpeg"
+  },
+  {
+   "storeCode": "DMQ-X1",
+   "month": "2026-09",
+   "file": "DMQ-X1-2026-09-1.jpg",
+   "source": "Mr Price Sport Balitto Sept.jpeg"
+  },
+  {
+   "storeCode": "DMQ-X2",
+   "month": "2026-09",
+   "file": "DMQ-X2-2026-09-1.jpg",
+   "source": "Mr price Sprt La Lucia Sept.jpeg"
+  },
+  {
+   "storeCode": "DMQ-X3",
+   "month": "2026-10",
+   "file": "DMQ-X3-2026-10-1.jpg",
+   "source": "Totalsports the Grove .jpeg"
+  },
+  {
+   "storeCode": "DMQ-X3",
+   "month": "2026-10",
+   "file": "DMQ-X3-2026-10-2.jpg",
+   "source": "Totalsport The Grove 2.jpeg"
+  },
+  {
+   "storeCode": "DMQ-X3",
+   "month": "2026-10",
+   "file": "DMQ-X3-2026-10-3.jpg",
+   "source": "Total Sports the Grove 4.jpeg"
+  }
+ ],
+ "extraStores": {
+  "DMQ-X1": {
+   "name": "Mr Price Sport Ballito",
+   "channel": "Mr Price Sport",
+   "region": "KZN",
+   "plannedRep": "Kgothatso"
+  },
+  "DMQ-X2": {
+   "name": "Mr Price Sport La Lucia",
+   "channel": "Mr Price Sport",
+   "region": "KZN",
+   "plannedRep": "Kgothatso"
+  },
+  "DMQ-X3": {
+   "name": "Totalsports The Grove Pretoria",
+   "channel": "Totalsports",
+   "region": "GP",
+   "plannedRep": "Chris"
+  }
+ },
+ "allocation": [
+  {
+   "file": "allocation-01.jpg",
+   "source": "WhatsApp Image 2026-10-27 at 07.48.25.jpeg"
+  },
+  {
+   "file": "allocation-02.jpg",
+   "source": "WhatsApp Image 2026-10-27 at 07.48.26 (1).jpeg"
+  },
+  {
+   "file": "allocation-03.jpg",
+   "source": "WhatsApp Image 2026-10-27 at 07.48.26.jpeg"
+  },
+  {
+   "file": "allocation-04.jpg",
+   "source": "WhatsApp Image 2026-10-27 at 07.48.27 (1).jpeg"
+  },
+  {
+   "file": "allocation-05.jpg",
+   "source": "WhatsApp Image 2026-10-27 at 07.48.27.jpeg"
+  },
+  {
+   "file": "allocation-06.jpg",
+   "source": "WhatsApp Image 2026-10-27 at 07.48.29 (1).jpeg"
+  },
+  {
+   "file": "allocation-07.jpg",
+   "source": "WhatsApp Image 2026-10-27 at 07.48.29.jpeg"
+  },
+  {
+   "file": "allocation-08.jpg",
+   "source": "WhatsApp Image 2026-10-27 at 07.48.30 (1).jpeg"
+  },
+  {
+   "file": "allocation-09.jpg",
+   "source": "WhatsApp Image 2026-10-27 at 07.48.30.jpeg"
+  },
+  {
+   "file": "allocation-10.jpg",
+   "source": "WhatsApp Image 2026-10-27 at 07.48.31 (1).jpeg"
+  },
+  {
+   "file": "allocation-11.jpg",
+   "source": "WhatsApp Image 2026-10-27 at 07.48.31 (2).jpeg"
+  },
+  {
+   "file": "allocation-12.jpg",
+   "source": "WhatsApp Image 2026-10-27 at 07.48.31.jpeg"
+  },
+  {
+   "file": "allocation-13.jpg",
+   "source": "WhatsApp Image 2026-10-27 at 07.48.32 (1).jpeg"
+  },
+  {
+   "file": "allocation-14.jpg",
+   "source": "WhatsApp Image 2026-10-27 at 07.48.32 (2).jpeg"
+  },
+  {
+   "file": "allocation-15.jpg",
+   "source": "WhatsApp Image 2026-10-27 at 07.48.32.jpeg"
+  },
+  {
+   "file": "allocation-16.jpg",
+   "source": "WhatsApp Image 2026-10-27 at 07.48.33 (1).jpeg"
+  },
+  {
+   "file": "allocation-17.jpg",
+   "source": "WhatsApp Image 2026-10-27 at 07.48.33.jpeg"
+  },
+  {
+   "file": "allocation-18.jpg",
+   "source": "WhatsApp Image 2026-10-27 at 07.48.34 (1).jpeg"
+  },
+  {
+   "file": "allocation-19.jpg",
+   "source": "WhatsApp Image 2026-10-27 at 07.48.34 (2).jpeg"
+  },
+  {
+   "file": "allocation-20.jpg",
+   "source": "WhatsApp Image 2026-10-27 at 07.48.34.jpeg"
+  }
+ ]
+}

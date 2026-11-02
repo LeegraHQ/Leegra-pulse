@@ -12,6 +12,8 @@ const { LEEGRA_ROLES } = require('./_data');
 const { blobsStore, getLiveVisits, getStores, getUsers, getPhoto } = require('./_lib/records');
 
 const supa = require('./_lib/supabase');
+let shipped = { addedAt: '', base: '', photos: [], keys: {} };
+try { shipped = Object.assign(shipped, require('./_civvio-visit-photos.json')); shipped.photos.forEach(p => { shipped.keys[p.storeCode + '|' + p.month] = true; }); } catch (e) {}
 const TENANT = 'CIV-088';
 const SAST_MS = 2 * 60 * 60 * 1000;
 const pad = n => String(n).padStart(2, '0');
@@ -148,6 +150,8 @@ exports.handler = async (event) => {
     const metas = (await Promise.all(blobs.map(b => hp.get(b.key, { type: 'json' }).catch(() => null)))).filter(Boolean);
     const extra = {};
     for (const p of metas) {
+      // Photos replaced by the shipped set (_civvio-visit-photos.json) are hidden; newer uploads still show.
+      if (shipped.keys[p.storeCode + '|' + String(p.date).slice(0, 7)] && !(p.uploadedAt > shipped.addedAt)) continue;
       const match = out.find(v => v.source === 'history' && v.storeCode === p.storeCode && v.date === p.date)
         || out.find(v => v.storeCode === p.storeCode && v.date === p.date);
       if (match) { match.photos.push({ id: p.id }); continue; }
@@ -162,6 +166,26 @@ exports.handler = async (event) => {
       extra[k].photos.push({ id: p.id });
     }
   } catch (e) { console.error('civvio history photos read failed', e && e.message); }
+  // Store photos shipped with the site replace earlier photos for the same store + month.
+  // They sit on that month's latest visit; if there is no visit yet, the month shows
+  // with "Visit date to follow" until the dated template row is uploaded.
+  try {
+    const byKey = {};
+    for (const p of shipped.photos) (byKey[p.storeCode + '|' + p.month] = byKey[p.storeCode + '|' + p.month] || []).push(p);
+    for (const k of Object.keys(byKey)) {
+      const [code, month] = k.split('|');
+      const vs = out.filter(v => v.storeCode === code && String(v.date).slice(0, 7) === month).sort((x, y) => (x.date < y.date ? 1 : -1));
+      vs.forEach(v => { v.photos = (v.photos || []).filter(p => String(p.id || '').startsWith('hist-')); });
+      let target = vs[0];
+      if (!target) {
+        const s = storeBy[code] || (shipped.extraStores || {})[code] || {};
+        target = { id: 'shipph-' + k, source: 'history', storeCode: code, storeName: s.name || code, channel: s.channel || 'Other', region: s.region || 'Unassigned',
+          rep: s.plannedRep || '', date: month + '-01', time: '', done: true, facings: null, returns: '', damaged: '', additional: '', comment: 'Visit date to follow', photos: [] };
+        out.push(target);
+      }
+      target.photos = byKey[k].map(p => ({ id: 'ship-' + p.file, url: shipped.base + p.file })).concat(target.photos);
+    }
+  } catch (e) { console.error('civvio shipped photos merge failed', e && e.message); }
   out.sort((x, y) => (x.date + x.time < y.date + y.time ? 1 : -1));
 
   let views;
@@ -182,6 +206,7 @@ exports.handler = async (event) => {
     generatedAt: new Date().toISOString(),
     superUser: who.superUser,
     photoStorage: supa.configured() ? 'supabase' : 'netlify',
+    allocationPhotos: (shipped.allocation || []).map(p => ({ url: shipped.base + p.file })),
     stores: stores.filter(s => s.dmqMonthly).map(s => ({ code: s.code, name: s.name, channel: s.channel || 'Other', region: s.region || 'Unassigned', plannedRep: s.plannedRep || '' })),
     visits: out,
     pendingNotes: pendingNotes.filter(p => !out.some(v => v.done && v.storeCode === p.storeCode && String(v.date).slice(0, 7) === p.month)),

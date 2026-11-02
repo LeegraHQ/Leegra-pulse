@@ -112,7 +112,10 @@
 
   <div class="card"><p class="kicker">Questionnaire feedback per store</p><div class="scroll"><table id="tFeedback"></table></div></div>
 
-  <div class="card"><p class="kicker">Photos per store</p><div class="gallery" id="gallery"></div></div>
+  <div style="display:grid;grid-template-columns:minmax(0,1fr) minmax(240px,320px);gap:14px;align-items:start" id="photoRow">
+    <div class="card"><p class="kicker">Photos per store</p><div class="gallery" id="gallery"></div></div>
+    <div class="card" id="allocCard"><p class="kicker">Pictures Allocation in Progress</p><p class="muted" style="margin:0 0 10px;font-size:12px">These photos are being matched to their stores and visit dates.</p><div id="allocGallery" style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;max-height:900px;overflow:auto"></div></div>
+  </div>
 
   <div class="card"><p class="kicker">Still to visit this month</p><div class="scroll"><table id="tOutstanding"></table></div></div>
 
@@ -300,6 +303,12 @@
       return '<div class="ph">' + (DEMO ? '<div style="aspect-ratio:4/3;border-radius:8px;background:var(--surface-2);display:flex;align-items:center;justify-content:center" class="muted">Stand photo</div>' : '<img loading="lazy" src="' + esc(x.p.url || photoUrl(x.p.id)) + '" data-cap="' + esc(cap) + '" alt="' + esc(x.v.storeName) + '">') +
         '<div class="ph-store">' + esc(x.v.storeName) + '</div><div class="ph-meta">' + esc(x.v.date + ' ' + x.v.time + ' · ' + x.v.rep + ' · ' + x.v.region) + '</div>' + (x.v.comment ? '<div class="ph-comment">' + esc(x.v.comment) + '</div>' : '') + '</div>';
     }).join('') : '<div class="empty">No photos for this selection yet.</div>';
+    var alloc = data.allocationPhotos || [];
+    if ($('allocCard')) $('allocCard').style.display = alloc.length ? '' : 'none';
+    if ($('photoRow')) $('photoRow').style.gridTemplateColumns = alloc.length && window.innerWidth > 900 ? 'minmax(0,1fr) minmax(240px,320px)' : 'minmax(0,1fr)';
+    if ($('allocGallery')) $('allocGallery').innerHTML = alloc.map(function (p, i) {
+      return '<img loading="lazy" src="' + esc(p.url) + '" data-cap="Pictures allocation in progress · photo ' + (i + 1) + ' of ' + alloc.length + '" alt="" style="width:100%;aspect-ratio:3/4;object-fit:cover;border-radius:8px;cursor:zoom-in;background:var(--surface-2);display:block">';
+    }).join('');
 
     var monthDone = uniq(visits.filter(function (v) { return monthOf(v.date) === f.month && v.done; }).map(function (v) { return v.storeCode; }));
     var pendingFor = function (code) { var p = (data.pendingNotes || []).filter(function (x) { return x.storeCode === code && x.month === f.month; })[0]; return p ? p.comment : ''; };
