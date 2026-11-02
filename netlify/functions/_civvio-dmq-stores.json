@@ -5,7 +5,7 @@
  "stores": [
   {
    "code": "DMQ-01",
-   "name": "Totalsports Westville Pavillion Durban",
+   "name": "Totalsports Westville Pavilion Durban",
    "channel": "Totalsports",
    "region": "KZN",
    "plannedRep": "Kgothatso"
@@ -68,7 +68,7 @@
   },
   {
    "code": "DMQ-10",
-   "name": "Totalsposrts Fourways Mall Johannesburg",
+   "name": "Totalsports Fourways Mall Johannesburg",
    "channel": "Totalsports",
    "region": "GP",
    "plannedRep": "Chris"
@@ -159,7 +159,7 @@
   },
   {
    "code": "DMQ-23",
-   "name": "Mr Price Sport Westville Pavillion",
+   "name": "Mr Price Sport Westville Pavilion",
    "channel": "Mr Price Sport",
    "region": "KZN",
    "plannedRep": "Kgothatso"
@@ -229,7 +229,7 @@
   },
   {
    "code": "DMQ-33",
-   "name": "Mr Price Sport Sandotn City Johannesburg",
+   "name": "Mr Price Sport Sandton City Johannesburg",
    "channel": "Mr Price Sport",
    "region": "GP",
    "plannedRep": "Chris"

@@ -61,6 +61,8 @@ exports.handler = async (event) => {
   const [visits, stores, users] = await Promise.all([getLiveVisits(TENANT), getStores(TENANT), getUsers(TENANT)]);
   // Allocation: Cape Town → Enver, KZN → Kgothatso, everything else → Chris.
   stores.forEach(s => { s.plannedRep = s.region === 'CPT' ? 'Enver' : s.region === 'KZN' ? 'Kgothatso' : 'Chris'; });
+  const NAME_FIX = {"Totalsposrts Fourways Mall Johannesburg":"Totalsports Fourways Mall Johannesburg","Mr Price Sport Sandotn City Johannesburg":"Mr Price Sport Sandton City Johannesburg","Totalsports Westville Pavillion Durban":"Totalsports Westville Pavilion Durban","Mr Price Sport Westville Pavillion":"Mr Price Sport Westville Pavilion"};
+  stores.forEach(s => { if (NAME_FIX[s.name]) s.name = NAME_FIX[s.name]; });
   const storeBy = Object.fromEntries(stores.map(s => [s.code, s]));
   const nameBy = Object.fromEntries(users.filter(u => u.email && u.name).map(u => [u.email.toLowerCase(), u.name]));
 
@@ -91,7 +93,7 @@ exports.handler = async (event) => {
     const { blobs } = await hist.list();
     const batches = await Promise.all(blobs.map(b => hist.get(b.key, { type: 'json' }).catch(() => null)));
     // Aug–Oct 2026 baseline shipped with the site (oldest, so any later Excel upload replaces it).
-    try { batches.push(require('./_civvio-history-aug-oct.json')); blobs.push({ key: '0000-baseline-aug-oct' }); } catch (e) {}
+    try { batches.push(require('./_civvio-history-aug-oct.json')); blobs.push({ key: '2026-11-02T08-00-00-000Z-baseline-aug-oct' }); } catch (e) {}
     // Newest upload wins: a store + date (or store + month placeholder) that
     // appears in a later batch replaces the earlier one, so re-uploading the
     // same file doesn't double up.
@@ -112,7 +114,7 @@ exports.handler = async (event) => {
         channel: s.channel || r.channel || 'Other', region: s.region || r.region || 'Unassigned',
         rep: r.rep || s.plannedRep || '', date: r.date, time: '', done: true,
         facings: r.facings, returns: r.returns || '', damaged: r.damaged || '', additional: r.additional || '',
-        comment: r.comment || '', photos: [],
+        comment: r.comment || '', photos: [], dateTbc: !!r.dateTbc,
       });
     }));
   } catch (e) { console.error('civvio history read failed', e && e.message); }
@@ -180,7 +182,7 @@ exports.handler = async (event) => {
       if (!target) {
         const s = storeBy[code] || (shipped.extraStores || {})[code] || {};
         target = { id: 'shipph-' + k, source: 'history', storeCode: code, storeName: s.name || code, channel: s.channel || 'Other', region: s.region || 'Unassigned',
-          rep: s.plannedRep || '', date: month + '-01', time: '', done: true, facings: null, returns: '', damaged: '', additional: '', comment: 'Visit date to follow', photos: [] };
+          rep: s.plannedRep || '', date: month + '-01', time: '', done: true, facings: null, returns: '', damaged: '', additional: '', comment: '', photos: [], dateTbc: true };
         out.push(target);
       }
       target.photos = byKey[k].map(p => ({ id: 'ship-' + p.file, url: shipped.base + p.file })).concat(target.photos);

@@ -1,19 +1,33 @@
 {
- "source": "DMQ-Past-Visits-Aug-Oct-All-Stores.xlsx",
+ "source": "DMQ-Past-Visits-Aug-Oct-All-Stores.xlsx (2 Nov 2026, spelling checked)",
  "rows": [
   {
-   "pending": true,
-   "month": "2026-08",
+   "date": "2026-08-01",
    "storeCode": "DMQ-01",
-   "storeName": "Totalsports Westville Pavillion Durban",
-   "comment": "Busy uploading"
+   "storeName": "Totalsports Westville Pavilion Durban",
+   "channel": "Totalsports",
+   "region": "KZN",
+   "rep": "Chris",
+   "facings": null,
+   "returns": "No",
+   "damaged": "No",
+   "additional": "No",
+   "comment": "Store in good condition. Competitor and TS brand stock removed from stand.",
+   "dateTbc": true
   },
   {
-   "pending": true,
-   "month": "2026-08",
+   "date": "2026-08-01",
    "storeCode": "DMQ-02",
    "storeName": "Totalsports Gateway Durban",
-   "comment": "Busy uploading"
+   "channel": "Totalsports",
+   "region": "KZN",
+   "rep": "Chris",
+   "facings": null,
+   "returns": "No",
+   "damaged": "No",
+   "additional": "No",
+   "comment": "No issues at store.",
+   "dateTbc": true
   },
   {
    "date": "2026-08-13",
@@ -23,10 +37,11 @@
    "region": "CPT",
    "rep": "Enver",
    "facings": null,
-   "returns": "",
-   "damaged": "",
-   "additional": "",
-   "comment": "Visited by Enver De Bryun. HYROX belt demand."
+   "returns": "No",
+   "damaged": "No",
+   "additional": "Yes",
+   "comment": "HYROX belt demand.",
+   "dateTbc": true
   },
   {
    "date": "2026-08-21",
@@ -36,10 +51,11 @@
    "region": "CPT",
    "rep": "Enver",
    "facings": null,
-   "returns": "",
-   "damaged": "",
+   "returns": "No",
+   "damaged": "No",
    "additional": "No",
-   "comment": "Visited by Enver De Bryun. Replenished."
+   "comment": "DC order received and store replenished.",
+   "dateTbc": true
   },
   {
    "pending": true,
@@ -70,10 +86,11 @@
    "region": "CPT",
    "rep": "Enver",
    "facings": null,
-   "returns": "",
-   "damaged": "",
-   "additional": "",
-   "comment": "Visited by Enver De Bryun. Peg length."
+   "returns": "No",
+   "damaged": "No",
+   "additional": "Yes",
+   "comment": "Peg length measurement.",
+   "dateTbc": true
   },
   {
    "pending": true,
@@ -90,16 +107,17 @@
    "region": "CPT",
    "rep": "Enver",
    "facings": null,
-   "returns": "",
-   "damaged": "",
-   "additional": "",
-   "comment": "Visited by Enver De Bryun. Replenished from DC."
+   "returns": "No",
+   "damaged": "No",
+   "additional": "Yes",
+   "comment": "DC order received and store replenished.",
+   "dateTbc": true
   },
   {
    "pending": true,
    "month": "2026-08",
    "storeCode": "DMQ-10",
-   "storeName": "Totalsposrts Fourways Mall Johannesburg",
+   "storeName": "Totalsports Fourways Mall Johannesburg",
    "comment": "Busy uploading"
   },
   {
@@ -190,7 +208,7 @@
    "pending": true,
    "month": "2026-08",
    "storeCode": "DMQ-23",
-   "storeName": "Mr Price Sport Westville Pavillion",
+   "storeName": "Mr Price Sport Westville Pavilion",
    "comment": "Busy uploading"
   },
   {
@@ -236,10 +254,11 @@
    "region": "CPT",
    "rep": "Enver",
    "facings": null,
-   "returns": "",
-   "damaged": "",
-   "additional": "",
-   "comment": "Visited by Enver De Bryun. Peg length."
+   "returns": "No",
+   "damaged": "No",
+   "additional": "No",
+   "comment": "Visited by Enver De Bryun. Peg length.",
+   "dateTbc": true
   },
   {
    "pending": true,
@@ -266,7 +285,7 @@
    "pending": true,
    "month": "2026-08",
    "storeCode": "DMQ-33",
-   "storeName": "Mr Price Sport Sandotn City Johannesburg",
+   "storeName": "Mr Price Sport Sandton City Johannesburg",
    "comment": "Busy uploading"
   },
   {
@@ -349,15 +368,16 @@
   {
    "date": "2026-09-30",
    "storeCode": "DMQ-01",
-   "storeName": "Totalsports Westville Pavillion Durban",
+   "storeName": "Totalsports Westville Pavilion Durban",
    "channel": "Totalsports",
    "region": "KZN",
    "rep": "Kgothatso",
    "facings": null,
-   "returns": "",
-   "damaged": "",
-   "additional": "",
-   "comment": "Visited by Kgothatso Matlou. Photos sent."
+   "returns": "No",
+   "damaged": "No",
+   "additional": "Yes",
+   "comment": "No issues at store.",
+   "dateTbc": true
   },
   {
    "date": "2026-09-30",
@@ -367,10 +387,11 @@
    "region": "KZN",
    "rep": "Kgothatso",
    "facings": null,
-   "returns": "",
-   "damaged": "",
-   "additional": "",
-   "comment": "Visited by Kgothatso Matlou. Photos sent."
+   "returns": "No",
+   "damaged": "No",
+   "additional": "Yes",
+   "comment": "No issues at store.",
+   "dateTbc": true
   },
   {
    "pending": true,
@@ -408,10 +429,11 @@
    "region": "CPT",
    "rep": "Enver",
    "facings": null,
-   "returns": "",
-   "damaged": "",
-   "additional": "",
-   "comment": "Visited by Enver De Bryun."
+   "returns": "No",
+   "damaged": "No",
+   "additional": "Yes",
+   "comment": "No issues at store.",
+   "dateTbc": true
   },
   {
    "pending": true,
@@ -428,16 +450,17 @@
    "region": "CPT",
    "rep": "Enver",
    "facings": null,
-   "returns": "",
-   "damaged": "",
+   "returns": "No",
+   "damaged": "No",
    "additional": "Yes",
-   "comment": "Visited by Enver De Bryun. Demand 18–32 kg, no stock."
+   "comment": "Demand 18–32 kg, no stock.",
+   "dateTbc": true
   },
   {
    "pending": true,
    "month": "2026-09",
    "storeCode": "DMQ-10",
-   "storeName": "Totalsposrts Fourways Mall Johannesburg",
+   "storeName": "Totalsports Fourways Mall Johannesburg",
    "comment": "Busy uploading"
   },
   {
@@ -462,10 +485,11 @@
    "region": "CPT",
    "rep": "Enver",
    "facings": null,
-   "returns": "",
-   "damaged": "",
-   "additional": "",
-   "comment": "Visited by Enver De Bryun. Towels moved to eye level."
+   "returns": "No",
+   "damaged": "No",
+   "additional": "Yes",
+   "comment": "Towels moved to eye level and re-merchandised.",
+   "dateTbc": true
   },
   {
    "date": "2026-09-30",
@@ -475,10 +499,11 @@
    "region": "KZN",
    "rep": "Kgothatso",
    "facings": null,
-   "returns": "",
-   "damaged": "",
-   "additional": "",
-   "comment": "Visited by Kgothatso Matlou. Photos sent."
+   "returns": "No",
+   "damaged": "No",
+   "additional": "No",
+   "comment": "No issues at store.",
+   "dateTbc": true
   },
   {
    "pending": true,
@@ -509,10 +534,11 @@
    "region": "CPT",
    "rep": "Enver",
    "facings": null,
-   "returns": "",
-   "damaged": "",
-   "additional": "",
-   "comment": "Visited by Enver De Bryun. Layout change."
+   "returns": "No",
+   "damaged": "No",
+   "additional": "Yes",
+   "comment": "Store layout change was in progress and re-merchandised.",
+   "dateTbc": true
   },
   {
    "pending": true,
@@ -545,15 +571,16 @@
   {
    "date": "2026-09-30",
    "storeCode": "DMQ-23",
-   "storeName": "Mr Price Sport Westville Pavillion",
+   "storeName": "Mr Price Sport Westville Pavilion",
    "channel": "Mr Price Sport",
    "region": "KZN",
    "rep": "Kgothatso",
    "facings": null,
-   "returns": "",
-   "damaged": "",
-   "additional": "",
-   "comment": "Visited by Kgothatso Matlou. Photos sent."
+   "returns": "No",
+   "damaged": "No",
+   "additional": "No",
+   "comment": "No issues at store.",
+   "dateTbc": true
   },
   {
    "date": "2026-09-30",
@@ -563,10 +590,11 @@
    "region": "KZN",
    "rep": "Kgothatso",
    "facings": null,
-   "returns": "",
-   "damaged": "",
-   "additional": "",
-   "comment": "Visited by Kgothatso Matlou. Photos sent."
+   "returns": "No",
+   "damaged": "No",
+   "additional": "No",
+   "comment": "No issues at store.",
+   "dateTbc": true
   },
   {
    "date": "2026-09-09",
@@ -576,10 +604,11 @@
    "region": "CPT",
    "rep": "Enver",
    "facings": null,
-   "returns": "",
-   "damaged": "",
-   "additional": "",
-   "comment": "Visited by Enver De Bryun. Peg photo."
+   "returns": "No",
+   "damaged": "No",
+   "additional": "No",
+   "comment": "No issues at store.",
+   "dateTbc": true
   },
   {
    "pending": true,
@@ -610,10 +639,11 @@
    "region": "CPT",
    "rep": "Enver",
    "facings": null,
-   "returns": "",
-   "damaged": "",
-   "additional": "",
-   "comment": "Visited by Enver De Bryun. New short arms – completed."
+   "returns": "No",
+   "damaged": "No",
+   "additional": "Yes",
+   "comment": "New short-arm pegs completed.",
+   "dateTbc": true
   },
   {
    "pending": true,
@@ -640,7 +670,7 @@
    "pending": true,
    "month": "2026-09",
    "storeCode": "DMQ-33",
-   "storeName": "Mr Price Sport Sandotn City Johannesburg",
+   "storeName": "Mr Price Sport Sandton City Johannesburg",
    "comment": "Busy uploading"
   },
   {
@@ -665,10 +695,11 @@
    "region": "KZN",
    "rep": "Kgothatso",
    "facings": null,
-   "returns": "",
-   "damaged": "",
-   "additional": "",
-   "comment": "Visited by Kgothatso Matlou. Photos sent."
+   "returns": "No",
+   "damaged": "No",
+   "additional": "No",
+   "comment": "No issues at store.",
+   "dateTbc": true
   },
   {
    "pending": true,
@@ -699,10 +730,11 @@
    "region": "CPT",
    "rep": "Enver",
    "facings": null,
-   "returns": "",
-   "damaged": "",
+   "returns": "No",
+   "damaged": "No",
    "additional": "No",
-   "comment": "Visited by Enver De Bryun. Neatened, all stock shown."
+   "comment": "Re-merchandised and shelf neatened, all stock visible.",
+   "dateTbc": true
   },
   {
    "date": "2026-09-28",
@@ -713,9 +745,10 @@
    "rep": "Chris",
    "facings": null,
    "returns": "No",
-   "damaged": "",
-   "additional": "",
-   "comment": "Visited by Mackenzie Gouws. Bigger stand requested."
+   "damaged": "No",
+   "additional": "Yes",
+   "comment": "Bigger stand requested at store level.",
+   "dateTbc": true
   },
   {
    "pending": true,
@@ -742,7 +775,7 @@
    "pending": true,
    "month": "2026-10",
    "storeCode": "DMQ-01",
-   "storeName": "Totalsports Westville Pavillion Durban",
+   "storeName": "Totalsports Westville Pavilion Durban",
    "comment": "Busy uploading"
   },
   {
@@ -788,10 +821,11 @@
    "region": "CPT",
    "rep": "Enver",
    "facings": null,
-   "returns": "",
-   "damaged": "",
-   "additional": "",
-   "comment": "Visited by Enver De Bryun. Phones too big for arm pockets."
+   "returns": "No",
+   "damaged": "No",
+   "additional": "No",
+   "comment": "Cellphones too big for arm pockets, relook alternative solution.",
+   "dateTbc": true
   },
   {
    "pending": true,
@@ -808,25 +842,46 @@
    "comment": "Busy uploading"
   },
   {
-   "pending": true,
-   "month": "2026-10",
+   "date": "2026-10-01",
    "storeCode": "DMQ-10",
-   "storeName": "Totalsposrts Fourways Mall Johannesburg",
-   "comment": "Busy uploading"
+   "storeName": "Totalsports Fourways Mall Johannesburg",
+   "channel": "Totalsports",
+   "region": "GP",
+   "rep": "Chris",
+   "facings": null,
+   "returns": "No",
+   "damaged": "No",
+   "additional": "No",
+   "comment": "Stand removed and moved to Sandton City.",
+   "dateTbc": true
   },
   {
-   "pending": true,
-   "month": "2026-10",
+   "date": "2026-10-01",
    "storeCode": "DMQ-11",
    "storeName": "Totalsports Eastgate Johannesburg",
-   "comment": "Busy uploading"
+   "channel": "Totalsports",
+   "region": "GP",
+   "rep": "Chris",
+   "facings": null,
+   "returns": "No",
+   "damaged": "No",
+   "additional": "No",
+   "comment": "No issues at store.",
+   "dateTbc": true
   },
   {
-   "pending": true,
-   "month": "2026-10",
+   "date": "2026-10-01",
    "storeCode": "DMQ-12",
    "storeName": "Totalsports Waterfall Mall Rustenburg",
-   "comment": "Busy uploading"
+   "channel": "Totalsports",
+   "region": "NW",
+   "rep": "Chris",
+   "facings": null,
+   "returns": "No",
+   "damaged": "No",
+   "additional": "No",
+   "comment": "No issues at store.",
+   "dateTbc": true
   },
   {
    "pending": true,
@@ -850,18 +905,32 @@
    "comment": "Busy uploading"
   },
   {
-   "pending": true,
-   "month": "2026-10",
+   "date": "2026-10-01",
    "storeCode": "DMQ-16",
    "storeName": "Totalsports Vaal Mall Vanderbijlpark",
-   "comment": "Busy uploading"
+   "channel": "Totalsports",
+   "region": "GP",
+   "rep": "Chris",
+   "facings": null,
+   "returns": "No",
+   "damaged": "No",
+   "additional": "No",
+   "comment": "No issues at store.",
+   "dateTbc": true
   },
   {
-   "pending": true,
-   "month": "2026-10",
+   "date": "2026-10-01",
    "storeCode": "DMQ-17",
    "storeName": "Totalsports Centurion Pretoria",
-   "comment": "Busy uploading"
+   "channel": "Totalsports",
+   "region": "GP",
+   "rep": "Chris",
+   "facings": null,
+   "returns": "No",
+   "damaged": "No",
+   "additional": "Yes",
+   "comment": "Store still under revamp and has a small pop-up store. Still trying to locate the stand from the store.",
+   "dateTbc": true
   },
   {
    "pending": true,
@@ -871,18 +940,32 @@
    "comment": "Busy uploading"
   },
   {
-   "pending": true,
-   "month": "2026-10",
+   "date": "2026-10-01",
    "storeCode": "DMQ-19",
    "storeName": "Totalsports Montana Pretoria",
-   "comment": "Busy uploading"
+   "channel": "Totalsports",
+   "region": "GP",
+   "rep": "Chris",
+   "facings": null,
+   "returns": "No",
+   "damaged": "No",
+   "additional": "No",
+   "comment": "No issues at store level.",
+   "dateTbc": true
   },
   {
-   "pending": true,
-   "month": "2026-10",
+   "date": "2026-10-01",
    "storeCode": "DMQ-20",
    "storeName": "Totalsports Loch Logan Bloemfontein",
-   "comment": "Busy uploading"
+   "channel": "Totalsports",
+   "region": "FS",
+   "rep": "Chris",
+   "facings": null,
+   "returns": "No",
+   "damaged": "No",
+   "additional": "Yes",
+   "comment": "Revamped store is helping with the new look and feel and attracting a lot of curious customers, although sales are still only growing marginally.",
+   "dateTbc": true
   },
   {
    "pending": true,
@@ -899,16 +982,17 @@
    "region": "CPT",
    "rep": "Enver",
    "facings": null,
-   "returns": "",
-   "damaged": "",
+   "returns": "No",
+   "damaged": "No",
    "additional": "Yes",
-   "comment": "Visited by Enver De Bryun. No towels/bottles."
+   "comment": "No towels/bottles stock available in store. Additional stock request done through the store manager.",
+   "dateTbc": true
   },
   {
    "pending": true,
    "month": "2026-10",
    "storeCode": "DMQ-23",
-   "storeName": "Mr Price Sport Westville Pavillion",
+   "storeName": "Mr Price Sport Westville Pavilion",
    "comment": "Busy uploading"
   },
   {
@@ -926,18 +1010,32 @@
    "comment": "Busy uploading"
   },
   {
-   "pending": true,
-   "month": "2026-10",
+   "date": "2026-10-01",
    "storeCode": "DMQ-26",
    "storeName": "Mr Price Sport Mall Of Africa Johannesburg",
-   "comment": "Busy uploading"
+   "channel": "Mr Price Sport",
+   "region": "GP",
+   "rep": "Chris",
+   "facings": null,
+   "returns": "No",
+   "damaged": "No",
+   "additional": "No",
+   "comment": "No issues at store.",
+   "dateTbc": true
   },
   {
-   "pending": true,
-   "month": "2026-10",
+   "date": "2026-10-01",
    "storeCode": "DMQ-27",
    "storeName": "Mr Price Sport East Rand Mall Boksburg",
-   "comment": "Busy uploading"
+   "channel": "Mr Price Sport",
+   "region": "GP",
+   "rep": "Chris",
+   "facings": null,
+   "returns": "No",
+   "damaged": "No",
+   "additional": "No",
+   "comment": "No issues at store. Great alternative store in East Rand Retail Park, as many customers in the area enjoy the convenience of a non-mall store.",
+   "dateTbc": true
   },
   {
    "pending": true,
@@ -954,11 +1052,18 @@
    "comment": "Busy uploading"
   },
   {
-   "pending": true,
-   "month": "2026-10",
+   "date": "2026-10-01",
    "storeCode": "DMQ-30",
    "storeName": "Mr Price Sport Menlyn Park Pretoria",
-   "comment": "Busy uploading"
+   "channel": "Mr Price Sport",
+   "region": "GP",
+   "rep": "Chris",
+   "facings": null,
+   "returns": "No",
+   "damaged": "No",
+   "additional": "No",
+   "comment": "No issues at store. Store foot count is very high at month end and eases off as the month progresses. The new look and revamp from earlier this year have helped foot count, as 2 major brand stores close by have closed for relocation and revamp.",
+   "dateTbc": true
   },
   {
    "pending": true,
@@ -975,18 +1080,32 @@
    "comment": "Busy uploading"
   },
   {
-   "pending": true,
-   "month": "2026-10",
+   "date": "2026-10-01",
    "storeCode": "DMQ-33",
-   "storeName": "Mr Price Sport Sandotn City Johannesburg",
-   "comment": "Busy uploading"
+   "storeName": "Mr Price Sport Sandton City Johannesburg",
+   "channel": "Mr Price Sport",
+   "region": "GP",
+   "rep": "Chris",
+   "facings": null,
+   "returns": "No",
+   "damaged": "No",
+   "additional": "No",
+   "comment": "Stand moved from Mr Price Sport Fourways.",
+   "dateTbc": true
   },
   {
-   "pending": true,
-   "month": "2026-10",
+   "date": "2026-10-01",
    "storeCode": "DMQ-34",
    "storeName": "Mr Price Sport Waterfall Mall Rustenburg",
-   "comment": "Busy uploading"
+   "channel": "Mr Price Sport",
+   "region": "NW",
+   "rep": "Chris",
+   "facings": null,
+   "returns": "No",
+   "damaged": "No",
+   "additional": "No",
+   "comment": "No issues at store. Store staff mentioned that for the second month in a row they have not made target. Mall foot count is high, but customers are only browsing.",
+   "dateTbc": true
   },
   {
    "pending": true,
@@ -1010,18 +1129,32 @@
    "comment": "Busy uploading"
   },
   {
-   "pending": true,
-   "month": "2026-10",
+   "date": "2026-10-01",
    "storeCode": "DMQ-38",
    "storeName": "Mr Price Sport Vaal Mall Vanderbijlpark",
-   "comment": "Busy uploading"
+   "channel": "Mr Price Sport",
+   "region": "GP",
+   "rep": "Chris",
+   "facings": null,
+   "returns": "No",
+   "damaged": "No",
+   "additional": "No",
+   "comment": "No issues at store.",
+   "dateTbc": true
   },
   {
-   "pending": true,
-   "month": "2026-10",
+   "date": "2026-10-01",
    "storeCode": "DMQ-39",
    "storeName": "Mr Price Sport Centurion Pretoria",
-   "comment": "Busy uploading"
+   "channel": "Mr Price Sport",
+   "region": "GP",
+   "rep": "Chris",
+   "facings": null,
+   "returns": "No",
+   "damaged": "No",
+   "additional": "No",
+   "comment": "No issues at store.",
+   "dateTbc": true
   },
   {
    "pending": true,
@@ -1031,18 +1164,32 @@
    "comment": "Busy uploading"
   },
   {
-   "pending": true,
-   "month": "2026-10",
+   "date": "2026-10-01",
    "storeCode": "DMQ-41",
    "storeName": "Mr Price Sport The Grove Pretoria",
-   "comment": "Busy uploading"
+   "channel": "Mr Price Sport",
+   "region": "GP",
+   "rep": "Chris",
+   "facings": null,
+   "returns": "No",
+   "damaged": "No",
+   "additional": "Yes",
+   "comment": "Another request for a bigger stand in store. Traction and momentum are picking up in this store.",
+   "dateTbc": true
   },
   {
-   "pending": true,
-   "month": "2026-10",
+   "date": "2026-10-01",
    "storeCode": "DMQ-42",
    "storeName": "Mr Price Sport Loch Logan Bloemfontein",
-   "comment": "Busy uploading"
+   "channel": "Mr Price Sport",
+   "region": "FS",
+   "rep": "Chris",
+   "facings": null,
+   "returns": "No",
+   "damaged": "No",
+   "additional": "No",
+   "comment": "Store movement is very slow, as the store has relocated in the mall and directions to the new store are not clear, as per store management.",
+   "dateTbc": true
   },
   {
    "pending": true,
