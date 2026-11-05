@@ -69,6 +69,22 @@
           <span>⬆</span> Import Excel / CSV
           <input type="file" accept=".xlsx,.xls,.xlsm,.csv" onChange="{{ importExcel }}" style="display:none;" />
         </label>
+        <div style="background:#132A57; border:1px solid rgba(255,255,255,0.12); border-radius:8px; padding:10px 12px; display:flex; flex-direction:column; gap:6px;">
+          <div style="display:flex; justify-content:space-between; color:#8EA3C7; font-size:10.5px; font-weight:700; letter-spacing:0.8px; text-transform:uppercase;"><span>Dashboard views</span><span>{{ viewTotal }}</span></div>
+          <sc-for list="{{ viewStats }}" as="v" hint-placeholder-count="4">
+            <div style="display:flex; align-items:baseline; gap:8px; font-size:12px;">
+              <span style="color:#fff; font-weight:600; flex:1;">{{ v.name }}</span>
+              <span style="color:#5E7AA8; font-size:10.5px;">{{ v.last }}</span>
+              <span style="color:#C6F135; font-weight:700; min-width:22px; text-align:right;">{{ v.count }}</span>
+            </div>
+          </sc-for>
+        </div>
+      </sc-if>
+      <sc-if value="{{ hasViewer }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex; justify-content:space-between; align-items:center; color:#8EA3C7; font-size:11.5px; padding:0 2px;">
+          <span style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">{{ viewerName }}</span>
+          <span onClick="{{ signOut }}" style="color:#C7D4E8; text-decoration:underline; cursor:pointer;">Sign out</span>
+        </div>
       </sc-if>
       <button onClick="{{ resetFilters }}" style="display:flex; align-items:center; justify-content:center; gap:8px; background:transparent; color:#8EA3C7; border:1px solid rgba(255,255,255,0.14); border-radius:8px; padding:8px 12px; font-size:12px; font-weight:600; cursor:pointer;" style-hover="color:#fff; border-color:#C6F135;">
         Reset Filters
@@ -808,6 +824,29 @@
 
     </div>
   </div>
+  <sc-if value="{{ askViewer }}" hint-placeholder-val="{{ false }}">
+    <div data-noprint="1" style="position:fixed; inset:0; background:#0B1B3A; z-index:1100; display:flex; align-items:center; justify-content:center; padding:24px;">
+      <form onSubmit="{{ submitLogin }}" style="background:#fff; border-radius:14px; padding:24px; width:100%; max-width:360px; display:flex; flex-direction:column; gap:12px;">
+        <div style="display:flex; align-items:center; gap:10px;">
+          <img src="assets/philips-logo.jpg" alt="Philips" style="width:34px; height:34px; object-fit:contain; border-radius:7px; border:1px solid #E4E9F0;" />
+          <div>
+            <div style="font-size:16px; font-weight:800; color:#0B1B3A;">Phillips PH Dashboard</div>
+            <div style="font-size:12px; color:#6B7A90;">Sign in with your email and access code</div>
+          </div>
+        </div>
+        <label style="display:flex; flex-direction:column; gap:4px; font-size:11.5px; font-weight:700; color:#5B6B82;">Email
+          <input type="email" autocomplete="email" value="{{ loginEmail }}" onChange="{{ setLoginEmail }}" style="border:1px solid #D3DAE4; border-radius:8px; padding:10px 12px; font-size:14px; color:#0B1B3A;" />
+        </label>
+        <label style="display:flex; flex-direction:column; gap:4px; font-size:11.5px; font-weight:700; color:#5B6B82;">Access code
+          <input type="password" value="{{ loginCode }}" onChange="{{ setLoginCode }}" style="border:1px solid #D3DAE4; border-radius:8px; padding:10px 12px; font-size:14px; color:#0B1B3A;" />
+        </label>
+        <sc-if value="{{ hasLoginError }}" hint-placeholder-val="{{ false }}">
+          <div style="font-size:12px; color:#C0392B; font-weight:600;">{{ loginError }}</div>
+        </sc-if>
+        <button type="submit" style="background:#0A5EEA; color:#fff; border:none; border-radius:8px; padding:11px; font-size:13.5px; font-weight:700; cursor:pointer;">{{ loginButtonLabel }}</button>
+      </form>
+    </div>
+  </sc-if>
 </div>
 
 </x-dc>
@@ -963,6 +1002,11 @@ class Component extends DCLogic {
     // Reps check in through the day, so the live half is re-polled. The
     // static half never changes between deploys and is fetched once.
     this.liveTimer = setInterval(() => this.loadLiveFeed(), 90000);
+    let savedEmail = '', savedCode = '';
+    try { savedEmail = localStorage.getItem('philipsViewerEmail') || ''; savedCode = localStorage.getItem('philipsViewerCode') || ''; } catch (e) {}
+    if (savedEmail && savedCode) this.login(savedEmail, savedCode, true);
+    else this.setState({ askViewer: true });
+    this.loadViews();
 
     const demoFiles = [
       'Checkers Boksburg Gauteng Enver de Bruyn.jpeg',
@@ -1354,6 +1398,42 @@ class Component extends DCLogic {
 
   componentWillUnmount() {
     if (this.liveTimer) clearInterval(this.liveTimer);
+  }
+
+  // Logs one view per browser session (the 90s live refresh doesn't add views).
+  login(email, code, fromSaved) {
+    let logged = false;
+    try { logged = sessionStorage.getItem('philipsViewLogged') === email; } catch (e) {}
+    this.setState({ loginBusy: true, loginError: '' });
+    fetch('/api/report-views', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ tenant: 'PH-201', email, code, silent: logged }) })
+      .then(r => r.json().then(j => ({ ok: r.ok, j })))
+      .then(({ ok, j }) => {
+        if (!ok) {
+          try { localStorage.removeItem('philipsViewerCode'); } catch (e) {}
+          this.setState({ loginBusy: false, askViewer: true, loginEmail: email, loginCode: '', loginError: fromSaved ? 'Please sign in again.' : (j.error || 'Sign in failed.') });
+          return;
+        }
+        try {
+          localStorage.setItem('philipsViewerEmail', j.email);
+          localStorage.setItem('philipsViewerCode', code);
+          sessionStorage.setItem('philipsViewLogged', j.email);
+        } catch (e) {}
+        this.setState({ loginBusy: false, askViewer: false, viewerName: j.email, loginCode: '' });
+        this.loadViews();
+      })
+      .catch(() => this.setState({ loginBusy: false, askViewer: true, loginError: 'No connection. Try again.' }));
+  }
+
+  signOut() {
+    try { localStorage.removeItem('philipsViewerCode'); sessionStorage.removeItem('philipsViewLogged'); } catch (e) {}
+    this.setState({ askViewer: true, viewerName: '', loginCode: '', loginError: '' });
+  }
+
+  loadViews() {
+    fetch('/api/report-views?tenant=PH-201')
+      .then(r => (r.ok ? r.json() : null))
+      .then(j => { if (j) this.setState({ viewStats: j.people || [], viewTotal: j.total || 0 }); })
+      .catch(() => {});
   }
 
   // Three layers, oldest first, all additive:
@@ -1819,14 +1899,17 @@ class Component extends DCLogic {
       return common / Math.max(ta.length, tb.size) >= 0.6;
     };
     const diaryReps = ((s.callDiary && s.callDiary.reps) || []).filter(r =>
+      (!selectedSet || !['attendance', 'blitz'].includes(active) || selectedSet.has(r.rep)) &&
       (!cf.blitz || cf.blitz === 'All' || r.rep === cf.blitz) &&
       (!cf.region || cf.region === 'All' || (REP_REGION[r.rep] || 'Unassigned') === cf.region));
     const todayIso = toISO(new Date());
     // Completion % is scoped to one month (current month by default), not the whole year.
     const curYm = todayIso.slice(0, 7);
     const ymLabel = (ym) => { const [y, m] = ym.split('-').map(Number); return new Date(y, m - 1, 1).toLocaleDateString('en-ZA', { month: 'long', year: 'numeric' }); };
-    const dyMonthSel = s.dyMonth || ymLabel(curYm);
     const blitzYm = (s.crossFilterValues.blitz || {}).blitzMonth || curYm;
+    // Daily table month follows the Month filter unless picked separately.
+    const dyMonthDefault = blitzYm === 'All' ? 'All' : ymLabel(blitzYm);
+    const dyMonthSel = s.dyMonth || dyMonthDefault;
     const inBlitzScope = (iso) => blitzYm === 'All' || iso.slice(0, 7) === blitzYm;
     const visitsByRepDate = {};
     attFiltered.forEach(r => {
@@ -1906,8 +1989,10 @@ class Component extends DCLogic {
     const blitzMembers = REP_NAMES.filter(n => !selectedSet || selectedSet.has(n)).map((name, i) => {
       const real = blitzReal[name];
       const ds = repDiaryStats[name];
+      // Month-scoped: only the diary vs attendance for the selected month counts.
+      // The static year-to-date figures (blitzReal) are used only for "All".
       const useDs = !!(ds && ds.planned);
-      const hasCoverage = useDs || !!(real && real.planned != null);
+      const hasCoverage = useDs || (blitzYm === 'All' && !!(real && real.planned != null));
       const planned = useDs ? ds.planned : (hasCoverage ? real.planned : null);
       const completed = useDs ? ds.completed : (hasCoverage ? real.completed : null);
       const offPct = ds && ds.visits ? ds.off / ds.visits : null;
@@ -2312,11 +2397,11 @@ class Component extends DCLogic {
     const diaryDaily = diaryFiltered.slice(dyPg.start, dyPg.start + 30);
     const pgUi = {
       attPg, dyPg,
-      dyMonthValue: dyMonth, dyMonthOptions: ['All', ...dyMonths].map(v => ({ v, label: v === 'All' ? 'All months' : v })), dyMonthStyle: dySel(dyMonth !== ymLabel(curYm)),
+      dyMonthValue: dyMonth, dyMonthOptions: ['All', ...dyMonths].map(v => ({ v, label: v === 'All' ? 'All months' : v })), dyMonthStyle: dySel(dyMonth !== dyMonthDefault),
       dyStatusValue: dyStatus, dyStatusOptions: ['All', 'Fully completed', 'Partly completed', 'Not completed', 'Upcoming'].map(v => ({ v, label: v === 'All' ? 'All statuses' : v })), dyStatusStyle: dySel(dyStatus !== 'All'),
       dyOnMonth: (e) => this.setState({ dyMonth: e.target.value, dyPage: 0 }),
       dyOnStatus: (e) => this.setState({ dyStatus: e.target.value, dyPage: 0 }),
-      dyHasFilters: dyMonth !== ymLabel(curYm) || dyStatus !== 'All',
+      dyHasFilters: dyMonth !== dyMonthDefault || dyStatus !== 'All',
       dyClear: () => this.setState({ dyMonth: null, dyStatus: 'All', dyPage: 0 }),
     };
     const cfLo = Math.max(0, Math.min(cfPage - 3, cfPages - 7));
@@ -2454,7 +2539,7 @@ class Component extends DCLogic {
     } else if (active === 'blitz') {
       crossFilters = [
         { label: 'Visit Channel (in detail below)', value: cf.blitzDetailChannel || 'All', options: blitzDetailChannelOptions, onChange: (e) => this.setCrossFilter('blitz', 'blitzDetailChannel', e.target.value) },
-        { label: 'Month', value: cf.blitzMonth || curYm, options: [...new Set([...blitzDetailMonthOptions, curYm])], onChange: (e) => this.setCrossFilter('blitz', 'blitzMonth', e.target.value) },
+        { label: 'Month', value: cf.blitzMonth || curYm, options: [...new Set([...blitzDetailMonthOptions, curYm])], onChange: (e) => { this.setState({ dyMonth: null, dyPage: 0 }); this.setCrossFilter('blitz', 'blitzMonth', e.target.value); } },
         { label: 'From Day (in detail below)', value: cf.blitzDateFrom || '', options: null, isDate: true, min: blitzMinDate, max: blitzMaxDate, onChange: (e) => this.setCrossFilter('blitz', 'blitzDateFrom', e.target.value) },
         { label: 'To Day (in detail below)', value: cf.blitzDateTo || '', options: null, isDate: true, min: blitzMinDate, max: blitzMaxDate, onChange: (e) => this.setCrossFilter('blitz', 'blitzDateTo', e.target.value) },
         { label: 'Late Check-in (>8am)', value: cf.blitzLateCheckin || 'All', options: ['All', 'Yes'], onChange: (e) => this.setCrossFilter('blitz', 'blitzLateCheckin', e.target.value) },
@@ -2693,6 +2778,20 @@ class Component extends DCLogic {
       execOpenMeta: eo ? fmtDay(eo.date) + (eo.time ? ' ' + eo.time : '') + ' · ' + (eo.storeCode || 'No code') + ' · ' + (eo.type === 'Training' ? 'Trainer: ' + (eo.trainer || 'TBC') : (eo.rep || 'Rep to confirm')) + (eo.address ? ' · ' + eo.address : '') : '',
       closeExec: () => this.setState({ execOpen: null }),
       stopProp: (e) => e.stopPropagation(),
+      askViewer: !!s.askViewer,
+      loginEmail: s.loginEmail || '',
+      loginCode: s.loginCode || '',
+      setLoginEmail: (e) => this.setState({ loginEmail: e.target.value }),
+      setLoginCode: (e) => this.setState({ loginCode: e.target.value }),
+      submitLogin: (e) => { e.preventDefault(); if (!s.loginBusy) this.login(String(s.loginEmail || '').trim(), String(s.loginCode || '').trim(), false); },
+      hasLoginError: !!s.loginError,
+      loginError: s.loginError || '',
+      loginButtonLabel: s.loginBusy ? 'Checking…' : 'Open dashboard',
+      hasViewer: !!s.viewerName && !s.askViewer,
+      viewerName: s.viewerName || '',
+      signOut: () => this.signOut(),
+      viewTotal: s.viewTotal || 0,
+      viewStats: (s.viewStats || []).map(v => ({ name: v.name, count: v.count, last: v.last ? new Date(v.last).toLocaleString('en-ZA', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) : '—' })),
       hasExecutionRows: executionRows.length > 0,
       executionFilteredCount: executionFiltered.length,
       spT, exT,

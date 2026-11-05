@@ -1,14 +1,16 @@
 // POST /api/admin-seed-philips-allocation   { code: "<admin access code>", include_dischem?: boolean }
 //
-// Allocates the October 2026 call-diary stores (_philips-oct-allocation.json)
+// Allocates the November 2026 call-diary stores (_philips-nov-allocation.json)
 // to each Philips PH-201 Blitz member, and scopes the three weekly-cadence
 // surveys (Stock Count & Pricing, Execution (Image Report), Competitor
 // Feedback) to every allocated store.
 //
-// - Each rep's storeCodes are REPLACED by their October diary stores; any
+// - Each rep's storeCodes are REPLACED by their November diary stores; any
 //   OFF-* (off-diary call) code they already had is kept.
 // - Surveys are opened to every store (storeCodes cleared = all stores).
-// - Reps not in the October file (e.g. Mzwakhe) are untouched.
+// - Lindani has no November diary: his October stores are carried over.
+// - sharedStores (Meeting, POA Meeting, Activation, Digital Experience) are
+//   created once and allocated to every Blitz rep.
 // - Idempotent: re-running just re-applies the same allocation.
 
 const accessCode = require('./_lib/accesscode');
@@ -22,7 +24,7 @@ const guessChannel = (n) => { n = String(n).toUpperCase();
   if (/CLICK/.test(n)) return 'Clicks'; if (/CHECKER/.test(n)) return 'Checkers';
   if (/BABY ?CITY/.test(n)) return 'Baby City'; if (/BABIES|BRU/.test(n)) return 'Babies R Us';
   if (/MAKRO/.test(n)) return 'Makro'; if (/MEDIRITE/.test(n)) return 'Medirite'; return 'Other'; };
-const ALLOC = require('./_philips-oct-allocation.json');
+const ALLOC = require('./_philips-nov-allocation.json');
 
 const SURVEY_IDS = ['ph_stock_pricing', 'ph_execution_image', 'ph_competitor_feedback'];
 const isDischem = (name) => /dis[\s-]*chem|dischem/i.test(String(name || ''));
@@ -46,10 +48,18 @@ exports.handler = async (event) => {
     for (const name of rep.unmatched || []) {
       const code = tbcCode(name);
       if (nameByCode[code]) continue;
-      stores.push({ code, name, channel: guessChannel(name), region: '', codePending: true, source: 'October 2026 call diary (no Philips code yet)' });
+      stores.push({ code, name, channel: guessChannel(name), region: '', codePending: true, source: ALLOC.period + ' call diary (no Philips code yet)' });
       nameByCode[code] = name;
       storesAdded++;
     }
+  }
+
+  const SHARED = ALLOC.sharedStores || [];
+  for (const s of SHARED) {
+    if (nameByCode[s.code]) continue;
+    stores.push({ code: s.code, name: s.name, channel: 'Other', region: '', nonStore: true, source: ALLOC.period + ' call diary (non-store activity)' });
+    nameByCode[s.code] = s.name;
+    storesAdded++;
   }
 
   const allocated = new Set();
@@ -57,7 +67,7 @@ exports.handler = async (event) => {
   for (const rep of ALLOC.reps) {
     const idx = users.findIndex(u => (u.email || '').toLowerCase() === (rep.email || '').toLowerCase());
     if (idx < 0) { reps.push({ email: rep.email, name: rep.name, error: 'user not found on tenant' }); continue; }
-    const known = [...rep.storeCodes.filter(c => nameByCode[c]), ...(rep.unmatched || []).map(tbcCode)];
+    const known = [...rep.storeCodes.filter(c => nameByCode[c]), ...(rep.unmatched || []).map(tbcCode), ...SHARED.map(s => s.code)];
     const offDiary = (users[idx].storeCodes || []).filter(c => /^OFF-/i.test(c));
     users[idx] = { ...users[idx], storeCodes: [...new Set([...offDiary, ...known])], allocationSource: ALLOC.period, updatedAt: new Date().toISOString() };
     known.forEach(c => allocated.add(c));
